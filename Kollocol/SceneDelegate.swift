@@ -10,13 +10,59 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
+    private var coordinator: AppCoordinator?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+        guard let windowScene = scene as? UIWindowScene else { return }
+
+        let nav = UINavigationController()
+
+        let baseURL = URL(string: "http://130.193.58.223:8080")!
+
+        let tokenStore = KeychainTokenStore(service: "Kollocol.AuthTokens")
+
+        let apiNoAuth = APIClient(
+            baseURL: baseURL,
+            session: .shared,
+            interceptor: nil
+        )
+
+        let refresher = RefreshClient(api: apiNoAuth)
+
+        let sessionManager = SessionManager(
+            store: tokenStore,
+            refresher: refresher,
+            onForcedLogout: { [weak self] in
+                self?.coordinator?.start()
+            }
+        )
+
+        let authInterceptor = AuthInterceptor(
+            session: sessionManager,
+            refreshPath: "/auth/refresh"
+        )
+
+        let api = APIClient(
+            baseURL: baseURL,
+            session: .shared,
+            interceptor: authInterceptor
+        )
+
+        let authService = AuthServiceImpl(api: api)
+
+        let services = Services(authService: authService)
+
+        let coordinator = AppCoordinator(
+            navigationController: nav,
+            services: services
+        )
+        self.coordinator = coordinator
+        coordinator.start()
+
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = nav
+        window.makeKeyAndVisible()
+        self.window = window
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
