@@ -11,16 +11,18 @@ import Foundation
 actor AuthServiceImpl: AuthService {
     // MARK: - Properties
     private let api: APIClient
+    private let tokenStore: any TokenStoring
 
     // MARK: - Lifecycle
-    init(api: APIClient) {
+    init(api: APIClient, tokenStore: any TokenStoring) {
         self.api = api
+        self.tokenStore = tokenStore
     }
     
     // MARK: - Methods
     func login(using email: String) async throws {
         do {
-            _ = try await api.request(LoginEndpoint(email: email))
+            let response = try await api.request(LoginEndpoint(email: email))
         } catch let networkError as NetworkError {
             throw map(networkError)
         } catch {
@@ -29,7 +31,7 @@ actor AuthServiceImpl: AuthService {
     }
     
     func logout() async throws {
-        print(1)
+        await tokenStore.clear()
     }
     
     func refreshToken(with token: String) async throws {
@@ -41,7 +43,13 @@ actor AuthServiceImpl: AuthService {
     }
     
     func verify(code: String, with email: String) async throws {
-        print(1)
+        do {
+            let response = try await api.request(VerifyEndpoint(code: code, email: email))
+        } catch let networkError as NetworkError {
+            throw map(networkError)
+        } catch {
+            throw map(error)
+        }
     }
     
     // MARK: - Private Methods

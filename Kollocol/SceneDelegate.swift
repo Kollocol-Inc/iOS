@@ -48,7 +48,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             interceptor: authInterceptor
         )
 
-        let authService = AuthServiceImpl(api: api)
+        let authService = AuthServiceImpl(api: api, tokenStore: tokenStore)
 
         let services = Services(authService: authService)
 

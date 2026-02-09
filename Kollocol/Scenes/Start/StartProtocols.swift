@@ -12,6 +12,6 @@ protocol StartInteractor: Actor {
 }
 
 protocol StartPresenter {
-    func presentLoginSuccess() async
+    func presentLoginSuccess(email: String) async
     func presentLoginError(_ error: AuthServiceError) async
 }

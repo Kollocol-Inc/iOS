@@ -1,37 +1,34 @@
 //
-//  StartPresenter.swift
+//  VerifyCodeRouter.swift
 //  Kollocol
 //
-//  Created by Arseniy on 01.02.2026.
+//  Created by Arseniy on 08.02.2026.
 //
 
 import UIKit
 
 @MainActor
-final class StartRouter: StartPresenter {
+final class VerifyCodeRouter: VerifyCodePresenter {
     // MARK: - Properties
-    weak var view: StartViewController?
-    
+    weak var view: VerifyCodeViewController?
     private let router: AuthRouting
     
     // MARK: - Lifecycle
     init(router: AuthRouting) {
         self.router = router
     }
-
+    
     // MARK: - Methods
-    func presentLoginSuccess(email: String) async {
-        await router.routeToVerifyCode(email: email)
+    func presentSuccessfulVerifying() async {
+        print("SUCCESS")
     }
     
-    func presentLoginError(_ error: AuthServiceError) async {
+    func presentVerifyingError(_ error: AuthServiceError) async {
         let message: String
         
         switch error {
-            case .invalidEmail:
-                message = "Неверный формат почты"
             case .tooManyRequests:
-                message = "Слишком много попыток"
+                message = "Слишком много попыток ввода кода. Попробуйте еще раз через несколько минут"
             case .offline:
                 message = "Нет интернета"
             default:
@@ -40,6 +37,6 @@ final class StartRouter: StartPresenter {
         
         await router.showError(title: "Ошибка", message: message)
         
-        await view?.showError()
+        await view?.showCodeValidationFailed()
     }
 }

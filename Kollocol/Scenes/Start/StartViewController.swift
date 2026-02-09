@@ -79,16 +79,17 @@ final class StartViewController: UIViewController {
         return view
     }()
     
-    // MARK: - Variables
+    // MARK: - Constants
+    private let baseButtonBottomInset: Double = 30
+    private let stackToButtonSpacing: Double = 24
+    private let keyboardSpacing: Double = 12
+    
+    // MARK: - Properties
     private var interactor: StartInteractor
     
     private var sendCodeButtonBottomConstraint: NSLayoutConstraint?
     private var centralStackCenterYConstraint: NSLayoutConstraint?
     private var centralStackBottomToButtonConstraint: NSLayoutConstraint?
-
-    private let baseButtonBottomInset: Double = 30
-    private let stackToButtonSpacing: Double = 24
-    private let keyboardSpacing: Double = 12
     
     // MARK: - Lifecycle
     init(interactor: StartInteractor) {
@@ -123,7 +124,14 @@ final class StartViewController: UIViewController {
         view.setPrimaryBackground()
         configureConstraints()
         configureActions()
+        configureEmailTextField()
         self.navigationController?.isNavigationBarHidden = true
+    }
+    
+    private func configureEmailTextField() {
+        emailTextField.returnKeyType = .done
+        emailTextField.enablesReturnKeyAutomatically = true
+        emailTextField.delegate = self
     }
     
     private func configureConstraints() {
@@ -247,5 +255,15 @@ private enum Constants {
                 .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
             ]
         )
+    }
+}
+
+// MARK: - UITextFieldDelegate
+extension StartViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        guard textField === emailTextField else { return true }
+        guard sendCodeButton.isEnabled else { return false }
+        sendCodeButton.sendActions(for: .touchUpInside)
+        return false
     }
 }

@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class StripedLoadingTextField: UITextField {
+class StripedLoadingTextField: UITextField {
     // MARK: - Config
     private let stripeWidth: CGFloat = 10
     private let stripeSpacing: CGFloat = 10

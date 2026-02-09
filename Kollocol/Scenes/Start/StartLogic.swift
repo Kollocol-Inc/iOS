@@ -23,7 +23,7 @@ actor StartLogic: StartInteractor {
         do {
             try await authService.login(using: email)
             
-            await presenter.presentLoginSuccess()
+            await presenter.presentLoginSuccess(email: email)
         } catch {
             await presenter.presentLoginError(AuthServiceError.wrap(error))
         }

@@ -28,7 +28,7 @@ final class AuthCoordinator {
     // MARK: - Methods
     func start() {
         let vc = StartAssembly.build(router: self, authService: services.authService)
-        navigationController.setViewControllers([vc], animated: false)
+        navigationController.setViewControllers([vc], animated: true)
     }
     
     // MARK: - Private Methods
@@ -46,7 +46,12 @@ extension AuthCoordinator: AuthRouting {
     }
     
     func routeToVerifyCode(email: String) {
-        //
+        let vc = VerifyCodeAssembly.build(
+            router: self,
+            email: email,
+            authService: services.authService
+        )
+        navigationController.pushViewController(vc, animated: true)
     }
     
     
