@@ -54,11 +54,14 @@ extension AuthCoordinator: AuthRouting {
         navigationController.pushViewController(vc, animated: true)
     }
     
-    
+    func routeToMainFlow() {
+        finish()
+    }
 }
 
 @MainActor
 protocol AuthRouting: AnyObject {
     func showError(title: String, message: String)
     func routeToVerifyCode(email: String)
+    func routeToMainFlow()
 }

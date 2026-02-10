@@ -22,7 +22,7 @@ actor AuthServiceImpl: AuthService {
     // MARK: - Methods
     func login(using email: String) async throws {
         do {
-            let response = try await api.request(LoginEndpoint(email: email))
+            _ = try await api.request(LoginEndpoint(email: email))
         } catch let networkError as NetworkError {
             throw map(networkError)
         } catch {
@@ -32,6 +32,7 @@ actor AuthServiceImpl: AuthService {
     
     func logout() async throws {
         await tokenStore.clear()
+        // await tokenStore.clear()
     }
     
     func refreshToken(with token: String) async throws {
@@ -45,6 +46,12 @@ actor AuthServiceImpl: AuthService {
     func verify(code: String, with email: String) async throws {
         do {
             let response = try await api.request(VerifyEndpoint(code: code, email: email))
+            await tokenStore.set(
+                TokenPair(
+                    accessToken: response.accessToken,
+                    refreshToken: response.refreshToken
+                )
+            )
         } catch let networkError as NetworkError {
             throw map(networkError)
         } catch {
