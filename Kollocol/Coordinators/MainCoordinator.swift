@@ -27,7 +27,8 @@ final class MainCoordinator {
     
     // MARK: - Methods
     func start() {
-        
+        let vc = MainAssembly.build(router: self)
+        navigationController.setViewControllers([vc], animated: true)
     }
     
     // MARK: - Private Methods

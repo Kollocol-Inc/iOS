@@ -75,7 +75,6 @@ final class StartViewController: UIViewController {
         let view = UIActivityIndicatorView(style: .medium)
         view.color = .textWhite
         view.hidesWhenStopped = true
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -214,7 +213,6 @@ final class StartViewController: UIViewController {
         }
     }
 
-    
     @objc
     private func textFieldDidBeginFocused() {
         emailTextField.setFocusedBorder(isActive: true)

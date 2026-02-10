@@ -8,7 +8,7 @@
 import Foundation
 
 struct RefreshEndpoint: Endpoint {
-    typealias Response = RefreshDTO
+    typealias Response = RefreshResponse
 
     let refreshToken: String
 
@@ -18,5 +18,9 @@ struct RefreshEndpoint: Endpoint {
 
     struct Body: Encodable, Sendable {
         let refreshToken: String
+        
+        private enum CodingKeys: String, CodingKey {
+            case refreshToken = "refresh_token"
+        }
     }
 }

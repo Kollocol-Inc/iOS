@@ -48,21 +48,29 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             interceptor: authInterceptor
         )
 
-        let authService = AuthServiceImpl(api: api, tokenStore: tokenStore)
+        let udService = UserDefaultsServiceImpl()
+        let authService = AuthServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
+        let userService = UserServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
 
-        let services = Services(authService: authService)
+        let services = Services(
+            authService: authService,
+            tokenStore: tokenStore,
+            udService: udService,
+            userService: userService
+        )
 
         let coordinator = AppCoordinator(
             navigationController: nav,
             services: services
         )
-        self.coordinator = coordinator
-        coordinator.start()
-
+        
         let window = UIWindow(windowScene: windowScene)
         window.rootViewController = nav
         window.makeKeyAndVisible()
         self.window = window
+
+        self.coordinator = coordinator
+        coordinator.start()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

@@ -19,8 +19,12 @@ final class VerifyCodeRouter: VerifyCodePresenter {
     }
     
     // MARK: - Methods
-    func presentSuccessfulVerifying() async {
-        await router.routeToMainFlow()
+    func presentSuccessfulVerifying(isRegistered: Bool) async {
+        if isRegistered {
+            await router.routeToMainFlow()
+        } else {
+            await router.routeToRegistration()
+        }
     }
     
     func presentVerifyingError(_ error: AuthServiceError) async {

@@ -21,9 +21,9 @@ final class VerifyCodeLogic: VerifyCodeInteractor {
     // MARK: - Methods
     func verify(code: String, with email: String) async {
         do {
-            try await authService.verify(code: code, with: email)
+            let isRegistered = try await authService.verify(code: code, with: email)
             
-            await presenter.presentSuccessfulVerifying()
+            await presenter.presentSuccessfulVerifying(isRegistered: isRegistered)
         } catch {
             await presenter.presentVerifyingError(AuthServiceError.wrap(error))
         }

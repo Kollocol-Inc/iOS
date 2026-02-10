@@ -12,6 +12,6 @@ protocol VerifyCodeInteractor {
 }
 
 protocol VerifyCodePresenter {
-    func presentSuccessfulVerifying() async
+    func presentSuccessfulVerifying(isRegistered: Bool) async
     func presentVerifyingError(_ error: AuthServiceError) async
 }

@@ -12,11 +12,13 @@ actor AuthServiceImpl: AuthService {
     // MARK: - Properties
     private let api: APIClient
     private let tokenStore: any TokenStoring
+    private let udService: UserDefaultsService
 
     // MARK: - Lifecycle
-    init(api: APIClient, tokenStore: any TokenStoring) {
+    init(api: APIClient, tokenStore: any TokenStoring, udService: UserDefaultsService) {
         self.api = api
         self.tokenStore = tokenStore
+        self.udService = udService
     }
     
     // MARK: - Methods
@@ -43,15 +45,21 @@ actor AuthServiceImpl: AuthService {
         print(1)
     }
     
-    func verify(code: String, with email: String) async throws {
+    func verify(code: String, with email: String) async throws -> Bool {
         do {
             let response = try await api.request(VerifyEndpoint(code: code, email: email))
+            
             await tokenStore.set(
                 TokenPair(
                     accessToken: response.accessToken,
                     refreshToken: response.refreshToken
                 )
             )
+            
+            let isRegistered = response.isRegistered
+            udService.isRegistered = isRegistered
+            
+            return isRegistered
         } catch let networkError as NetworkError {
             throw map(networkError)
         } catch {
@@ -92,7 +100,7 @@ protocol AuthService: Actor {
     func logout() async throws
     func refreshToken(with token: String) async throws
     func resendCode(to email: String) async throws
-    func verify(code: String, with email: String) async throws
+    func verify(code: String, with email: String) async throws -> Bool
 }
 
 // MARK: - AuthServiceError

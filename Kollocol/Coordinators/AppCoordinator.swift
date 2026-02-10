@@ -22,15 +22,30 @@ final class AppCoordinator {
 
     // MARK: - Methods
     func start() {
-        startAuth()
+        Task { [weak self] in
+            guard let self else { return }
+
+            let hasToken = await services.tokenStore.refreshToken() != nil
+            let isRegistered = services.udService.isRegistered
+
+            if hasToken, isRegistered {
+                startMain()
+            } else if hasToken, !isRegistered {
+                startAuth(entry: .registration)
+            } else {
+                startAuth(entry: .start)
+            }
+        }
     }
     
     // MARK: - Private Methods
-    private func startAuth() {
+    private func startAuth(entry: AuthCoordinator.Entry) {
         let auth = AuthCoordinator(
             navigationController: navigationController,
             services: services,
-            onFinish: {
+            entry: entry,
+            onFinish: { [weak self] in
+                guard let self else { return }
                 self.activeFlow = nil
                 self.startMain()
             }
@@ -40,12 +55,22 @@ final class AppCoordinator {
     }
     
     private func startMain() {
-        // запускаем основной флоу приложения
+        let main = MainCoordinator(
+            navigationController: navigationController,
+            services: services,
+            onFinish: {
+                self.activeFlow = nil
+            }
+        )
+        activeFlow = main
+        main.start()
     }
 }
 
 // MARK: - Services
 struct Services {
     let authService: AuthService
+    let tokenStore: any TokenStoring
+    let udService: UserDefaultsService
+    let userService: UserService
 }
-
