@@ -12,10 +12,10 @@ final class MyQuizzesRouter: MyQuizzesPresenter {
     // MARK: - Properties
     weak var view: MyQuizzesViewController?
 
-    private let router: MainRouting
-    
+    private let router: MyQuizzesRouting
+
     // MARK: - Lifecycle
-    init(router: MainRouting) {
+    init(router: MyQuizzesRouting) {
         self.router = router
     }
 }

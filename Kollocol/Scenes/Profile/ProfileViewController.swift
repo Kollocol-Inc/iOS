@@ -24,6 +24,11 @@ final class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .red
+        configureUI()
+    }
+
+    // MARK: - Private Methods
+    private func configureUI() {
+        view.setPrimaryBackground()
     }
 }

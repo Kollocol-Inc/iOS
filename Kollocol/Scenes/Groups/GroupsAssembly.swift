@@ -10,7 +10,7 @@ import UIKit
 enum GroupsAssembly {
     @MainActor
     static func build(
-        router: MainRouting
+        router: GroupsRouting
     ) -> UIViewController {
         let presenter = GroupsRouter(router: router)
         let interactor = GroupsLogic(presenter: presenter)

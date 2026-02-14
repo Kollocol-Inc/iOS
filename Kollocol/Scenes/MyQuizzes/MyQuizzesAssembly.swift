@@ -10,7 +10,7 @@ import UIKit
 enum MyQuizzesAssembly {
     @MainActor
     static func build(
-        router: MainRouting
+        router: MyQuizzesRouting
     ) -> UIViewController {
         let presenter = MyQuizzesRouter(router: router)
         let interactor = MyQuizzesLogic(presenter: presenter)

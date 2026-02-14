@@ -10,7 +10,7 @@ import UIKit
 enum ProfileAssembly {
     @MainActor
     static func build(
-        router: MainRouting
+        router: ProfileRouting
     ) -> UIViewController {
         let presenter = ProfileRouter(router: router)
         let interactor = ProfileLogic(presenter: presenter)

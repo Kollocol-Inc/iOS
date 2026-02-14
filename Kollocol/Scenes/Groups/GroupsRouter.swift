@@ -12,10 +12,10 @@ final class GroupsRouter: GroupsPresenter {
     // MARK: - Properties
     weak var view: GroupsViewController?
 
-    private let router: MainRouting
-    
+    private let router: GroupsRouting
+
     // MARK: - Lifecycle
-    init(router: MainRouting) {
+    init(router: GroupsRouting) {
         self.router = router
     }
 }

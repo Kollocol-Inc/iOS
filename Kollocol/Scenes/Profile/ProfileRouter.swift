@@ -12,10 +12,10 @@ final class ProfileRouter: ProfilePresenter {
     // MARK: - Properties
     weak var view: ProfileViewController?
 
-    private let router: MainRouting
-    
+    private let router: ProfileRouting
+
     // MARK: - Lifecycle
-    init(router: MainRouting) {
+    init(router: ProfileRouting) {
         self.router = router
     }
 }
