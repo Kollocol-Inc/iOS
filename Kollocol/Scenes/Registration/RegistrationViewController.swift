@@ -182,7 +182,7 @@ final class RegistrationViewController: UIViewController {
     
     // MARK: - Methods
     @MainActor
-    func showError() {
+    func unlockFieldsAndButtons() {
         stopLoadingState()
     }
     
@@ -193,6 +193,13 @@ final class RegistrationViewController: UIViewController {
         updateAvatarMenu()
     }
     
+    @MainActor
+    func applyCroppedAvatar(_ image: UIImage) {
+        avatarImageView.image = image
+        avatarPayload = (image: image, data: image.jpegData(compressionQuality: 0.8))
+        updateAvatarMenu()
+    }
+
     // MARK: - Private Methods
     private func configureUI() {
         view.setPrimaryBackground()
@@ -388,6 +395,12 @@ final class RegistrationViewController: UIViewController {
         present(picker, animated: true)
     }
     
+    private func openCrop(with image: UIImage) {
+        Task { @MainActor in
+            await interactor.openAvatarCrop(with: image)
+        }
+    }
+    
     // MARK: - Actions
     @objc
     private func registerButtonPressed() {
@@ -469,15 +482,28 @@ extension RegistrationViewController: UITextFieldDelegate {
 // MARK: - PHPickerViewControllerDelegate
 extension RegistrationViewController: PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        picker.dismiss(animated: true)
+        guard let result = results.first else {
+            picker.dismiss(animated: true)
+            return
+        }
 
-        guard let result = results.first else { return }
-        guard result.itemProvider.canLoadObject(ofClass: UIImage.self) else { return }
+        self.startLoadingState()
 
-        result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
-            guard let image = object as? UIImage else { return }
-            DispatchQueue.main.async {
-                self?.setAvatar(image: image)
+        picker.dismiss(animated: true) { [weak self] in
+            guard let self else { return }
+            guard result.itemProvider.canLoadObject(ofClass: UIImage.self) else { return }
+
+            result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
+                guard let image = object as? UIImage else {
+                    Task { @MainActor [weak self] in
+                        self?.stopLoadingState()
+                    }
+                    return
+                }
+
+                Task { @MainActor [weak self] in
+                    await self?.interactor.openAvatarCrop(with: image)
+                }
             }
         }
     }
@@ -493,11 +519,17 @@ extension RegistrationViewController: UIImagePickerControllerDelegate, UINavigat
         _ picker: UIImagePickerController,
         didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
     ) {
-        picker.dismiss(animated: true)
-
         let image = (info[.editedImage] as? UIImage) ?? (info[.originalImage] as? UIImage)
-        guard let image else { return }
 
-        setAvatar(image: image)
+        picker.dismiss(animated: true) { [weak self] in
+            guard let self else { return }
+            guard let image else { return }
+
+            self.startLoadingState()
+
+            Task { @MainActor [weak self] in
+                await self?.interactor.openAvatarCrop(with: image)
+            }
+        }
     }
 }

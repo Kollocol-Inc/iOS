@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E2F0BBA82F3E87360071EDCE /* Mantis in Frameworks */ = {isa = PBXBuildFile; productRef = E2F0BBA72F3E87360071EDCE /* Mantis */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		AE87EB722F3058390067D95A /* Kollocol.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kollocol.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2F0BBA82F3E87360071EDCE /* Mantis in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 			);
 			name = Kollocol;
 			packageProductDependencies = (
+				E2F0BBA72F3E87360071EDCE /* Mantis */,
 			);
 			productName = Kollocol;
 			productReference = AE87EB722F3058390067D95A /* Kollocol.app */;
@@ -107,6 +113,9 @@
 			);
 			mainGroup = AE87EB692F3058390067D95A;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E2F0BBA62F3E87360071EDCE /* XCRemoteSwiftPackageReference "Mantis" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AE87EB732F3058390067D95A /* Products */;
 			projectDirPath = "";
@@ -341,6 +350,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E2F0BBA62F3E87360071EDCE /* XCRemoteSwiftPackageReference "Mantis" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/guoyingtao/Mantis.git";
+			requirement = {
+				kind = exactVersion;
+				version = 2.28.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E2F0BBA72F3E87360071EDCE /* Mantis */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2F0BBA62F3E87360071EDCE /* XCRemoteSwiftPackageReference "Mantis" */;
+			productName = Mantis;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AE87EB6A2F3058390067D95A /* Project object */;
 }

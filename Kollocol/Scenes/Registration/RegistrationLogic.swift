@@ -11,7 +11,9 @@ final class RegistrationLogic: RegistrationInteractor {
     // MARK: - Constants
     private let presenter: RegistrationPresenter
     private let userService: UserService
-    
+
+    private var avatarUpload: RegistrationModels.AvatarUpload?
+
     // MARK: - Lifecycle
     init(presenter: RegistrationPresenter, userService: UserService) {
         self.presenter = presenter
@@ -21,6 +23,7 @@ final class RegistrationLogic: RegistrationInteractor {
     // MARK: - Methods
     func register(name: String, surname: String) async {
         do {
+            // TODO: отправить аватарку на бек
             try await userService.register(name: name, surname: surname)
             
             await presenter.presentSuccessfulRegister()
@@ -29,6 +32,27 @@ final class RegistrationLogic: RegistrationInteractor {
         }
     }
     
+    func openAvatarCrop(with image: UIImage) async {
+        let prepared = await Task.detached(priority: .userInitiated) {
+            RegistrationModels.AvatarImageProcessor.prepareForCropping(image)
+        }.value
+
+        await presenter.presentAvatarCrop(image: prepared)
+    }
+
+    func storeAvatar(image: UIImage) async -> UIImage {
+        let upload = await Task.detached(priority: .userInitiated) {
+            RegistrationModels.AvatarImageProcessor.processForUpload(image)
+        }.value
+
+        avatarUpload = upload
+        return upload.image
+    }
+
+    func clearAvatar() async {
+        avatarUpload = nil
+    }
+
     func requestDeleteAvatarConfirmation() async {
         await presenter.presentDeleteAvatarConfirmation()
     }

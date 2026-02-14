@@ -9,6 +9,9 @@ import UIKit
 
 @MainActor
 final class RegistrationRouter: RegistrationPresenter {
+    // MARK: - Typealias
+    typealias AvatarCropCompletion = @MainActor (UIImage?) -> Void
+
     // MARK: - Properties
     weak var view: RegistrationViewController?
     
@@ -36,12 +39,21 @@ final class RegistrationRouter: RegistrationPresenter {
         
         await router.showError(title: "Ошибка", message: message)
         
-        await view?.showError()
+        await view?.unlockFieldsAndButtons()
     }
     
     func presentDeleteAvatarConfirmation() async {
         await router.showAvatarDeleteConfirmation { [weak self] in
             self?.view?.deleteAvatar()
+        }
+    }
+    
+    func presentAvatarCrop(image: UIImage) async {
+        await router.showAvatarCrop(image: image) { [weak self] cropped in
+            self?.view?.unlockFieldsAndButtons()
+
+            guard let cropped else { return }
+            self?.view?.applyCroppedAvatar(cropped)
         }
     }
 }

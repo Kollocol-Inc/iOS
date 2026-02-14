@@ -6,6 +6,9 @@
 //
 
 import UIKit
+import Mantis
+import PhotosUI
+import ObjectiveC
 
 @MainActor
 final class AuthCoordinator {
@@ -14,13 +17,17 @@ final class AuthCoordinator {
         case start
         case registration
     }
-    
+
+    private enum AssociatedKeys {
+        static var avatarCropHandlerKey: UInt8 = 0
+    }
+
     // MARK: - Properties
     private let navigationController: UINavigationController
     private let services: Services
     private let entry: Entry
     private let onFinish: () -> Void
-    
+
     // MARK: - Lifecycle
     init(
         navigationController: UINavigationController,
@@ -36,12 +43,6 @@ final class AuthCoordinator {
     
     // MARK: - Methods
     func start() {
-//        let vc = RegistrationAssembly.build(
-//            router: self,
-//            userService: services.userService
-//        )
-//        navigationController.setViewControllers([vc], animated: true)
-        
         switch entry {
         case .start:
             let vc = StartAssembly.build(
@@ -62,6 +63,26 @@ final class AuthCoordinator {
     // MARK: - Private Methods
     private func finish() {
         onFinish()
+    }
+    
+    private func presentSafely(_ viewController: UIViewController) {
+        if let presented = navigationController.presentedViewController {
+            let shouldDismissFirst =
+                presented is PHPickerViewController ||
+                presented is UIImagePickerController ||
+                presented.isBeingDismissed ||
+                presented.view.window == nil
+
+            if shouldDismissFirst {
+                navigationController.dismiss(animated: true) { [weak self] in
+                    guard let self else { return }
+                    self.navigationController.present(viewController, animated: true)
+                }
+                return
+            }
+        }
+
+        navigationController.present(viewController, animated: true)
     }
 }
 
@@ -105,6 +126,28 @@ extension AuthCoordinator: AuthRouting {
         navigationController.visibleViewController?.present(alert, animated: true)
     }
     
+    func showAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) {
+        var config = Mantis.Config()
+        config.presetFixedRatioType = .alwaysUsingOnePresetFixedRatio(ratio: 1)
+        config.cropViewConfig.cropShapeType = .circle(maskOnly: true)
+        config.cropViewConfig.showAttachedRotationControlView = false
+
+        let cropViewController = Mantis.cropViewController(image: image, config: config)
+        cropViewController.modalPresentationStyle = .fullScreen
+
+        let handler = AvatarCropHandler(onFinish: onFinish)
+        cropViewController.delegate = handler
+
+        objc_setAssociatedObject(
+            cropViewController,
+            &AssociatedKeys.avatarCropHandlerKey,
+            handler,
+            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+        )
+
+        presentSafely(cropViewController)
+    }
+
     func routeToMainFlow() {
         finish()
     }
@@ -117,5 +160,6 @@ protocol AuthRouting: AnyObject {
     func routeToVerifyCode(email: String)
     func routeToRegistration()
     func showAvatarDeleteConfirmation(onConfirm: @escaping @MainActor () -> Void)
+    func showAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void)
     func routeToMainFlow()
 }
