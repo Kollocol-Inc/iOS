@@ -29,6 +29,7 @@ final class MyQuizzesViewController: UIViewController {
 
     // MARK: - Private Methods
     private func configureUI() {
-        view.setPrimaryBackground()
+//        view.setPrimaryBackground()
+        view.backgroundColor = .blue
     }
 }

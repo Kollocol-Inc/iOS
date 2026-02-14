@@ -46,6 +46,7 @@ final class MainCoordinator {
 
     // MARK: - Properties
     private let tabBarController = UITabBarController()
+    private let tabBarDelegateProxy = TabBarSlideDelegateProxy()
     private let navigationController: UINavigationController
     private let services: Services
     private let onFinish: () -> Void
@@ -69,6 +70,8 @@ final class MainCoordinator {
     // MARK: - Methods
     func start() {
         navigationController.setNavigationBarHidden(true, animated: false)
+
+        tabBarController.delegate = tabBarDelegateProxy
 
         let tabs = makeTabs()
         tabBarController.setViewControllers(tabs, animated: false)

@@ -29,6 +29,7 @@ final class GroupsViewController: UIViewController {
 
     // MARK: - Private Methods
     private func configureUI() {
-        view.setPrimaryBackground()
+//        view.setPrimaryBackground()
+        view.backgroundColor = .gray
     }
 }
