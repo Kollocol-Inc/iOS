@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RegisterResponse: Decodable {
+struct UserDTO: Decodable {
     // MARK: - Constants
     private enum Constants {
         static let rfc3339WithFractionalSeconds: ISO8601DateFormatter = {
@@ -24,17 +24,17 @@ struct RegisterResponse: Decodable {
     }
 
     // MARK: - Properties
-    //let avatarUrl: String
-    let createdAt: Date
-    let email: String
-    let firstName: String
-    let id: String
-    let lastName: String
-    let updatedAt: Date
+    let avatarUrl: String?
+    let createdAt: Date?
+    let email: String?
+    let firstName: String?
+    let id: String?
+    let lastName: String?
+    let updatedAt: Date?
 
     // MARK: - Methods
     private enum CodingKeys: String, CodingKey {
-        //case avatarUrl = "avatar_url"
+        case avatarUrl = "avatar_url"
         case createdAt = "created_at"
         case email
         case firstName = "first_name"
@@ -46,7 +46,7 @@ struct RegisterResponse: Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        //avatarUrl = try container.decode(String.self, forKey: .avatarUrl)
+        avatarUrl = try container.decode(String.self, forKey: .avatarUrl)
         email = try container.decode(String.self, forKey: .email)
         firstName = try container.decode(String.self, forKey: .firstName)
         id = try container.decode(String.self, forKey: .id)

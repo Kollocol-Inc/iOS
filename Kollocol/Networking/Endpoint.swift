@@ -15,10 +15,12 @@ protocol Endpoint {
     var query: [URLQueryItem] { get }
     var headers: [String: String] { get }
     var body: AnyEncodable? { get }
+    var multipart: MultipartFormData? { get }
 }
 
 extension Endpoint {
     var query: [URLQueryItem] { [] }
     var headers: [String: String] { [:] }
     var body: AnyEncodable? { nil }
+    var multipart: MultipartFormData? { nil }
 }

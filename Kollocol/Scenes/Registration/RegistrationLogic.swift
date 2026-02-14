@@ -21,17 +21,24 @@ final class RegistrationLogic: RegistrationInteractor {
     }
     
     // MARK: - Methods
-    func register(name: String, surname: String) async {
+    func register(name: String, surname: String, avatarData: Data?) async {
+        if let avatarData {
+            do {
+                try await userService.uploadAvatar(data: avatarData)
+            } catch {
+                await presenter.presentAvatarUploadError()
+                return
+            }
+        }
+
         do {
-            // TODO: отправить аватарку на бек
             try await userService.register(name: name, surname: surname)
-            
             await presenter.presentSuccessfulRegister()
         } catch {
             await presenter.presentRegisterError(UserServiceError.wrap(error))
         }
     }
-    
+
     func openAvatarCrop(with image: UIImage) async {
         let prepared = await Task.detached(priority: .userInitiated) {
             RegistrationModels.AvatarImageProcessor.prepareForCropping(image)

@@ -408,7 +408,8 @@ final class RegistrationViewController: UIViewController {
 
         startLoadingState()
 
-        Task { await interactor.register(name: name, surname: surname) }
+        let avatarData = avatarPayload?.data
+        Task { await interactor.register(name: name, surname: surname, avatarData: avatarData) }
     }
 
     @objc

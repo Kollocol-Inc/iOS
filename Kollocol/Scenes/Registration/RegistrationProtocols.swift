@@ -8,7 +8,7 @@
 import UIKit
 
 protocol RegistrationInteractor {
-    func register(name: String, surname: String) async
+    func register(name: String, surname: String, avatarData: Data?) async
 
     // MARK: - Avatar
     func openAvatarCrop(with image: UIImage) async
@@ -22,6 +22,7 @@ protocol RegistrationPresenter {
     func presentRegisterError(_ error: UserServiceError) async
 
     // MARK: - Avatar
+    func presentAvatarUploadError() async
     func presentAvatarCrop(image: UIImage) async
     func presentDeleteAvatarConfirmation() async
 }

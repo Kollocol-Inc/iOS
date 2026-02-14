@@ -32,7 +32,18 @@ actor UserServiceImpl: UserService {
             throw map(error)
         }
     }
-    
+
+    func uploadAvatar(data: Data) async throws {
+        do {
+            let file = UploadAvatar.AvatarFile(data: data)
+            _ = try await api.request(UploadAvatar(avatar: file))
+        } catch let networkError as NetworkError {
+            throw map(networkError)
+        } catch {
+            throw map(error)
+        }
+    }
+
     // MARK: - Private Methods
     private func map(_ error: Error) -> UserServiceError {
         if let e = error as? UserServiceError { return e }
@@ -62,6 +73,7 @@ actor UserServiceImpl: UserService {
 // MARK: - UserServiceError
 protocol UserService: Actor {
     func register(name: String, surname: String) async throws
+    func uploadAvatar(data: Data) async throws
 }
 
 // MARK: - UserServiceError

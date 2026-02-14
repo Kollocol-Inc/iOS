@@ -8,6 +8,10 @@
 import Foundation
 
 final class APIClient {
+    private enum Constants {
+        static let jsonContentType = "application/json"
+    }
+
     private let baseURL: URL
     private let session: URLSession
     private let decoder: JSONDecoder
@@ -101,8 +105,14 @@ final class APIClient {
 
         endpoint.headers.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
 
+        if let multipart = endpoint.multipart {
+            request.setValue(multipart.contentTypeHeaderValue, forHTTPHeaderField: "Content-Type")
+            request.httpBody = multipart.encode()
+            return request
+        }
+
         if let body = endpoint.body {
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(Constants.jsonContentType, forHTTPHeaderField: "Content-Type")
             request.httpBody = try encoder.encode(body)
         }
 
@@ -125,7 +135,8 @@ final class APIClient {
         let method = request.httpMethod ?? "?"
         let url = request.url?.absoluteString ?? "?"
         let headers = redactHeaders(request.allHTTPHeaderFields ?? [:])
-        let body = previewBody(request.httpBody)
+
+        let body = previewBodyForLogging(request)
 
         logLine("▶️ requestId=\(requestId) attempt=\(attempt) \(method) \(url)")
         if !headers.isEmpty {
@@ -134,6 +145,17 @@ final class APIClient {
         if let body, !body.isEmpty {
             logLine("body=\(body)")
         }
+    }
+
+    private func previewBodyForLogging(_ request: URLRequest) -> String? {
+        guard let data = request.httpBody, !data.isEmpty else { return nil }
+
+        let contentType = request.value(forHTTPHeaderField: "Content-Type") ?? ""
+        if contentType.contains("multipart/form-data") {
+            return "multipart bytes=\(data.count)"
+        }
+
+        return previewBody(data)
     }
 
     private func logResponse(_ response: HTTPURLResponse, data: Data, requestId: String, attempt: Int, duration: CFTimeInterval) {

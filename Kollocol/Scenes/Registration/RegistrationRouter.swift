@@ -41,7 +41,17 @@ final class RegistrationRouter: RegistrationPresenter {
         
         await view?.unlockFieldsAndButtons()
     }
-    
+
+    func presentAvatarUploadError() async {
+        await router.showError(
+            title: "Ошибка",
+            message: "Произошла ошибка при загрузке аватара"
+        )
+
+        await view?.deleteAvatar()
+        await view?.unlockFieldsAndButtons()
+    }
+
     func presentDeleteAvatarConfirmation() async {
         await router.showAvatarDeleteConfirmation { [weak self] in
             self?.view?.deleteAvatar()

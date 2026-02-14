@@ -6,7 +6,7 @@
 //
 
 struct RegisterEndpoint: Endpoint {
-    typealias Response = RegisterResponse
+    typealias Response = UserDTO
 
     let name: String
     let surname: String
