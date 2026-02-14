@@ -70,6 +70,7 @@ final class AppCoordinator {
 // MARK: - Services
 struct Services {
     let authService: AuthService
+    let sessionManager: SessionManager
     let tokenStore: any TokenStoring
     let udService: UserDefaultsService
     let userService: UserService

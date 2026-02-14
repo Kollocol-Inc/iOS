@@ -30,5 +30,31 @@ final class ProfileViewController: UIViewController {
     // MARK: - Private Methods
     private func configureUI() {
         view.setPrimaryBackground()
+        configureNavbar()
+    }
+
+    private func configureNavbar() {
+        // title
+        var title = AttributedString("Профиль")
+        title.foregroundColor = .textSecondary
+        title.font = .systemFont(ofSize: 20, weight: .bold)
+        navigationItem.attributedTitle = title
+
+        // right button
+        let showPopupAndLogoutAction = UIAction { [weak self] _ in
+            Task { [weak self] in
+                await self?.interactor.logout()
+            }
+        }
+
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(
+                systemName: "door.right.hand.open"
+            )?.withTintColor(
+                .backgroundRedPrimary,
+                renderingMode: .alwaysOriginal
+            ),
+            primaryAction: showPopupAndLogoutAction
+        )
     }
 }

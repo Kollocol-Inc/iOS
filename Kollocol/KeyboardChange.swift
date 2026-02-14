@@ -7,8 +7,6 @@
 
 import UIKit
 
-import UIKit
-
 struct KeyboardChange {
     let duration: Double
     let options: UIView.AnimationOptions

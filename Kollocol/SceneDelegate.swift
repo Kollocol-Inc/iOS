@@ -54,6 +54,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let services = Services(
             authService: authService,
+            sessionManager: sessionManager,
             tokenStore: tokenStore,
             udService: udService,
             userService: userService

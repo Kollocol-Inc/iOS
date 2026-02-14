@@ -18,4 +18,9 @@ final class ProfileRouter: ProfilePresenter {
     init(router: ProfileRouting) {
         self.router = router
     }
+
+    // MARK: - Methods
+    func presentLogoutConfirmation(onConfirm: @escaping @MainActor () -> Void) async {
+        await router.showLogoutConfirmation(onConfirm: onConfirm)
+    }
 }

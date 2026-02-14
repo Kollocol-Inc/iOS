@@ -68,14 +68,13 @@ final class MainCoordinator {
     
     // MARK: - Methods
     func start() {
-            navigationController.setNavigationBarHidden(true, animated: false)
+        navigationController.setNavigationBarHidden(true, animated: false)
 
-            let tabs = makeTabs()
-            tabBarController.setViewControllers(tabs, animated: false)
-            configureTabBarAppearance()
+        let tabs = makeTabs()
+        tabBarController.setViewControllers(tabs, animated: false)
 
-            navigationController.setViewControllers([tabBarController], animated: true)
-        }
+        navigationController.setViewControllers([tabBarController], animated: true)
+    }
 
     // MARK: - Private Methods
     private func finish() {
@@ -104,7 +103,7 @@ final class MainCoordinator {
         )
         myQuizzesNavController = myQuizzesNav
 
-        let profileVC = ProfileAssembly.build(router: self)
+        let profileVC = ProfileAssembly.build(router: self, sessionManager: services.sessionManager)
         let profileNav = makeTabNavigationController(
             root: profileVC,
             tab: .profile
@@ -117,18 +116,47 @@ final class MainCoordinator {
     private func makeTabNavigationController(root: UIViewController, tab: Tab) -> UINavigationController {
         let nav = UINavigationController(rootViewController: root)
 
-        nav.tabBarItem = UITabBarItem(
-            title: tab.title,
-            image: UIImage(systemName: tab.imageName),
-            selectedImage: UIImage(systemName: tab.selectedImageName)
+        let normalImage = UIImage(systemName: tab.imageName)?
+            .withTintColor(.textSecondary, renderingMode: .alwaysOriginal)
+
+        let selectedImage = UIImage(systemName: tab.selectedImageName)?
+            .withTintColor(.accentPrimary, renderingMode: .alwaysOriginal)
+
+        let item = UITabBarItem(
+            title: nil,
+            image: normalImage,
+            selectedImage: selectedImage
         )
 
+        item.setTitleTextAttributes([.foregroundColor: UIColor.textSecondary], for: .normal)
+        item.setTitleTextAttributes([.foregroundColor: UIColor.accentPrimary], for: .selected)
+
+        nav.tabBarItem = item
         return nav
     }
 
-    private func configureTabBarAppearance() {
-        tabBarController.tabBar.tintColor = .accentPrimary
-        tabBarController.tabBar.unselectedItemTintColor = .textSecondary
+    private func topMostViewController() -> UIViewController? {
+        func resolve(from vc: UIViewController?) -> UIViewController? {
+            if let presented = vc?.presentedViewController {
+                return resolve(from: presented)
+            }
+            if let nav = vc as? UINavigationController {
+                return resolve(from: nav.visibleViewController)
+            }
+            if let tab = vc as? UITabBarController {
+                return resolve(from: tab.selectedViewController)
+            }
+            return vc
+        }
+
+        return resolve(from: navigationController)
+    }
+}
+
+// MARK: - AlertPresenting
+extension MainCoordinator: AlertPresenting {
+    func presentAlert(_ alert: UIAlertController) {
+        topMostViewController()?.present(alert, animated: true)
     }
 }
 
@@ -149,7 +177,16 @@ extension MainCoordinator: MyQuizzesRouting {
 
 // MARK: - ProfileRouting
 extension MainCoordinator: ProfileRouting {
-    
+    func showLogoutConfirmation(onConfirm: @escaping @MainActor () -> Void) {
+        showConfirmationAlert(
+            title: "Выход из аккаунта",
+            message: "Вы уверены, что хотите выйти из аккаунта?",
+            cancelTitle: "Отмена",
+            confirmTitle: "Выход",
+            confirmStyle: .destructive,
+            onConfirm: onConfirm
+        )
+    }
 }
 
 @MainActor
@@ -169,5 +206,5 @@ protocol MyQuizzesRouting: AnyObject {
 
 @MainActor
 protocol ProfileRouting: AnyObject {
-
+    func showLogoutConfirmation(onConfirm: @escaping @MainActor () -> Void)
 }
