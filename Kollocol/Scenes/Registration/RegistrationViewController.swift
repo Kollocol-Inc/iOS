@@ -10,8 +10,8 @@ import PhotosUI
 
 final class RegistrationViewController: UIViewController {
     // MARK: - Typealias
-    typealias AvatarPayload = (image: UIImage, data: Data?)
-    
+    typealias AvatarPayload = (image: UIImage?, data: Data?)
+
     // MARK: - UI Components
     private let kollocolLabel: UILabel = {
         let label = UILabel()
@@ -37,43 +37,6 @@ final class RegistrationViewController: UIViewController {
         let view = UIView()
         view.setHeight(75)
         return view
-    }()
-    
-    private let avatarContainerView: UIView = {
-        let view = UIView()
-        view.setWidth(75)
-        view.setHeight(75)
-        return view
-    }()
-    
-    private let avatarImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = .avatarPlaceholder
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 37.5
-        imageView.layer.borderWidth = 1.5
-        imageView.layer.borderColor = UIColor.accentPrimary.cgColor
-        imageView.isUserInteractionEnabled = false
-        return imageView
-    }()
-    
-    private let avatarMenuButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.backgroundColor = .clear
-        button.showsMenuAsPrimaryAction = true
-        return button
-    }()
-    
-    private let editAvatarButton: UIButton = {
-        let button = UIButton(type: .system)
-        let configuration = UIImage.SymbolConfiguration(font: .systemFont(ofSize: 20, weight: .regular))
-        let image = UIImage(systemName: "pencil.circle.fill", withConfiguration: configuration)
-        button.setImage(image, for: .normal)
-        button.tintColor = .textPrimary
-        button.showsMenuAsPrimaryAction = true
-        button.backgroundColor = .clear
-        return button
     }()
     
     private let nameTextField: StripedLoadingTextField = {
@@ -147,14 +110,16 @@ final class RegistrationViewController: UIViewController {
         view.hidesWhenStopped = true
         return view
     }()
-    
+
+    private let avatarPickerView = AvatarPickerView()
+
     // MARK: - Constants
     private let baseButtonBottomInset: Double = 30
     private let keyboardSpacing: Double = 12
     
     // MARK: - Properties
     private var interactor: RegistrationInteractor
-    
+    private var avatarPickerController: AvatarPickerController?
     private var avatarPayload: AvatarPayload?
     
     private var registerButtonBottomConstraint: NSLayoutConstraint?
@@ -176,7 +141,7 @@ final class RegistrationViewController: UIViewController {
         super.viewDidLoad()
         enableKeyboardDismissOnBackgroundTap()
         configureUI()
-        updateAvatarMenu()
+        configureAvatarPicker()
         configureKeyboardObservers()
     }
     
@@ -185,19 +150,12 @@ final class RegistrationViewController: UIViewController {
     func unlockFieldsAndButtons() {
         stopLoadingState()
     }
-    
+
     @MainActor
-    func deleteAvatar() {
+    func resetAvatarAfterUploadError() {
         avatarPayload = nil
-        avatarImageView.image = .avatarPlaceholder
-        updateAvatarMenu()
-    }
-    
-    @MainActor
-    func applyCroppedAvatar(_ image: UIImage) {
-        avatarImageView.image = image
-        avatarPayload = (image: image, data: image.jpegData(compressionQuality: 0.8))
-        updateAvatarMenu()
+        avatarPickerController?.setAvatar(nil)
+        unlockFieldsAndButtons()
     }
 
     // MARK: - Private Methods
@@ -224,19 +182,9 @@ final class RegistrationViewController: UIViewController {
         centralStack.pinCenterX(to: view.safeAreaLayoutGuide.centerXAnchor)
         centralStack.pinLeft(to: view.safeAreaLayoutGuide.leadingAnchor, 16)
         
-        avatarRowView.addSubview(avatarContainerView)
-        avatarContainerView.pinCenterX(to: avatarRowView.centerXAnchor)
-        avatarContainerView.pinTop(to: avatarRowView.topAnchor)
-
-        avatarContainerView.addSubview(avatarImageView)
-        avatarImageView.pin(to: avatarContainerView)
-
-        avatarContainerView.addSubview(avatarMenuButton)
-        avatarMenuButton.pin(to: avatarContainerView)
-
-        avatarContainerView.addSubview(editAvatarButton)
-        editAvatarButton.pinRight(to: avatarContainerView.trailingAnchor, -6)
-        editAvatarButton.pinBottom(to: avatarContainerView.bottomAnchor, -6)
+        avatarRowView.addSubview(avatarPickerView)
+        avatarPickerView.pinCenterX(to: avatarRowView.centerXAnchor)
+        avatarPickerView.pinTop(to: avatarRowView.topAnchor)
 
         view.addSubview(registerButton)
         registerButton.pinCenterX(to: view.safeAreaLayoutGuide.centerXAnchor)
@@ -333,74 +281,31 @@ final class RegistrationViewController: UIViewController {
 
         updateRegisterButtonState()
     }
-    
-    private func updateAvatarMenu() {
-        let galleryImage = UIImage(systemName: "photo.on.rectangle.angled.fill")
-        let cameraImage = UIImage(systemName: "camera.fill")
-        let trashImage = UIImage(systemName: "trash.fill")
 
-        let galleryAction = UIAction(title: "Галерея", image: galleryImage) { [weak self] _ in
-            self?.presentGalleryPicker()
-        }
-
-        let cameraAction = UIAction(title: "Сделать фото", image: cameraImage) { [weak self] _ in
-            self?.presentCameraPicker()
-        }
-
-        var actions: [UIAction] = [galleryAction, cameraAction]
-
-        if avatarPayload != nil {
-            let deleteAction = UIAction(
-                title: "Удалить фото",
-                image: trashImage,
-                attributes: [.destructive]
-            ) { [weak self] _ in
-                Task { [weak self] in
-                    await self?.interactor.requestDeleteAvatarConfirmation()
+    private func configureAvatarPicker() {
+        avatarPickerController = AvatarPickerController(
+            avatarView: avatarPickerView,
+            presentingViewController: self,
+            interactor: interactor,
+            initialAvatar: avatarPayload?.image,
+            onProcessingChanged: { [weak self] isProcessing in
+                guard let self else { return }
+                if isProcessing {
+                    self.startLoadingState()
+                } else {
+                    self.stopLoadingState()
+                }
+            },
+            onAvatarChanged: { [weak self] payload in
+                if let image = payload.image {
+                    self?.avatarPayload = (image: image, data: payload.data)
+                } else {
+                    self?.avatarPayload = nil
                 }
             }
-            actions.append(deleteAction)
-        }
-
-        let menu = UIMenu(title: "", children: actions)
-        avatarMenuButton.menu = menu
-        editAvatarButton.menu = menu
+        )
     }
-    
-    private func setAvatar(image: UIImage) {
-        avatarImageView.image = image
 
-        avatarPayload = (image: image, data: image.jpegData(compressionQuality: 0.8))
-
-        updateAvatarMenu()
-    }
-    
-    private func presentGalleryPicker() {
-        var configuration = PHPickerConfiguration(photoLibrary: .shared())
-        configuration.selectionLimit = 1
-        configuration.filter = .images
-
-        let picker = PHPickerViewController(configuration: configuration)
-        picker.delegate = self
-        present(picker, animated: true)
-    }
-    
-    private func presentCameraPicker() {
-        guard UIImagePickerController.isSourceTypeAvailable(.camera) else { return }
-
-        let picker = UIImagePickerController()
-        picker.sourceType = .camera
-        picker.cameraCaptureMode = .photo
-        picker.delegate = self
-        present(picker, animated: true)
-    }
-    
-    private func openCrop(with image: UIImage) {
-        Task { @MainActor in
-            await interactor.openAvatarCrop(with: image)
-        }
-    }
-    
     // MARK: - Actions
     @objc
     private func registerButtonPressed() {
@@ -477,60 +382,5 @@ extension RegistrationViewController: UITextFieldDelegate {
         }
 
         return true
-    }
-}
-
-// MARK: - PHPickerViewControllerDelegate
-extension RegistrationViewController: PHPickerViewControllerDelegate {
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        guard let result = results.first else {
-            picker.dismiss(animated: true)
-            return
-        }
-
-        self.startLoadingState()
-
-        picker.dismiss(animated: true) { [weak self] in
-            guard let self else { return }
-            guard result.itemProvider.canLoadObject(ofClass: UIImage.self) else { return }
-
-            result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
-                guard let image = object as? UIImage else {
-                    Task { @MainActor [weak self] in
-                        self?.stopLoadingState()
-                    }
-                    return
-                }
-
-                Task { @MainActor [weak self] in
-                    await self?.interactor.openAvatarCrop(with: image)
-                }
-            }
-        }
-    }
-}
-
-// MARK: - UIImagePickerControllerDelegate
-extension RegistrationViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true)
-    }
-
-    func imagePickerController(
-        _ picker: UIImagePickerController,
-        didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
-    ) {
-        let image = (info[.editedImage] as? UIImage) ?? (info[.originalImage] as? UIImage)
-
-        picker.dismiss(animated: true) { [weak self] in
-            guard let self else { return }
-            guard let image else { return }
-
-            self.startLoadingState()
-
-            Task { @MainActor [weak self] in
-                await self?.interactor.openAvatarCrop(with: image)
-            }
-        }
     }
 }

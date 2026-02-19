@@ -12,8 +12,6 @@ final class RegistrationLogic: RegistrationInteractor {
     private let presenter: RegistrationPresenter
     private let userService: UserService
 
-    private var avatarUpload: RegistrationModels.AvatarUpload?
-
     // MARK: - Lifecycle
     init(presenter: RegistrationPresenter, userService: UserService) {
         self.presenter = presenter
@@ -39,28 +37,11 @@ final class RegistrationLogic: RegistrationInteractor {
         }
     }
 
-    func openAvatarCrop(with image: UIImage) async {
-        let prepared = await Task.detached(priority: .userInitiated) {
-            RegistrationModels.AvatarImageProcessor.prepareForCropping(image)
-        }.value
-
-        await presenter.presentAvatarCrop(image: prepared)
+    func presentAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) async {
+        await presenter.presentAvatarCrop(image: image, onFinish: onFinish)
     }
 
-    func storeAvatar(image: UIImage) async -> UIImage {
-        let upload = await Task.detached(priority: .userInitiated) {
-            RegistrationModels.AvatarImageProcessor.processForUpload(image)
-        }.value
-
-        avatarUpload = upload
-        return upload.image
-    }
-
-    func clearAvatar() async {
-        avatarUpload = nil
-    }
-
-    func requestDeleteAvatarConfirmation() async {
-        await presenter.presentDeleteAvatarConfirmation()
+    func presentAvatarDeleteConfirmation(onConfirm: @escaping @MainActor () -> Void) async {
+        await presenter.presentDeleteAvatarConfirmation(onConfirm: onConfirm)
     }
 }

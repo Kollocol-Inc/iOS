@@ -13,7 +13,7 @@ struct UploadAvatar: Endpoint {
     let avatar: AvatarFile
 
     var method: HTTPMethod { .post }
-    var path: String { "/users/me/avatar" }
+    var path: String { "/users/me/avatar/upload" }
     var body: AnyEncodable? { nil }
     var multipart: MultipartFormData? {
         MultipartFormData(parts: [

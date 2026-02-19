@@ -9,9 +9,6 @@ import UIKit
 
 @MainActor
 final class RegistrationRouter: RegistrationPresenter {
-    // MARK: - Typealias
-    typealias AvatarCropCompletion = @MainActor (UIImage?) -> Void
-
     // MARK: - Properties
     weak var view: RegistrationViewController?
     
@@ -45,25 +42,21 @@ final class RegistrationRouter: RegistrationPresenter {
     func presentAvatarUploadError() async {
         await router.showError(
             title: "Ошибка",
-            message: "Произошла ошибка при загрузке аватара"
+            message: "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
         )
 
-        await view?.deleteAvatar()
-        await view?.unlockFieldsAndButtons()
+        await view?.resetAvatarAfterUploadError()
     }
 
-    func presentDeleteAvatarConfirmation() async {
-        await router.showAvatarDeleteConfirmation { [weak self] in
-            self?.view?.deleteAvatar()
+    func presentDeleteAvatarConfirmation(onConfirm: @escaping @MainActor () -> Void) async {
+        await router.showAvatarDeleteConfirmation {
+            onConfirm()
         }
     }
-    
-    func presentAvatarCrop(image: UIImage) async {
-        await router.showAvatarCrop(image: image) { [weak self] cropped in
-            self?.view?.unlockFieldsAndButtons()
 
-            guard let cropped else { return }
-            self?.view?.applyCroppedAvatar(cropped)
+    func presentAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) async {
+        await router.showAvatarCrop(image: image) { cropped in
+            onFinish(cropped)
         }
     }
 }

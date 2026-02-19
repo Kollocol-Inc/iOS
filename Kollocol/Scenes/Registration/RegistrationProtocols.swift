@@ -7,14 +7,8 @@
 
 import UIKit
 
-protocol RegistrationInteractor {
+protocol RegistrationInteractor: AvatarFlowInteracting {
     func register(name: String, surname: String, avatarData: Data?) async
-
-    // MARK: - Avatar
-    func openAvatarCrop(with image: UIImage) async
-    func storeAvatar(image: UIImage) async -> UIImage
-    func clearAvatar() async
-    func requestDeleteAvatarConfirmation() async
 }
 
 protocol RegistrationPresenter {
@@ -23,6 +17,6 @@ protocol RegistrationPresenter {
 
     // MARK: - Avatar
     func presentAvatarUploadError() async
-    func presentAvatarCrop(image: UIImage) async
-    func presentDeleteAvatarConfirmation() async
+    func presentAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) async
+    func presentDeleteAvatarConfirmation(onConfirm: @escaping @MainActor () -> Void) async
 }

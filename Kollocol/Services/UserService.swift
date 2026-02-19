@@ -22,10 +22,24 @@ actor UserServiceImpl: UserService {
     }
     
     // MARK: - Methods
-    func register(name: String, surname: String) async throws {
+    func getUserProfile() async throws -> UserDTO {
         do {
-            _ = try await api.request(RegisterEndpoint(name: name, surname: surname))
-            udService.isRegistered = true
+            return try await api.request(GetUserProfile())
+        } catch let networkError as NetworkError {
+            throw map(networkError)
+        } catch {
+            throw map(error)
+        }
+    }
+
+    func updateUserProfile(name: String, surname: String) async throws -> UserDTO {
+        do {
+            return try await api.request(
+                UpdateUserProfile(
+                    name: name,
+                    surname: surname
+                )
+            )
         } catch let networkError as NetworkError {
             throw map(networkError)
         } catch {
@@ -42,6 +56,53 @@ actor UserServiceImpl: UserService {
         } catch {
             throw map(error)
         }
+    }
+
+    func getNotifications() async throws -> NotificationsSettingsDTO {
+        do {
+            return try await api.request(GetNotifications())
+        } catch let networkError as NetworkError {
+            throw map(networkError)
+        } catch {
+            throw map(error)
+        }
+    }
+
+    func updateNotifications(
+        deadlineReminder: String,
+        groupInvites: Bool,
+        newQuizzes: Bool,
+        quizResults: Bool
+    ) async throws -> NotificationsSettingsDTO {
+        do {
+            return try await api.request(
+                UpdateNotifications(
+                    deadlineReminder: deadlineReminder,
+                    groupInvites: groupInvites,
+                    newQuizzes: newQuizzes,
+                    quizResults: quizResults
+                )
+            )
+        } catch let networkError as NetworkError {
+            throw map(networkError)
+        } catch {
+            throw map(error)
+        }
+    }
+
+    func register(name: String, surname: String) async throws {
+        do {
+            _ = try await api.request(RegisterEndpoint(name: name, surname: surname))
+            udService.isRegistered = true
+        } catch let networkError as NetworkError {
+            throw map(networkError)
+        } catch {
+            throw map(error)
+        }
+    }
+
+    func deleteAvatar() async throws {
+        // TODO: implement
     }
 
     // MARK: - Private Methods
@@ -72,8 +133,18 @@ actor UserServiceImpl: UserService {
 
 // MARK: - UserServiceError
 protocol UserService: Actor {
-    func register(name: String, surname: String) async throws
+    func getUserProfile() async throws -> UserDTO
+    func updateUserProfile(name: String, surname: String) async throws -> UserDTO
     func uploadAvatar(data: Data) async throws
+    func getNotifications() async throws -> NotificationsSettingsDTO
+    func updateNotifications(
+        deadlineReminder: String,
+        groupInvites: Bool,
+        newQuizzes: Bool,
+        quizResults: Bool
+    ) async throws -> NotificationsSettingsDTO
+    func register(name: String, surname: String) async throws
+    func deleteAvatar() async throws
 }
 
 // MARK: - UserServiceError

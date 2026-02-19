@@ -8,6 +8,19 @@
 import UIKit
 
 final class ProfileViewController: UIViewController {
+    // MARK: - UI Components
+    private let tableView: UITableView = {
+        let table = UITableView()
+        table.backgroundColor = .backgroundSecondary
+        table.layer.masksToBounds = false
+        table.layer.shadowColor = UIColor.black.cgColor
+        table.layer.shadowRadius = 20
+        table.layer.shadowOpacity = 0.2
+        table.layer.cornerRadius = 30
+        table.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        return table
+    }()
+
     // MARK: - Properties
     private var interactor: ProfileInteractor
 
@@ -30,6 +43,7 @@ final class ProfileViewController: UIViewController {
     // MARK: - Private Methods
     private func configureUI() {
         view.setPrimaryBackground()
+        configureConstraints()
         configureNavbar()
     }
 
@@ -47,14 +61,48 @@ final class ProfileViewController: UIViewController {
             }
         }
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(
-                systemName: "door.right.hand.open"
-            )?.withTintColor(
-                .backgroundRedPrimary,
-                renderingMode: .alwaysOriginal
+        let changeNameAction = UIAction { [weak self] _ in
+            Task { [weak self] in
+                // await self?.interactor.changeName()
+            }
+        }
+
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(
+                image: UIImage(
+                    systemName: "door.right.hand.open"
+                )?.withTintColor(
+                    .backgroundRedPrimary,
+                    renderingMode: .alwaysOriginal
+                ),
+                primaryAction: showPopupAndLogoutAction
             ),
-            primaryAction: showPopupAndLogoutAction
+            UIBarButtonItem(
+                image: UIImage(
+                    systemName: "gearshape.fill"
+                )?.withTintColor(
+                    .textSecondary,
+                    renderingMode: .alwaysOriginal
+                ),
+                primaryAction: changeNameAction
+            )
+        ]
+
+        // left button
+        navigationItem.backBarButtonItem = UIBarButtonItem(
+            image: UIImage(
+                systemName: "chevron.backward"
+            )?.withTintColor(
+                .textSecondary,
+                renderingMode: .alwaysOriginal
+            )
         )
+    }
+
+    private func configureConstraints() {
+        view.addSubview(tableView)
+        tableView.pinHorizontal(to: view)
+        tableView.pinBottom(to: view.bottomAnchor)
+        tableView.pinTop(to: view.safeAreaLayoutGuide.topAnchor, 10)
     }
 }
