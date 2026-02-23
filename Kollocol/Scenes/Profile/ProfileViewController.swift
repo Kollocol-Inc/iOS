@@ -61,12 +61,6 @@ final class ProfileViewController: UIViewController {
             }
         }
 
-        let changeNameAction = UIAction { [weak self] _ in
-            Task { [weak self] in
-                // await self?.interactor.changeName()
-            }
-        }
-
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(
                 image: UIImage(
@@ -76,15 +70,6 @@ final class ProfileViewController: UIViewController {
                     renderingMode: .alwaysOriginal
                 ),
                 primaryAction: showPopupAndLogoutAction
-            ),
-            UIBarButtonItem(
-                image: UIImage(
-                    systemName: "gearshape.fill"
-                )?.withTintColor(
-                    .textSecondary,
-                    renderingMode: .alwaysOriginal
-                ),
-                primaryAction: changeNameAction
             )
         ]
 
