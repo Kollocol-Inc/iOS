@@ -31,4 +31,8 @@ final class MainLogic: MainInteractor {
     func routeToProfileScreen() async {
         await presenter.presentProfileScreen()
     }
+
+    func joinQuiz(code: String) async {
+        print("attempt to join quiz")
+    }
 }

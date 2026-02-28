@@ -35,4 +35,16 @@ final class MainRouter: MainPresenter {
     func presentProfileScreen() async {
         await router.routeToProfileScreen()
     }
+
+    func presentJoinQuizSuccess() async {
+        // TODO: Handle success
+    }
+
+    func presentJoinQuizError() async {
+        await router.showError(
+            title: "Неверный код",
+            message: "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
+        )
+        await view?.resetCodeFields()
+    }
 }

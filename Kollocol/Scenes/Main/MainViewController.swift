@@ -44,6 +44,15 @@ final class MainViewController: UIViewController {
         view.isUserInteractionEnabled = true
         return view
     }()
+    
+    private let tableView: UITableView = {
+        let table = UITableView()
+        table.backgroundColor = .clear
+        table.separatorStyle = .none
+        table.allowsSelection = false
+        table.keyboardDismissMode = .onDrag
+        return table
+    }()
 
     // MARK: - Properties
     private var interactor: MainInteractor
@@ -61,6 +70,7 @@ final class MainViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnBackgroundTap()
         configureUI()
         configureNavbar()
         
@@ -81,9 +91,25 @@ final class MainViewController: UIViewController {
         avatarImageView.setImage(url: avatarUrl, placeholder: UIImage(named: "avatarPlaceholder"))
     }
 
+    @MainActor
+    func resetCodeFields() {
+        guard let cell = tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? CodeInputTableViewCell else { return }
+        cell.resetFields()
+    }
+
     // MARK: - Private Methods
     private func configureUI() {
         view.setPrimaryBackground()
+        configureTableView()
+    }
+    
+    private func configureTableView() {
+        view.addSubview(tableView)
+        tableView.pin(to: view)
+        
+        tableView.register(CodeInputTableViewCell.self, forCellReuseIdentifier: CodeInputTableViewCell.reuseIdentifier)
+        tableView.dataSource = self
+        tableView.delegate = self
     }
 
     private func configureNavbar() {
@@ -153,3 +179,31 @@ final class MainViewController: UIViewController {
     }
 }
 
+
+// MARK: - UITableViewDataSource
+extension MainViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: CodeInputTableViewCell.reuseIdentifier, for: indexPath) as? CodeInputTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        cell.onCodeEntered = { [weak self] code in
+            Task {
+                await self?.interactor.joinQuiz(code: code)
+            }
+        }
+        
+        return cell
+    }
+}
+
+// MARK: - UITableViewDelegate
+extension MainViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 102
+    }
+}

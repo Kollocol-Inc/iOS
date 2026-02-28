@@ -168,6 +168,10 @@ extension MainCoordinator: MainRouting {
     func routeToProfileScreen() {
         tabBarController.selectedIndex = 3
     }
+
+    func showError(title: String, message: String) {
+        showAlert(title: title, message: message)
+    }
 }
 
 // MARK: - MyQuizzesRouting
@@ -197,6 +201,7 @@ extension MainCoordinator: ProfileRouting {
 @MainActor
 protocol MainRouting: AnyObject {
     func routeToProfileScreen()
+    func showError(title: String, message: String)
 }
 
 @MainActor
