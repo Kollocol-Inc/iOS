@@ -46,7 +46,7 @@ struct UserDTO: Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        avatarUrl = try container.decode(String.self, forKey: .avatarUrl)
+        avatarUrl = try container.decodeIfPresent(String.self, forKey: .avatarUrl)
         email = try container.decode(String.self, forKey: .email)
         firstName = try container.decode(String.self, forKey: .firstName)
         id = try container.decode(String.self, forKey: .id)

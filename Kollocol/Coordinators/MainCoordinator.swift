@@ -85,7 +85,7 @@ final class MainCoordinator {
     }
 
     private func makeTabs() -> [UIViewController] {
-        let mainVC = MainAssembly.build(router: self)
+        let mainVC = MainAssembly.build(router: self, userService: services.userService)
         let mainNav = makeTabNavigationController(
             root: mainVC,
             tab: .main
@@ -165,7 +165,9 @@ extension MainCoordinator: AlertPresenting {
 
 // MARK: - AuthRouting
 extension MainCoordinator: MainRouting {
-    
+    func routeToProfileScreen() {
+        tabBarController.selectedIndex = 3
+    }
 }
 
 // MARK: - MyQuizzesRouting
@@ -194,7 +196,7 @@ extension MainCoordinator: ProfileRouting {
 
 @MainActor
 protocol MainRouting: AnyObject {
-    
+    func routeToProfileScreen()
 }
 
 @MainActor

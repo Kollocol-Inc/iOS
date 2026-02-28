@@ -10,10 +10,11 @@ import UIKit
 enum MainAssembly {
     @MainActor
     static func build(
-        router: MainRouting
+        router: MainRouting,
+        userService: UserService
     ) -> UIViewController {
         let presenter = MainRouter(router: router)
-        let interactor = MainLogic(presenter: presenter)
+        let interactor = MainLogic(presenter: presenter, userService: userService)
         let view = MainViewController(interactor: interactor)
         presenter.view = view
         
