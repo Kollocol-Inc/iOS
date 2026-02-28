@@ -39,7 +39,7 @@ final class CodeInputTableViewCell: UITableViewCell {
     private lazy var codeField6: StripedLoadingTextField = makeCodeField(tag: 5)
     
     // MARK: - Properties
-    var onCodeEntered: ((String) -> Void)?
+    var onCodeChanged: ((String?) -> Void)?
     
     private var codeFields: [StripedLoadingTextField] {
         [codeField1, codeField2, codeField3, codeField4, codeField5, codeField6]
@@ -81,7 +81,6 @@ final class CodeInputTableViewCell: UITableViewCell {
             $0.text = nil
             applyBorder(for: $0, state: .inactive)
         }
-        codeField1.becomeFirstResponder()
     }
     
     // MARK: - Private Methods
@@ -94,7 +93,7 @@ final class CodeInputTableViewCell: UITableViewCell {
         codeStack.pinLeft(to: contentView.leadingAnchor, 32)
         codeStack.pinRight(to: contentView.trailingAnchor, 32)
         codeStack.pinTop(to: contentView.topAnchor, 16)
-        codeStack.pinBottom(to: contentView.bottomAnchor, 16)
+        codeStack.pinBottom(to: contentView.bottomAnchor, 8)
         
         configureCodeFields()
     }
@@ -144,9 +143,8 @@ final class CodeInputTableViewCell: UITableViewCell {
         return parts.joined()
     }
     
-    private func submitIfReady() {
-        guard !isSubmitting, let code = currentCode() else { return }
-        onCodeEntered?(code)
+    private func notifyCodeChanged() {
+        onCodeChanged?(currentCode())
     }
     
     private func setCode(_ digits: [String]) {
@@ -157,8 +155,9 @@ final class CodeInputTableViewCell: UITableViewCell {
         if digits.count < codeFields.count {
             codeFields[digits.count].becomeFirstResponder()
         } else {
-            submitIfReady()
+            codeFields.last?.resignFirstResponder()
         }
+        notifyCodeChanged()
     }
     
     private func clearFields(from index: Int) {
@@ -185,8 +184,9 @@ final class CodeInputTableViewCell: UITableViewCell {
         if nextIndex < codeFields.count {
             codeFields[nextIndex].becomeFirstResponder()
         } else {
-            submitIfReady()
+            codeFields[index].resignFirstResponder()
         }
+        notifyCodeChanged()
     }
     
     private func handleBackspaceOnEmpty(_ field: VerifyCodeTextField) {
@@ -199,12 +199,14 @@ final class CodeInputTableViewCell: UITableViewCell {
         prev.text = nil
         prev.becomeFirstResponder()
         prev.sendActions(for: .editingChanged)
+        notifyCodeChanged()
     }
     
     private func handleBackspaceAtBeginningWithText(_ field: VerifyCodeTextField) {
         guard !isSubmitting else { return }
         field.text = nil
         field.sendActions(for: .editingChanged)
+        notifyCodeChanged()
     }
     
     // MARK: - Actions
@@ -215,6 +217,8 @@ final class CodeInputTableViewCell: UITableViewCell {
         let index = sender.tag
         if sender.text?.count == 1 {
             moveFocusForward(from: index)
+        } else if sender.text?.isEmpty == true {
+            notifyCodeChanged()
         }
     }
     

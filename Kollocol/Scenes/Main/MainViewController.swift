@@ -56,6 +56,8 @@ final class MainViewController: UIViewController {
 
     // MARK: - Properties
     private var interactor: MainInteractor
+    private var currentCode: String?
+    private var isJoinLoading = false
     
     // MARK: - Lifecycle
     init(interactor: MainInteractor) {
@@ -93,8 +95,17 @@ final class MainViewController: UIViewController {
 
     @MainActor
     func resetCodeFields() {
-        guard let cell = tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? CodeInputTableViewCell else { return }
-        cell.resetFields()
+        isJoinLoading = false
+        currentCode = nil
+        
+        if let codeCell = tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? CodeInputTableViewCell {
+            codeCell.resetFields()
+        }
+        
+        if let buttonCell = tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as? ButtonTableViewCell {
+            buttonCell.setLoading(false)
+            buttonCell.setEnabled(false)
+        }
     }
 
     // MARK: - Private Methods
@@ -108,6 +119,7 @@ final class MainViewController: UIViewController {
         tableView.pin(to: view)
         
         tableView.register(CodeInputTableViewCell.self, forCellReuseIdentifier: CodeInputTableViewCell.reuseIdentifier)
+        tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: ButtonTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -183,27 +195,65 @@ final class MainViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return 2
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: CodeInputTableViewCell.reuseIdentifier, for: indexPath) as? CodeInputTableViewCell else {
-            return UITableViewCell()
-        }
-        
-        cell.onCodeEntered = { [weak self] code in
-            Task {
-                await self?.interactor.joinQuiz(code: code)
+        if indexPath.row == 0 {
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: CodeInputTableViewCell.reuseIdentifier, for: indexPath) as? CodeInputTableViewCell else {
+                return UITableViewCell()
             }
+            
+            cell.onCodeChanged = { [weak self] code in
+                self?.currentCode = code
+                if let buttonCell = tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as? ButtonTableViewCell {
+                    buttonCell.setEnabled(code?.count == 6)
+                }
+            }
+            
+            if isJoinLoading {
+                cell.startAnimating()
+            } else {
+                cell.stopAnimating()
+            }
+            
+            return cell
+        } else {
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: ButtonTableViewCell.reuseIdentifier, for: indexPath) as? ButtonTableViewCell else {
+                return UITableViewCell()
+            }
+            
+            cell.configure(title: "Погнали!") { [weak self] in
+                guard let self, let code = self.currentCode else { return }
+                
+                self.isJoinLoading = true
+                
+                if let codeCell = tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? CodeInputTableViewCell {
+                    codeCell.startAnimating()
+                }
+                
+                cell.setLoading(true)
+                
+                Task {
+                    await self.interactor.joinQuiz(code: code)
+                }
+            }
+            
+            cell.setEnabled(currentCode?.count == 6)
+            cell.setLoading(isJoinLoading)
+            
+            return cell
         }
-        
-        return cell
     }
 }
 
 // MARK: - UITableViewDelegate
 extension MainViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 102
+        if indexPath.row == 0 {
+            return 94 // 70 height + 16 top + 8 bottom
+        } else {
+            return 58 // 42 height + 8 top + 8 bottom
+        }
     }
 }

@@ -33,6 +33,6 @@ final class MainLogic: MainInteractor {
     }
 
     func joinQuiz(code: String) async {
-        print("attempt to join quiz")
+        await presenter.presentJoinQuizError()
     }
 }
