@@ -59,7 +59,8 @@ final class MainViewController: UIViewController {
     private var interactor: MainInteractor
     private var currentCode: String?
     private var isJoinLoading = false
-    
+    private var quizInstances: [QuizInstanceViewData] = []
+
     // MARK: - Lifecycle
     init(interactor: MainInteractor) {
         self.interactor = interactor
@@ -80,6 +81,10 @@ final class MainViewController: UIViewController {
         Task {
             await interactor.fetchUserProfile()
         }
+        
+        Task {
+            await interactor.fetchParticipatingQuizzes()
+        }
     }
 
     // MARK: - Methods
@@ -92,6 +97,12 @@ final class MainViewController: UIViewController {
         
         nameLabel.text = name
         avatarImageView.setImage(url: avatarUrl, placeholder: UIImage(named: "avatarPlaceholder"))
+    }
+
+    @MainActor
+    func displayParticipatingQuizzes(_ quizInstances: [QuizInstanceViewData]) {
+        self.quizInstances = quizInstances
+        self.tableView.reloadData()
     }
 
     @MainActor
@@ -122,7 +133,7 @@ final class MainViewController: UIViewController {
         tableView.register(CodeInputTableViewCell.self, forCellReuseIdentifier: CodeInputTableViewCell.reuseIdentifier)
         tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: ButtonTableViewCell.reuseIdentifier)
         tableView.register(HeaderTableViewCell.self, forCellReuseIdentifier: HeaderTableViewCell.reuseIdentifier)
-        tableView.register(CardTableViewCell.self, forCellReuseIdentifier: CardTableViewCell.reuseIdentifier)
+        tableView.register(CardsTableViewCell.self, forCellReuseIdentifier: CardsTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -259,9 +270,11 @@ extension MainViewController: UITableViewDataSource {
             return cell
 
         case 3:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: CardTableViewCell.reuseIdentifier, for: indexPath) as? CardTableViewCell else {
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: CardsTableViewCell.reuseIdentifier, for: indexPath) as? CardsTableViewCell else {
                 return UITableViewCell()
             }
+
+            cell.configure(with: quizInstances)
 
             return cell
 
@@ -278,7 +291,7 @@ extension MainViewController: UITableViewDelegate {
         case 0: return 94 // 70 height + 16 top + 8 bottom
         case 1: return 66 // 42 height + 8 top + 16 bottom
         case 2: return 46 // header height
-        case 3: return 150 // card height
+        case 3: return 178 // card height + 8 spacing + pager
         default: return 0
         }
     }

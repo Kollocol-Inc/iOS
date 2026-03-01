@@ -8,7 +8,7 @@
 import Foundation
 
 struct LoginEndpoint: Endpoint {
-    typealias Response = LoginResponse
+    typealias Response = EmptyResponse
 
     let email: String
 

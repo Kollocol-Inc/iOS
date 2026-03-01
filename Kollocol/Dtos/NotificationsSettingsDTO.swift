@@ -15,10 +15,10 @@ struct NotificationsSettingsDTO: Decodable {
     let userId: String?
 
     private enum CodingKeys: String, CodingKey {
-        case deadlineReminder = "deadline_reminder"
-        case groupInvites = "group_invites"
-        case newQuizzes = "new_quizzes"
-        case quizResults = "quiz_results"
-        case userId = "user_id"
+        case deadlineReminder   = "deadline_reminder"
+        case groupInvites       = "group_invites"
+        case newQuizzes         = "new_quizzes"
+        case quizResults        = "quiz_results"
+        case userId             = "user_id"
     }
 }

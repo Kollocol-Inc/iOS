@@ -85,7 +85,7 @@ final class MainCoordinator {
     }
 
     private func makeTabs() -> [UIViewController] {
-        let mainVC = MainAssembly.build(router: self, userService: services.userService)
+        let mainVC = MainAssembly.build(router: self, userService: services.userService, quizService: services.quizService)
         let mainNav = makeTabNavigationController(
             root: mainVC,
             tab: .main

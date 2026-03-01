@@ -8,21 +8,6 @@
 import Foundation
 
 struct UserDTO: Decodable {
-    // MARK: - Constants
-    private enum Constants {
-        static let rfc3339WithFractionalSeconds: ISO8601DateFormatter = {
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            return formatter
-        }()
-
-        static let rfc3339: ISO8601DateFormatter = {
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime]
-            return formatter
-        }()
-    }
-
     // MARK: - Properties
     let avatarUrl: String?
     let createdAt: Date?
@@ -42,7 +27,10 @@ struct UserDTO: Decodable {
         case lastName = "last_name"
         case updatedAt = "updated_at"
     }
+}
 
+// MARK: - Decodable
+extension UserDTO {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -58,8 +46,42 @@ struct UserDTO: Decodable {
         let updatedAtString = try container.decode(String.self, forKey: .updatedAt)
         updatedAt = try Self.parseRFC3339(updatedAtString, key: .updatedAt)
     }
+}
 
-    // MARK: - Private Methods
+// MARK: - UserDTO -> User
+extension UserDTO {
+    func toDomain() -> User {
+        return User(
+            avatarUrl:  self.avatarUrl,
+            createdAt:  self.createdAt,
+            email:      self.email,
+            firstName:  self.firstName,
+            id:         self.id,
+            lastName:   self.lastName,
+            updatedAt:  self.updatedAt
+        )
+    }
+}
+
+// MARK: - Constants
+private extension UserDTO {
+    private enum Constants {
+        static let rfc3339WithFractionalSeconds: ISO8601DateFormatter = {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            return formatter
+        }()
+
+        static let rfc3339: ISO8601DateFormatter = {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime]
+            return formatter
+        }()
+    }
+}
+
+// MARK: - Private Methods
+private extension UserDTO {
     private static func parseRFC3339(_ value: String, key: CodingKeys) throws -> Date {
         if let date = Constants.rfc3339WithFractionalSeconds.date(from: value) {
             return date

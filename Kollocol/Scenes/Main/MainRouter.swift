@@ -28,6 +28,12 @@ final class MainRouter: MainPresenter {
         await view?.displayUserProfile(avatarUrl: user.avatarUrl, name: name)
     }
 
+    func presentParticipatingQuizzes(_ quizInstances: [QuizInstance]) async {
+        let quizInstancesViewData = quizInstances.map { $0.toViewData() }
+        
+        await view?.displayParticipatingQuizzes(quizInstancesViewData)
+    }
+
     func presentError(_ error: UserServiceError) async {
         // TODO: Handle error
     }

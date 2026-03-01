@@ -51,13 +51,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let udService = UserDefaultsServiceImpl()
         let authService = AuthServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
         let userService = UserServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
+        let mockQuizService = MockQuizServiceImpl()
 
         let services = Services(
             authService: authService,
             sessionManager: sessionManager,
             tokenStore: tokenStore,
             udService: udService,
-            userService: userService
+            userService: userService,
+            quizService: mockQuizService
         )
 
         let coordinator = AppCoordinator(

@@ -74,4 +74,5 @@ struct Services {
     let tokenStore: any TokenStoring
     let udService: UserDefaultsService
     let userService: UserService
+    let quizService: QuizService
 }
