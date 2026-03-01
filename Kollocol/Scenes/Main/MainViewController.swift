@@ -51,6 +51,7 @@ final class MainViewController: UIViewController {
         table.separatorStyle = .none
         table.allowsSelection = false
         table.keyboardDismissMode = .onDrag
+        table.sectionHeaderTopPadding = 0
         return table
     }()
 
@@ -120,6 +121,8 @@ final class MainViewController: UIViewController {
         
         tableView.register(CodeInputTableViewCell.self, forCellReuseIdentifier: CodeInputTableViewCell.reuseIdentifier)
         tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: ButtonTableViewCell.reuseIdentifier)
+        tableView.register(HeaderTableViewCell.self, forCellReuseIdentifier: HeaderTableViewCell.reuseIdentifier)
+        tableView.register(CardTableViewCell.self, forCellReuseIdentifier: CardTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -195,54 +198,75 @@ final class MainViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2
+        return 4
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.row == 0 {
+        switch indexPath.row {
+        case 0:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: CodeInputTableViewCell.reuseIdentifier, for: indexPath) as? CodeInputTableViewCell else {
                 return UITableViewCell()
             }
-            
+
             cell.onCodeChanged = { [weak self] code in
                 self?.currentCode = code
                 if let buttonCell = tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as? ButtonTableViewCell {
                     buttonCell.setEnabled(code?.count == 6)
                 }
             }
-            
+
             if isJoinLoading {
                 cell.startAnimating()
             } else {
                 cell.stopAnimating()
             }
-            
+
             return cell
-        } else {
+
+        case 1:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ButtonTableViewCell.reuseIdentifier, for: indexPath) as? ButtonTableViewCell else {
                 return UITableViewCell()
             }
-            
+
             cell.configure(title: "Погнали!") { [weak self] in
                 guard let self, let code = self.currentCode else { return }
-                
+
                 self.isJoinLoading = true
-                
+
                 if let codeCell = tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? CodeInputTableViewCell {
                     codeCell.startAnimating()
                 }
-                
+
                 cell.setLoading(true)
-                
+
                 Task {
                     await self.interactor.joinQuiz(code: code)
                 }
             }
-            
+
             cell.setEnabled(currentCode?.count == 6)
             cell.setLoading(isJoinLoading)
-            
+
             return cell
+
+        case 2:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: HeaderTableViewCell.reuseIdentifier, for: indexPath) as? HeaderTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(title: "Участвую")
+
+            return cell
+
+        case 3:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: CardTableViewCell.reuseIdentifier, for: indexPath) as? CardTableViewCell else {
+                return UITableViewCell()
+            }
+
+            return cell
+
+        default:
+            return UITableViewCell()
         }
     }
 }
@@ -250,10 +274,20 @@ extension MainViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension MainViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.row == 0 {
-            return 94 // 70 height + 16 top + 8 bottom
+        switch indexPath.row {
+        case 0: return 94 // 70 height + 16 top + 8 bottom
+        case 1: return 66 // 42 height + 8 top + 16 bottom
+        case 2: return 46 // header height
+        case 3: return 150 // card height
+        default: return 0
+        }
+    }
+
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == 3 {
+            cell.layer.zPosition = 1
         } else {
-            return 58 // 42 height + 8 top + 8 bottom
+            cell.layer.zPosition = 0
         }
     }
 }

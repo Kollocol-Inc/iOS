@@ -95,7 +95,7 @@ final class ButtonTableViewCell: UITableViewCell {
         button.pinLeft(to: contentView.leadingAnchor, 32)
         button.pinRight(to: contentView.trailingAnchor, 32)
         button.pinTop(to: contentView.topAnchor, 8)
-        button.pinBottom(to: contentView.bottomAnchor, 8)
+        button.pinBottom(to: contentView.bottomAnchor, 16)
         button.setHeight(42)
         
         button.addSubview(loader)
