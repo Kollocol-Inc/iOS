@@ -20,6 +20,7 @@ final class CardCollectionViewCell: UICollectionViewCell {
         view.backgroundColor = .backgroundSecondary
         view.layer.cornerRadius = 18
         view.layer.masksToBounds = false
+        view.clipsToBounds = false
         view.layer.shadowColor = UIColor.black.cgColor
         view.layer.shadowRadius = 20
         view.layer.shadowOpacity = 0.2

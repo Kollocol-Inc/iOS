@@ -46,9 +46,8 @@ final class HeaderTableViewCell: UITableViewCell {
         contentView.layer.cornerRadius = 28
         contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         contentView.layer.shadowColor = UIColor.black.cgColor
-        contentView.layer.shadowRadius = 6
-        contentView.layer.shadowOpacity = 0.05
-        contentView.layer.shadowOffset = CGSize(width: 0, height: -12)
+        contentView.layer.shadowRadius = 20
+        contentView.layer.shadowOpacity = 0.2
     }
 
     private func configureBackground() {

@@ -30,6 +30,18 @@ actor QuizServiceImpl: QuizService {
         }
     }
 
+  func getHostingQuizzes() async throws -> [QuizInstance] {
+    do {
+      let response = try await api.request(GetHostingQuizInstances())
+      let instances = response.instances.map { $0.toDomain() }
+      return instances
+    } catch let networkError as NetworkError {
+      throw map(networkError)
+    } catch {
+      throw map(error)
+    }
+  }
+
     // MARK: - Private Methods
     private func map(_ error: Error) -> QuizServiceError {
         if let e = error as? QuizServiceError { return e }
@@ -59,6 +71,7 @@ actor QuizServiceImpl: QuizService {
 // MARK: - UserServiceError
 protocol QuizService: Actor {
     func getParticipatingQuizzes() async throws -> [ParticipatingInstance]
+    func getHostingQuizzes() async throws -> [QuizInstance]
 }
 
 // MARK: - UserServiceError

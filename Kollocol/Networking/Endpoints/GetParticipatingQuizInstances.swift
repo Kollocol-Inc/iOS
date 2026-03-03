@@ -14,4 +14,3 @@ struct GetParticipatingQuizInstances: Endpoint {
     var path: String { "/quizzes/instances/participating" }
     var body: AnyEncodable? { nil }
 }
-
