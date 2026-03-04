@@ -1,25 +1,18 @@
 //
-//  HeaderTableViewCell.swift
+//  DividerTableViewCell.swift
 //  Kollocol
 //
-//  Created by Arsenii Potiakin on 28.02.2026.
+//  Created by Arsenii Potiakin on 04.03.2026.
 //
 
 import UIKit
 
-final class HeaderTableViewCell: UITableViewCell {
+final class DividerTableViewCell: UITableViewCell {
     // MARK: - Constants
-    static let reuseIdentifier = "HeaderTableViewCell"
+    static let reuseIdentifier = "DividerTableViewCell"
 
     // MARK: - UI Components
-    private let label: UILabel = {
-        let label = UILabel()
-        label.textColor = .textSecondary
-        label.numberOfLines = 1
-        label.textAlignment = .left
-        label.font = UIFont.systemFont(ofSize: 20, weight: .medium)
-        return label
-    }()
+    private let dividerView: DividerView = DividerView()
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -30,11 +23,6 @@ final class HeaderTableViewCell: UITableViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    // MARK: - Methods
-    func configure(title: String) {
-        label.text = title
     }
 
     // MARK: - Private Methods
@@ -52,9 +40,9 @@ final class HeaderTableViewCell: UITableViewCell {
     }
 
     private func configureConstraints() {
-        contentView.addSubview(label)
-        label.pinLeft(to: contentView.safeAreaLayoutGuide.leadingAnchor, 24)
-        label.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
-        label.pinTop(to: contentView.topAnchor, 12)
+        contentView.addSubview(dividerView)
+        dividerView.pinCenterY(to: contentView.centerYAnchor)
+        dividerView.pinLeft(to: contentView.safeAreaLayoutGuide.leadingAnchor, 24)
+        dividerView.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
     }
 }

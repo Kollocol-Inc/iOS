@@ -44,7 +44,17 @@ final class MainViewController: UIViewController {
         view.isUserInteractionEnabled = true
         return view
     }()
-    
+
+    private let codeInputView: CodeInputTableViewCell = {
+        let cell = CodeInputTableViewCell(style: .default, reuseIdentifier: nil)
+        return cell
+    }()
+
+    private let joinButtonView: ButtonTableViewCell = {
+        let cell = ButtonTableViewCell(style: .default, reuseIdentifier: nil)
+        return cell
+    }()
+
     private let tableView: UITableView = {
         let table = UITableView()
         table.backgroundColor = .clear
@@ -52,14 +62,31 @@ final class MainViewController: UIViewController {
         table.allowsSelection = false
         table.keyboardDismissMode = .onDrag
         table.sectionHeaderTopPadding = 0
+        table.layer.cornerRadius = 28
+        table.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        table.clipsToBounds = true
+        table.backgroundColor = .clear
         return table
+    }()
+
+    private let tableViewBackgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .backgroundSecondary
+        view.layer.cornerRadius = 28
+        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        view.clipsToBounds = false
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowRadius = 20
+        view.layer.shadowOpacity = 0.2
+        return view
     }()
 
     // MARK: - Properties
     private var interactor: MainInteractor
     private var currentCode: String?
     private var isJoinLoading = false
-    private var quizInstances: [QuizInstanceViewData] = []
+    private var quizParticipatingInstances: [QuizInstanceViewData] = []
+    private var quizHostingInstances: [QuizInstanceViewData] = []
 
     // MARK: - Lifecycle
     init(interactor: MainInteractor) {
@@ -85,6 +112,12 @@ final class MainViewController: UIViewController {
         Task {
             await interactor.fetchParticipatingQuizzes()
         }
+
+        Task {
+            await interactor.fetchHostingQuizzes()
+        }
+
+        initialState()
     }
 
     // MARK: - Methods
@@ -101,7 +134,13 @@ final class MainViewController: UIViewController {
 
     @MainActor
     func displayParticipatingQuizzes(_ quizInstances: [QuizInstanceViewData]) {
-        self.quizInstances = quizInstances
+        self.quizParticipatingInstances = quizInstances
+        self.tableView.reloadData()
+    }
+
+    @MainActor
+    func displayHostingQuizzes(_ quizInstances: [QuizInstanceViewData]) {
+        self.quizHostingInstances = quizInstances
         self.tableView.reloadData()
     }
 
@@ -110,30 +149,76 @@ final class MainViewController: UIViewController {
         isJoinLoading = false
         currentCode = nil
         
-        if let codeCell = tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? CodeInputTableViewCell {
-            codeCell.resetFields()
-        }
-        
-        if let buttonCell = tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as? ButtonTableViewCell {
-            buttonCell.setLoading(false)
-            buttonCell.setEnabled(false)
-        }
+        codeInputView.resetFields()
+        joinButtonView.setLoading(false)
+        joinButtonView.setEnabled(false)
     }
 
     // MARK: - Private Methods
     private func configureUI() {
         view.setPrimaryBackground()
+        configureConstraints()
+        configureActions()
         configureTableView()
     }
-    
-    private func configureTableView() {
+
+    private func initialState() {
+        joinButtonView.setEnabled(currentCode?.count == 6)
+        joinButtonView.setLoading(isJoinLoading)
+        if isJoinLoading {
+            codeInputView.startAnimating()
+        } else {
+            codeInputView.stopAnimating()
+        }
+    }
+
+    private func configureConstraints() {
+        view.addSubview(codeInputView)
+        codeInputView.pinLeft(to: view.leadingAnchor)
+        codeInputView.pinRight(to: view.trailingAnchor)
+        codeInputView.pinTop(to: view.safeAreaLayoutGuide.topAnchor)
+        codeInputView.setHeight(94)
+
+        view.addSubview(joinButtonView)
+        joinButtonView.pinLeft(to: view.leadingAnchor)
+        joinButtonView.pinRight(to: view.trailingAnchor)
+        joinButtonView.pinTop(to: codeInputView.bottomAnchor)
+        joinButtonView.setHeight(66)
+
+        view.addSubview(tableViewBackgroundView)
+        tableViewBackgroundView.pinLeft(to: view.leadingAnchor)
+        tableViewBackgroundView.pinRight(to: view.trailingAnchor)
+        tableViewBackgroundView.pinTop(to: joinButtonView.bottomAnchor)
+        tableViewBackgroundView.pinBottom(to: view.bottomAnchor)
+
         view.addSubview(tableView)
-        tableView.pin(to: view)
-        
-        tableView.register(CodeInputTableViewCell.self, forCellReuseIdentifier: CodeInputTableViewCell.reuseIdentifier)
-        tableView.register(ButtonTableViewCell.self, forCellReuseIdentifier: ButtonTableViewCell.reuseIdentifier)
+        tableView.pin(to: tableViewBackgroundView)
+    }
+
+    private func configureActions() {
+        codeInputView.onCodeChanged = { [weak self] code in
+            self?.currentCode = code
+            self?.joinButtonView.setEnabled(code?.count == 6)
+        }
+
+        joinButtonView.configure(title: "Погнали!") { [weak self] in
+            guard let self, let code = self.currentCode else { return }
+
+            self.isJoinLoading = true
+
+            self.codeInputView.startAnimating()
+            self.joinButtonView.setLoading(true)
+
+            Task {
+                await self.interactor.joinQuiz(code: code)
+            }
+        }
+    }
+
+    private func configureTableView() {
         tableView.register(HeaderTableViewCell.self, forCellReuseIdentifier: HeaderTableViewCell.reuseIdentifier)
         tableView.register(CardsTableViewCell.self, forCellReuseIdentifier: CardsTableViewCell.reuseIdentifier)
+        tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -209,58 +294,12 @@ final class MainViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4
+        return 5
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.row {
         case 0:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: CodeInputTableViewCell.reuseIdentifier, for: indexPath) as? CodeInputTableViewCell else {
-                return UITableViewCell()
-            }
-
-            cell.onCodeChanged = { [weak self] code in
-                self?.currentCode = code
-                if let buttonCell = tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as? ButtonTableViewCell {
-                    buttonCell.setEnabled(code?.count == 6)
-                }
-            }
-
-            if isJoinLoading {
-                cell.startAnimating()
-            } else {
-                cell.stopAnimating()
-            }
-
-            return cell
-
-        case 1:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ButtonTableViewCell.reuseIdentifier, for: indexPath) as? ButtonTableViewCell else {
-                return UITableViewCell()
-            }
-
-            cell.configure(title: "Погнали!") { [weak self] in
-                guard let self, let code = self.currentCode else { return }
-
-                self.isJoinLoading = true
-
-                if let codeCell = tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? CodeInputTableViewCell {
-                    codeCell.startAnimating()
-                }
-
-                cell.setLoading(true)
-
-                Task {
-                    await self.interactor.joinQuiz(code: code)
-                }
-            }
-
-            cell.setEnabled(currentCode?.count == 6)
-            cell.setLoading(isJoinLoading)
-
-            return cell
-
-        case 2:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: HeaderTableViewCell.reuseIdentifier, for: indexPath) as? HeaderTableViewCell else {
                 return UITableViewCell()
             }
@@ -269,12 +308,37 @@ extension MainViewController: UITableViewDataSource {
 
             return cell
 
-        case 3:
+        case 1:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: CardsTableViewCell.reuseIdentifier, for: indexPath) as? CardsTableViewCell else {
                 return UITableViewCell()
             }
 
-            cell.configure(with: quizInstances)
+            cell.configure(with: quizParticipatingInstances)
+
+            return cell
+
+        case 2:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: DividerTableViewCell.reuseIdentifier, for: indexPath) as? DividerTableViewCell else {
+                return UITableViewCell()
+            }
+
+            return cell
+
+        case 3:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: HeaderTableViewCell.reuseIdentifier, for: indexPath) as? HeaderTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(title: "Провожу")
+
+            return cell
+
+        case 4:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: CardsTableViewCell.reuseIdentifier, for: indexPath) as? CardsTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(with: quizHostingInstances)
 
             return cell
 
@@ -288,19 +352,12 @@ extension MainViewController: UITableViewDataSource {
 extension MainViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.row {
-        case 0: return 94 // 70 height + 16 top + 8 bottom
-        case 1: return 66 // 42 height + 8 top + 16 bottom
-        case 2: return 46 // header height
-        case 3: return 178 // card height + 8 spacing + pager
+        case 0: return 46  // header height
+        case 1: return 178 // card height + 8 spacing + pager
+        case 2: return 1 // divider height
+        case 3: return 46 // header height
+        case 4: return 178 // card height + 8 spacing + pager
         default: return 0
-        }
-    }
-
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.row == 3 {
-            cell.layer.zPosition = 1
-        } else {
-            cell.layer.zPosition = 0
         }
     }
 }

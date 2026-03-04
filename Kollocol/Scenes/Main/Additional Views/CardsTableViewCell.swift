@@ -89,7 +89,7 @@ final class CardsTableViewCell: UITableViewCell {
     private func configureBackground() {
         selectionStyle = .none
         backgroundColor = .clear
-        contentView.backgroundColor = .backgroundSecondary
+        contentView.backgroundColor = .clear
         clipsToBounds = false
         layer.masksToBounds = false
         contentView.clipsToBounds = false
@@ -112,7 +112,7 @@ final class CardsTableViewCell: UITableViewCell {
 
         pageControl.pinTop(to: collectionView.bottomAnchor, 8)
         pageControl.pinCenterX(to: contentView.centerXAnchor)
-        pageControl.pinBottom(to: contentView.bottomAnchor)
+        pageControl.pinBottom(to: contentView.bottomAnchor, 8)
     }
 
     private func reloadContent() {

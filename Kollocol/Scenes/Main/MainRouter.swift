@@ -34,6 +34,12 @@ final class MainRouter: MainPresenter {
         await view?.displayParticipatingQuizzes(quizInstancesViewData)
     }
 
+    func presentHostingQuizzes(_ quizInstances: [QuizInstance]) async {
+        let quizInstancesViewData = quizInstances.map { $0.toViewData() }
+
+        await view?.displayHostingQuizzes(quizInstancesViewData)
+    }
+
     func presentError(_ error: UserServiceError) async {
         // TODO: Handle error
     }

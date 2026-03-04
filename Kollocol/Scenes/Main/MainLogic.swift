@@ -15,6 +15,7 @@ final class MainLogic: MainInteractor {
 
     // MARK: - Properties
     var participatingInstances: [ParticipatingInstance] = []
+    var hostingInstances: [QuizInstance] = []
 
     // MARK: - Lifecycle
     init(presenter: MainPresenter, userService: UserService, quizService: QuizService) {
@@ -38,6 +39,16 @@ final class MainLogic: MainInteractor {
             let participatingInstances = try await quizService.getParticipatingQuizzes()
             self.participatingInstances = participatingInstances
             await presenter.presentParticipatingQuizzes(participatingInstances.compactMap { $0.instance })
+        } catch {
+            await presenter.presentError(UserServiceError.wrap(error))
+        }
+    }
+
+    func fetchHostingQuizzes() async {
+        do {
+            let hostingInstances = try await quizService.getHostingQuizzes()
+            self.hostingInstances = hostingInstances
+            await presenter.presentHostingQuizzes(hostingInstances)
         } catch {
             await presenter.presentError(UserServiceError.wrap(error))
         }
