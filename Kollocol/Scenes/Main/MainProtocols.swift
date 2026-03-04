@@ -17,9 +17,8 @@ protocol MainInteractor {
 protocol MainPresenter {
     func presentUserProfile(_ user: UserDTO) async
     func presentQuizzes(participating: [QuizInstance], hosting: [QuizInstance]) async
-    func presentUserServiceError(_ error: UserServiceError) async
-    func presentQuizServiceError(_ error: QuizServiceError) async
+    func presentServiceError(_ error: any UserFacingError) async
     func presentProfileScreen() async
     func presentJoinQuizSuccess() async
-    func presentJoinQuizError() async
+    func presentJoinQuizError(_ error: QuizServiceError) async
 }

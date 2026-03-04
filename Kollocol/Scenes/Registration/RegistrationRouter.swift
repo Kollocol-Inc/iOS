@@ -51,7 +51,7 @@ final class RegistrationRouter: RegistrationPresenter, ServiceErrorHandling {
             }
             return "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
 
-        case .generic:
+        default:
             return nil
         }
     }

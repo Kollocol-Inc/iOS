@@ -30,7 +30,7 @@ final class MainLogic: MainInteractor {
             let user = try await userService.getUserProfile()
             await presenter.presentUserProfile(user)
         } catch {
-            await presenter.presentUserServiceError(UserServiceError.wrap(error))
+            await presenter.presentServiceError(UserServiceError.wrap(error))
         }
     }
 
@@ -47,7 +47,7 @@ final class MainLogic: MainInteractor {
                 hosting: hostingInstances
             )
         } catch {
-            await presenter.presentQuizServiceError(QuizServiceError.wrap(error))
+            await presenter.presentServiceError(QuizServiceError.wrap(error))
         }
     }
 
