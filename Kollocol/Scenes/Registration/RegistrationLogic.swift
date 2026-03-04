@@ -24,7 +24,7 @@ final class RegistrationLogic: RegistrationInteractor {
             do {
                 try await userService.uploadAvatar(data: avatarData)
             } catch {
-                await presenter.presentAvatarUploadError()
+                await presenter.presentAvatarUploadError(UserServiceError.wrap(error))
                 return
             }
         }

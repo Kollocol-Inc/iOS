@@ -33,10 +33,11 @@ final class VerifyCodeRouter: VerifyCodePresenter, ServiceErrorHandling {
         await view?.showCodeValidationFailed()
     }
 
-    func overrideMessage(for error: Error) -> String? {
+    func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String? {
+        guard useCase == .generic else { return nil }
         guard let authError = error as? AuthServiceError else { return nil }
-        guard case .badRequest = authError else { return nil }
+        guard case .tooManyRequests = authError else { return nil }
 
-        return "Неправильный код. Попробуйте еще раз"
+        return "Слишком много попыток ввода кода. Попробуйте еще раз через несколько минут"
     }
 }

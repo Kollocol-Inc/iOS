@@ -26,17 +26,34 @@ final class RegistrationRouter: RegistrationPresenter, ServiceErrorHandling {
     }
     
     func presentRegisterError(_ error: UserServiceError) async {
-        await presentServiceError(error)
+        await presentServiceError(error, useCase: .registrationSubmit)
         await view?.unlockFieldsAndButtons()
     }
 
-    func presentAvatarUploadError() async {
-        await router.showError(
-            title: "Ошибка",
-            message: "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
-        )
-
+    func presentAvatarUploadError(_ error: UserServiceError) async {
+        await presentServiceError(error, useCase: .avatarUpload)
         await view?.resetAvatarAfterUploadError()
+    }
+
+    func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String? {
+        guard let userServiceError = error as? UserServiceError else { return nil }
+
+        switch useCase {
+        case .registrationSubmit:
+            if userServiceError == .badRequest {
+                return "Ошибка при регистрации. Попробуйте еще раз или вернитесь позже"
+            }
+            return nil
+
+        case .avatarUpload:
+            if userServiceError == .badRequest {
+                return "Выбранная фотография слишком большая, выберите другую"
+            }
+            return "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
+
+        case .generic:
+            return nil
+        }
     }
 
     func presentDeleteAvatarConfirmation(onConfirm: @escaping @MainActor () -> Void) async {

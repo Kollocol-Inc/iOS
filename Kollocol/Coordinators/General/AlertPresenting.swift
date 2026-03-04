@@ -111,19 +111,29 @@ extension QuizServiceError: UserFacingError {
 }
 
 // MARK: - ServiceErrorHandling
+enum ServiceErrorUseCase {
+    case generic
+    case registrationSubmit
+    case avatarUpload
+}
+
 @MainActor
 protocol ServiceErrorHandling: AnyObject {
     var errorDisplayer: any ErrorMessageDisplaying { get }
-    func overrideMessage(for error: Error) -> String?
+    func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String?
 }
 
 extension ServiceErrorHandling {
-    func overrideMessage(for error: Error) -> String? {
+    func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String? {
         nil
     }
 
-    func presentServiceError(_ error: Error, title: String = "Ошибка") async {
-        let message = overrideMessage(for: error)
+    func presentServiceError(
+        _ error: Error,
+        useCase: ServiceErrorUseCase = .generic,
+        title: String = "Ошибка"
+    ) async {
+        let message = overrideMessage(for: error, useCase: useCase)
             ?? (error as? any UserFacingError)?.userMessage
             ?? "Что-то пошло не так"
 
