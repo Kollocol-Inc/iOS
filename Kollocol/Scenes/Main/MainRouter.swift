@@ -49,7 +49,7 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
 
     func presentJoinQuizError(_ error: QuizServiceError) async {
         await presentServiceError(error, useCase: .joinQuiz, title: "Неверный код")
-        view?.resetCodeFields()
+        await view?.resetCodeFields()
     }
 
     func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String? {
@@ -60,6 +60,7 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
             if quizServiceError == .badRequest {
                 return "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
             }
+            return nil
 
         default:
             return nil

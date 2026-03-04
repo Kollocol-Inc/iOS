@@ -56,6 +56,6 @@ final class MainLogic: MainInteractor {
     }
 
     func joinQuiz(code: String) async {
-        await presenter.presentJoinQuizError()
+//        await presenter.presentJoinQuizError()
     }
 }
