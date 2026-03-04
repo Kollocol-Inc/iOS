@@ -28,20 +28,23 @@ final class MainRouter: MainPresenter {
         await view?.displayUserProfile(avatarUrl: user.avatarUrl, name: name)
     }
 
-    func presentParticipatingQuizzes(_ quizInstances: [QuizInstance]) async {
-        let quizInstancesViewData = quizInstances.map { $0.toViewData() }
-        
-        await view?.displayParticipatingQuizzes(quizInstancesViewData)
-    }
-
-    func presentHostingQuizzes(_ quizInstances: [QuizInstance]) async {
-        let quizInstancesViewData = quizInstances.map { $0.toViewData() }
-
-        await view?.displayHostingQuizzes(quizInstancesViewData)
+    func presentQuizzes(participating: [QuizInstance], hosting: [QuizInstance]) async {
+        let participatingViewData = participating.map { $0.toViewData() }
+        let hostingViewData = hosting.map { $0.toViewData() }
+        await view?.displayQuizzes(participating: participatingViewData, hosting: hostingViewData)
     }
 
     func presentError(_ error: UserServiceError) async {
-        // TODO: Handle error
+        let message: String
+
+        switch error {
+            case .offline:
+                message = "Нет интернета"
+            default:
+                message = "Что-то пошло не так"
+        }
+
+        await router.showError(title: "Ошибка", message: message)
     }
 
     func presentProfileScreen() async {

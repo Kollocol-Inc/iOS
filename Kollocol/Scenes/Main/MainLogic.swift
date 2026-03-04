@@ -30,27 +30,24 @@ final class MainLogic: MainInteractor {
             let user = try await userService.getUserProfile()
             await presenter.presentUserProfile(user)
         } catch {
-            await presenter.presentError(UserServiceError.wrap(error))
+            await presenter.presentUserServiceError(UserServiceError.wrap(error))
         }
     }
 
-    func fetchParticipatingQuizzes() async {
+    func fetchQuizzes() async {
         do {
-            let participatingInstances = try await quizService.getParticipatingQuizzes()
+            async let participatingTask = quizService.getParticipatingQuizzes()
+            async let hostingTask = quizService.getHostingQuizzes()
+
+            let (participatingInstances, hostingInstances) = try await (participatingTask, hostingTask)
             self.participatingInstances = participatingInstances
-            await presenter.presentParticipatingQuizzes(participatingInstances.compactMap { $0.instance })
-        } catch {
-            await presenter.presentError(UserServiceError.wrap(error))
-        }
-    }
-
-    func fetchHostingQuizzes() async {
-        do {
-            let hostingInstances = try await quizService.getHostingQuizzes()
             self.hostingInstances = hostingInstances
-            await presenter.presentHostingQuizzes(hostingInstances)
+            await presenter.presentQuizzes(
+                participating: participatingInstances.compactMap { $0.instance },
+                hosting: hostingInstances
+            )
         } catch {
-            await presenter.presentError(UserServiceError.wrap(error))
+            await presenter.presentQuizServiceError(QuizServiceError.wrap(error))
         }
     }
 

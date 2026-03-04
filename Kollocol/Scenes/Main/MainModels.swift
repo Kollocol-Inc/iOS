@@ -8,5 +8,9 @@
 import UIKit
 
 enum MainModels {
-    
+    enum Row {
+        case header(title: String)
+        case cards(items: [QuizInstanceViewData])
+        case divider
+    }
 }

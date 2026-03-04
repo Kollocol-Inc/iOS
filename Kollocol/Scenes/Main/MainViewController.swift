@@ -69,6 +69,12 @@ final class MainViewController: UIViewController {
         return table
     }()
 
+    private lazy var refreshControl: UIRefreshControl = {
+        let control = UIRefreshControl()
+        control.addTarget(self, action: #selector(handlePullToRefresh), for: .valueChanged)
+        return control
+    }()
+
     private let tableViewBackgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = .backgroundSecondary
@@ -81,12 +87,26 @@ final class MainViewController: UIViewController {
         return view
     }()
 
+    private let emptyStateLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Вы не проводите квизы и не участвуете в них"
+        label.font = .systemFont(ofSize: 20, weight: .medium)
+        label.textColor = .textSecondary
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.isUserInteractionEnabled = false
+        label.isHidden = true
+        return label
+    }()
+
     // MARK: - Properties
     private var interactor: MainInteractor
     private var currentCode: String?
     private var isJoinLoading = false
     private var quizParticipatingInstances: [QuizInstanceViewData] = []
     private var quizHostingInstances: [QuizInstanceViewData] = []
+    private var rows: [MainModels.Row] = []
+    private var hasLoadedQuizzes = false
 
     // MARK: - Lifecycle
     init(interactor: MainInteractor) {
@@ -110,11 +130,7 @@ final class MainViewController: UIViewController {
         }
         
         Task {
-            await interactor.fetchParticipatingQuizzes()
-        }
-
-        Task {
-            await interactor.fetchHostingQuizzes()
+            await interactor.fetchQuizzes()
         }
 
         initialState()
@@ -133,15 +149,13 @@ final class MainViewController: UIViewController {
     }
 
     @MainActor
-    func displayParticipatingQuizzes(_ quizInstances: [QuizInstanceViewData]) {
-        self.quizParticipatingInstances = quizInstances
-        self.tableView.reloadData()
-    }
-
-    @MainActor
-    func displayHostingQuizzes(_ quizInstances: [QuizInstanceViewData]) {
-        self.quizHostingInstances = quizInstances
-        self.tableView.reloadData()
+    func displayQuizzes(participating: [QuizInstanceViewData], hosting: [QuizInstanceViewData]) {
+        hasLoadedQuizzes = true
+        quizParticipatingInstances = participating
+        quizHostingInstances = hosting
+        rows = buildRows(participating: quizParticipatingInstances, hosting: quizHostingInstances)
+        updateEmptyStateVisibility()
+        tableView.reloadData()
     }
 
     @MainActor
@@ -193,6 +207,12 @@ final class MainViewController: UIViewController {
 
         view.addSubview(tableView)
         tableView.pin(to: tableViewBackgroundView)
+
+        view.addSubview(emptyStateLabel)
+        emptyStateLabel.pinCenterX(to: tableViewBackgroundView.centerXAnchor)
+        emptyStateLabel.pinCenterY(to: tableViewBackgroundView.centerYAnchor, -40)
+        emptyStateLabel.pinLeft(to: tableViewBackgroundView.leadingAnchor, 24)
+        emptyStateLabel.pinRight(to: tableViewBackgroundView.trailingAnchor, 24)
     }
 
     private func configureActions() {
@@ -221,6 +241,44 @@ final class MainViewController: UIViewController {
         tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.refreshControl = refreshControl
+    }
+
+    private func reloadMainContent() async {
+        async let userProfileTask: Void = interactor.fetchUserProfile()
+        async let quizzesTask: Void = interactor.fetchQuizzes()
+
+        _ = await (userProfileTask, quizzesTask)
+        await MainActor.run {
+            refreshControl.endRefreshing()
+        }
+    }
+
+    private func buildRows(
+        participating: [QuizInstanceViewData],
+        hosting: [QuizInstanceViewData]
+    ) -> [MainModels.Row] {
+        var rows: [MainModels.Row] = []
+
+        if !participating.isEmpty {
+            rows.append(.header(title: "Участвую"))
+            rows.append(.cards(items: participating))
+        }
+
+        if !hosting.isEmpty {
+            if !rows.isEmpty {
+                rows.append(.divider)
+            }
+
+            rows.append(.header(title: "Провожу"))
+            rows.append(.cards(items: hosting))
+        }
+
+        return rows
+    }
+
+    private func updateEmptyStateVisibility() {
+        emptyStateLabel.isHidden = !hasLoadedQuizzes || !rows.isEmpty
     }
 
     private func configureNavbar() {
@@ -288,62 +346,48 @@ final class MainViewController: UIViewController {
             await interactor.routeToProfileScreen()
         }
     }
+
+    @objc
+    private func handlePullToRefresh() {
+        Task {
+            await reloadMainContent()
+        }
+    }
 }
 
 
 // MARK: - UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 5
+        rows.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.row {
-        case 0:
+        switch rows[indexPath.row] {
+        case .header(let title):
             guard let cell = tableView.dequeueReusableCell(withIdentifier: HeaderTableViewCell.reuseIdentifier, for: indexPath) as? HeaderTableViewCell else {
                 return UITableViewCell()
             }
 
-            cell.configure(title: "Участвую")
+            cell.configure(title: title)
 
             return cell
 
-        case 1:
+        case .cards(let items):
             guard let cell = tableView.dequeueReusableCell(withIdentifier: CardsTableViewCell.reuseIdentifier, for: indexPath) as? CardsTableViewCell else {
                 return UITableViewCell()
             }
 
-            cell.configure(with: quizParticipatingInstances)
+            cell.configure(with: items)
 
             return cell
 
-        case 2:
+        case .divider:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: DividerTableViewCell.reuseIdentifier, for: indexPath) as? DividerTableViewCell else {
                 return UITableViewCell()
             }
 
             return cell
-
-        case 3:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: HeaderTableViewCell.reuseIdentifier, for: indexPath) as? HeaderTableViewCell else {
-                return UITableViewCell()
-            }
-
-            cell.configure(title: "Провожу")
-
-            return cell
-
-        case 4:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: CardsTableViewCell.reuseIdentifier, for: indexPath) as? CardsTableViewCell else {
-                return UITableViewCell()
-            }
-
-            cell.configure(with: quizHostingInstances)
-
-            return cell
-
-        default:
-            return UITableViewCell()
         }
     }
 }
@@ -351,13 +395,10 @@ extension MainViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension MainViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch indexPath.row {
-        case 0: return 46  // header height
-        case 1: return 178 // card height + 8 spacing + pager
-        case 2: return 1 // divider height
-        case 3: return 46 // header height
-        case 4: return 178 // card height + 8 spacing + pager
-        default: return 0
+        switch rows[indexPath.row] {
+        case .header: return 46
+        case .cards: return 178
+        case .divider: return 1
         }
     }
 }
