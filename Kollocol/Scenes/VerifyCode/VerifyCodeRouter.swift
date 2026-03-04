@@ -8,10 +8,11 @@
 import UIKit
 
 @MainActor
-final class VerifyCodeRouter: VerifyCodePresenter {
+final class VerifyCodeRouter: VerifyCodePresenter, ServiceErrorHandling {
     // MARK: - Properties
     weak var view: VerifyCodeViewController?
     private let router: AuthRouting
+    var errorDisplayer: any ErrorMessageDisplaying { router }
     
     // MARK: - Lifecycle
     init(router: AuthRouting) {
@@ -28,19 +29,14 @@ final class VerifyCodeRouter: VerifyCodePresenter {
     }
     
     func presentVerifyingError(_ error: AuthServiceError) async {
-        let message: String
-        
-        switch error {
-            case .tooManyRequests:
-                message = "Слишком много попыток ввода кода. Попробуйте еще раз через несколько минут"
-            case .offline:
-                message = "Нет интернета"
-            default:
-                message = "Что-то пошло не так"
-        }
-        
-        await router.showError(title: "Ошибка", message: message)
-        
+        await presentServiceError(error)
         await view?.showCodeValidationFailed()
+    }
+
+    func overrideMessage(for error: Error) -> String? {
+        guard let authError = error as? AuthServiceError else { return nil }
+        guard case .badRequest = authError else { return nil }
+
+        return "Неправильный код. Попробуйте еще раз"
     }
 }

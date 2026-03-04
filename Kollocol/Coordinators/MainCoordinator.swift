@@ -199,9 +199,8 @@ extension MainCoordinator: ProfileRouting {
 }
 
 @MainActor
-protocol MainRouting: AnyObject {
+protocol MainRouting: ErrorMessageDisplaying {
     func routeToProfileScreen()
-    func showError(title: String, message: String)
 }
 
 @MainActor

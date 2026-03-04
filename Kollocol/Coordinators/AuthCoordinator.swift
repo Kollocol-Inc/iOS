@@ -155,8 +155,7 @@ extension AuthCoordinator: AuthRouting {
 
 // MARK: - AuthRouting
 @MainActor
-protocol AuthRouting: AnyObject {
-    func showError(title: String, message: String)
+protocol AuthRouting: ErrorMessageDisplaying {
     func routeToVerifyCode(email: String)
     func routeToRegistration()
     func showAvatarDeleteConfirmation(onConfirm: @escaping @MainActor () -> Void)

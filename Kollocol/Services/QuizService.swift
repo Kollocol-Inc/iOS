@@ -23,10 +23,8 @@ actor QuizServiceImpl: QuizService {
             let response = try await api.request(GetParticipatingQuizInstances())
             let instances = response.instances.map { $0.toDomain() }
             return instances
-        } catch let networkError as NetworkError {
-            throw map(networkError)
         } catch {
-            throw map(error)
+            throw QuizServiceError.wrap(error)
         }
     }
 
@@ -35,37 +33,10 @@ actor QuizServiceImpl: QuizService {
       let response = try await api.request(GetHostingQuizInstances())
       let instances = response.instances.map { $0.toDomain() }
       return instances
-    } catch let networkError as NetworkError {
-      throw map(networkError)
     } catch {
-      throw map(error)
+      throw QuizServiceError.wrap(error)
     }
   }
-
-    // MARK: - Private Methods
-    private func map(_ error: Error) -> QuizServiceError {
-        if let e = error as? QuizServiceError { return e }
-
-        guard let networkError = error as? NetworkError else {
-            return .unknown
-        }
-
-        switch networkError {
-        case .transport(let urlError):
-            if urlError.code == .notConnectedToInternet { return .offline }
-            return .unknown
-
-        case .httpStatus(let code, _):
-            if code == 400 { return .badRequest }
-            if code == 401 { return .unauthorized }
-            if (500...599).contains(code) { return .server }
-
-            return .unknown
-
-        default:
-            return .unknown
-        }
-    }
 }
 
 // MARK: - UserServiceError
@@ -78,12 +49,19 @@ protocol QuizService: Actor {
 enum QuizServiceError: Error, Sendable {
     case badRequest
     case unauthorized
+    case tooManyRequests
     case server
     case offline
     case unknown
 
-    static func wrap(_ error: Error) -> QuizServiceError {
-        if let e = error as? QuizServiceError { return e }
-        return .unknown
+    static func mapStatusCode(_ code: Int) -> QuizServiceError? {
+        if code == 400 { return .badRequest }
+        if code == 401 { return .unauthorized }
+        if code == 429 { return .tooManyRequests }
+        if (500...599).contains(code) { return .server }
+
+        return nil
     }
 }
+
+extension QuizServiceError: NetworkServiceError {}

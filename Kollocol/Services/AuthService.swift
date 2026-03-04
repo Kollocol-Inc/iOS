@@ -25,10 +25,8 @@ actor AuthServiceImpl: AuthService {
     func login(using email: String) async throws {
         do {
             _ = try await api.request(LoginEndpoint(email: email))
-        } catch let networkError as NetworkError {
-            throw map(networkError)
         } catch {
-            throw map(error)
+            throw AuthServiceError.wrap(error)
         }
     }
     
@@ -60,36 +58,8 @@ actor AuthServiceImpl: AuthService {
             udService.isRegistered = isRegistered
             
             return isRegistered
-        } catch let networkError as NetworkError {
-            throw map(networkError)
         } catch {
-            throw map(error)
-        }
-    }
-    
-    // MARK: - Private Methods
-    private func map(_ error: Error) -> AuthServiceError {
-        if let e = error as? AuthServiceError { return e }
-
-        guard let networkError = error as? NetworkError else {
-            return .unknown
-        }
-
-        switch networkError {
-        case .transport(let urlError):
-            if urlError.code == .notConnectedToInternet { return .offline }
-            return .unknown
-
-        case .httpStatus(let code, _):
-            if code == 400 { return .invalidEmail }
-            if code == 429 { return .tooManyRequests }
-            if code == 401 { return .unauthorized }
-            if (500...599).contains(code) { return .server }
-
-            return .unknown
-
-        default:
-            return .unknown
+            throw AuthServiceError.wrap(error)
         }
     }
 }
@@ -105,16 +75,21 @@ protocol AuthService: Actor {
 
 // MARK: - AuthServiceError
 enum AuthServiceError: Error, Sendable {
-    case invalidEmail
+    case badRequest
     case tooManyRequests
-    case invalidCode
     case unauthorized
     case offline
     case server
     case unknown
     
-    static func wrap(_ error: Error) -> AuthServiceError {
-        if let e = error as? AuthServiceError { return e }
-        return .unknown
+    static func mapStatusCode(_ code: Int) -> AuthServiceError? {
+        if code == 400 { return .badRequest }
+        if code == 401 { return .unauthorized }
+        if code == 429 { return .tooManyRequests }
+        if (500...599).contains(code) { return .server }
+
+        return nil
     }
 }
+
+extension AuthServiceError: NetworkServiceError {}

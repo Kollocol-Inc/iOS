@@ -41,3 +41,92 @@ extension AlertPresenting {
         presentAlert(alert)
     }
 }
+
+// MARK: - ErrorMessageDisplaying
+@MainActor
+protocol ErrorMessageDisplaying: AnyObject {
+    func showError(title: String, message: String)
+}
+
+// MARK: - UserFacingError
+protocol UserFacingError: Error {
+    var userMessage: String { get }
+}
+
+extension AuthServiceError: UserFacingError {
+    var userMessage: String {
+        switch self {
+        case .badRequest:
+            return "Ошибка на стороне клиента"
+        case .tooManyRequests:
+            return "Слишком много попыток. Попробуйте еще раз через пару минут"
+        case .offline:
+            return "Нет интернета"
+        case .server:
+            return "Ошибка на стороне сервера. Идем будить девопса..."
+        case .unauthorized:
+            return "Ошибка авторизации. Выполните вход снова"
+        default:
+            return "Что-то пошло не так"
+        }
+    }
+}
+
+extension UserServiceError: UserFacingError {
+    var userMessage: String {
+        switch self {
+        case .badRequest:
+            return "Ошибка на стороне клиента"
+        case .tooManyRequests:
+            return "Слишком много попыток. Попробуйте еще раз через пару минут"
+        case .offline:
+            return "Нет интернета"
+        case .server:
+            return "Ошибка на стороне сервера. Идем будить девопса..."
+        case .unauthorized:
+            return "Ошибка авторизации. Выполните вход снова"
+        default:
+            return "Что-то пошло не так"
+        }
+    }
+}
+
+extension QuizServiceError: UserFacingError {
+    var userMessage: String {
+        switch self {
+        case .badRequest:
+            return "Ошибка на стороне клиента"
+        case .tooManyRequests:
+            return "Слишком много попыток. Попробуйте еще раз через пару минут"
+        case .offline:
+            return "Нет интернета"
+        case .server:
+            return "Ошибка на стороне сервера. Идем будить девопса..."
+        case .unauthorized:
+            return "Ошибка авторизации. Выполните вход снова"
+        default:
+            return "Что-то пошло не так"
+        }
+    }
+}
+
+// MARK: - ServiceErrorHandling
+@MainActor
+protocol ServiceErrorHandling: AnyObject {
+    var errorDisplayer: any ErrorMessageDisplaying { get }
+    func overrideMessage(for error: Error) -> String?
+}
+
+extension ServiceErrorHandling {
+    func overrideMessage(for error: Error) -> String? {
+        nil
+    }
+
+    func presentServiceError(_ error: Error, title: String = "Ошибка") async {
+        let message = overrideMessage(for: error)
+            ?? (error as? any UserFacingError)?.userMessage
+            ?? "Что-то пошло не так"
+
+        errorDisplayer.showError(title: title, message: message)
+    }
+}

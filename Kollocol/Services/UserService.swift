@@ -25,10 +25,8 @@ actor UserServiceImpl: UserService {
     func getUserProfile() async throws -> UserDTO {
         do {
             return try await api.request(GetUserProfile())
-        } catch let networkError as NetworkError {
-            throw map(networkError)
         } catch {
-            throw map(error)
+            throw UserServiceError.wrap(error)
         }
     }
 
@@ -40,10 +38,8 @@ actor UserServiceImpl: UserService {
                     surname: surname
                 )
             )
-        } catch let networkError as NetworkError {
-            throw map(networkError)
         } catch {
-            throw map(error)
+            throw UserServiceError.wrap(error)
         }
     }
 
@@ -51,20 +47,16 @@ actor UserServiceImpl: UserService {
         do {
             let file = UploadAvatar.AvatarFile(data: data)
             _ = try await api.request(UploadAvatar(avatar: file))
-        } catch let networkError as NetworkError {
-            throw map(networkError)
         } catch {
-            throw map(error)
+            throw UserServiceError.wrap(error)
         }
     }
 
     func getNotifications() async throws -> NotificationsSettingsDTO {
         do {
             return try await api.request(GetNotifications())
-        } catch let networkError as NetworkError {
-            throw map(networkError)
         } catch {
-            throw map(error)
+            throw UserServiceError.wrap(error)
         }
     }
 
@@ -83,10 +75,8 @@ actor UserServiceImpl: UserService {
                     quizResults: quizResults
                 )
             )
-        } catch let networkError as NetworkError {
-            throw map(networkError)
         } catch {
-            throw map(error)
+            throw UserServiceError.wrap(error)
         }
     }
 
@@ -94,10 +84,8 @@ actor UserServiceImpl: UserService {
         do {
             _ = try await api.request(RegisterEndpoint(name: name, surname: surname))
             udService.isRegistered = true
-        } catch let networkError as NetworkError {
-            throw map(networkError)
         } catch {
-            throw map(error)
+            throw UserServiceError.wrap(error)
         }
     }
 
@@ -105,30 +93,6 @@ actor UserServiceImpl: UserService {
         // TODO: implement
     }
 
-    // MARK: - Private Methods
-    private func map(_ error: Error) -> UserServiceError {
-        if let e = error as? UserServiceError { return e }
-
-        guard let networkError = error as? NetworkError else {
-            return .unknown
-        }
-
-        switch networkError {
-        case .transport(let urlError):
-            if urlError.code == .notConnectedToInternet { return .offline }
-            return .unknown
-
-        case .httpStatus(let code, _):
-            if code == 400 { return .badRequest }
-            if code == 401 { return .unauthorized }
-            if (500...599).contains(code) { return .server }
-
-            return .unknown
-
-        default:
-            return .unknown
-        }
-    }
 }
 
 // MARK: - UserServiceError
@@ -150,13 +114,20 @@ protocol UserService: Actor {
 // MARK: - UserServiceError
 enum UserServiceError: Error, Sendable {
     case badRequest
+    case tooManyRequests
     case unauthorized
     case server
     case offline
     case unknown
     
-    static func wrap(_ error: Error) -> UserServiceError {
-        if let e = error as? UserServiceError { return e }
-        return .unknown
+    static func mapStatusCode(_ code: Int) -> UserServiceError? {
+        if code == 400 { return .badRequest }
+        if code == 401 { return .unauthorized }
+        if code == 429 { return .tooManyRequests }
+        if (500...599).contains(code) { return .server }
+
+        return nil
     }
 }
+
+extension UserServiceError: NetworkServiceError {}

@@ -8,11 +8,12 @@
 import UIKit
 
 @MainActor
-final class StartRouter: StartPresenter {
+final class StartRouter: StartPresenter, ServiceErrorHandling {
     // MARK: - Properties
     weak var view: StartViewController?
     
     private let router: AuthRouting
+    var errorDisplayer: any ErrorMessageDisplaying { router }
     
     // MARK: - Lifecycle
     init(router: AuthRouting) {
@@ -25,21 +26,7 @@ final class StartRouter: StartPresenter {
     }
     
     func presentLoginError(_ error: AuthServiceError) async {
-        let message: String
-        
-        switch error {
-            case .invalidEmail:
-                message = "Неверный формат почты"
-            case .tooManyRequests:
-                message = "Слишком много попыток"
-            case .offline:
-                message = "Нет интернета"
-            default:
-                message = "Что-то пошло не так"
-        }
-        
-        await router.showError(title: "Ошибка", message: message)
-        
+        await presentServiceError(error)
         await view?.showError()
     }
 }

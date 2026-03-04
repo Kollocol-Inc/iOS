@@ -8,11 +8,12 @@
 import UIKit
 
 @MainActor
-final class RegistrationRouter: RegistrationPresenter {
+final class RegistrationRouter: RegistrationPresenter, ServiceErrorHandling {
     // MARK: - Properties
     weak var view: RegistrationViewController?
     
     private let router: AuthRouting
+    var errorDisplayer: any ErrorMessageDisplaying { router }
     
     // MARK: - Lifecycle
     init(router: AuthRouting) {
@@ -25,17 +26,7 @@ final class RegistrationRouter: RegistrationPresenter {
     }
     
     func presentRegisterError(_ error: UserServiceError) async {
-        let message: String
-        
-        switch error {
-            case .offline:
-                message = "Нет интернета"
-            default:
-                message = "Что-то пошло не так"
-        }
-        
-        await router.showError(title: "Ошибка", message: message)
-        
+        await presentServiceError(error)
         await view?.unlockFieldsAndButtons()
     }
 

@@ -8,11 +8,12 @@
 import UIKit
 
 @MainActor
-final class MainRouter: MainPresenter {
+final class MainRouter: MainPresenter, ServiceErrorHandling {
     // MARK: - Properties
     weak var view: MainViewController?
     
     private let router: MainRouting
+    var errorDisplayer: any ErrorMessageDisplaying { router }
     
     // MARK: - Lifecycle
     init(router: MainRouting) {
@@ -34,17 +35,12 @@ final class MainRouter: MainPresenter {
         await view?.displayQuizzes(participating: participatingViewData, hosting: hostingViewData)
     }
 
-    func presentError(_ error: UserServiceError) async {
-        let message: String
+    func presentUserServiceError(_ error: UserServiceError) async {
+        await presentServiceError(error)
+    }
 
-        switch error {
-            case .offline:
-                message = "Нет интернета"
-            default:
-                message = "Что-то пошло не так"
-        }
-
-        await router.showError(title: "Ошибка", message: message)
+    func presentQuizServiceError(_ error: QuizServiceError) async {
+        await presentServiceError(error)
     }
 
     func presentProfileScreen() async {
