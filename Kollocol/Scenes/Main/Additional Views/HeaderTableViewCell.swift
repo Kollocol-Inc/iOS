@@ -14,7 +14,7 @@ final class HeaderTableViewCell: UITableViewCell {
     // MARK: - UI Components
     private let label: UILabel = {
         let label = UILabel()
-        label.textColor = .textSecondary
+        label.textColor = .textPrimary
         label.numberOfLines = 1
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 20, weight: .medium)

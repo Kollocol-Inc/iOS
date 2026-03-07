@@ -87,18 +87,6 @@ final class MainViewController: UIViewController {
         return view
     }()
 
-    private let emptyStateLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Вы не проводите квизы и не участвуете в них"
-        label.font = .systemFont(ofSize: 20, weight: .medium)
-        label.textColor = .textSecondary
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.isUserInteractionEnabled = false
-        label.isHidden = true
-        return label
-    }()
-
     // MARK: - Properties
     private var interactor: MainInteractor
     private var currentCode: String?
@@ -106,7 +94,6 @@ final class MainViewController: UIViewController {
     private var quizParticipatingInstances: [QuizInstanceViewData] = []
     private var quizHostingInstances: [QuizInstanceViewData] = []
     private var rows: [MainModels.Row] = []
-    private var hasLoadedQuizzes = false
 
     // MARK: - Lifecycle
     init(interactor: MainInteractor) {
@@ -150,11 +137,9 @@ final class MainViewController: UIViewController {
 
     @MainActor
     func displayQuizzes(participating: [QuizInstanceViewData], hosting: [QuizInstanceViewData]) {
-        hasLoadedQuizzes = true
         quizParticipatingInstances = participating
         quizHostingInstances = hosting
         rows = buildRows(participating: quizParticipatingInstances, hosting: quizHostingInstances)
-        updateEmptyStateVisibility()
         tableView.reloadData()
     }
 
@@ -207,12 +192,6 @@ final class MainViewController: UIViewController {
 
         view.addSubview(tableView)
         tableView.pin(to: tableViewBackgroundView)
-
-        view.addSubview(emptyStateLabel)
-        emptyStateLabel.pinCenterX(to: tableViewBackgroundView.centerXAnchor)
-        emptyStateLabel.pinCenterY(to: tableViewBackgroundView.centerYAnchor, -40)
-        emptyStateLabel.pinLeft(to: tableViewBackgroundView.leadingAnchor, 24)
-        emptyStateLabel.pinRight(to: tableViewBackgroundView.trailingAnchor, 24)
     }
 
     private func configureActions() {
@@ -238,6 +217,7 @@ final class MainViewController: UIViewController {
     private func configureTableView() {
         tableView.register(HeaderTableViewCell.self, forCellReuseIdentifier: HeaderTableViewCell.reuseIdentifier)
         tableView.register(CardsTableViewCell.self, forCellReuseIdentifier: CardsTableViewCell.reuseIdentifier)
+        tableView.register(EmptyStateTableViewCell.self, forCellReuseIdentifier: EmptyStateTableViewCell.reuseIdentifier)
         tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
@@ -258,27 +238,17 @@ final class MainViewController: UIViewController {
         participating: [QuizInstanceViewData],
         hosting: [QuizInstanceViewData]
     ) -> [MainModels.Row] {
-        var rows: [MainModels.Row] = []
-
-        if !participating.isEmpty {
-            rows.append(.header(title: "Участвую"))
-            rows.append(.cards(items: participating))
-        }
-
-        if !hosting.isEmpty {
-            if !rows.isEmpty {
-                rows.append(.divider)
-            }
-
-            rows.append(.header(title: "Провожу"))
-            rows.append(.cards(items: hosting))
-        }
-
-        return rows
-    }
-
-    private func updateEmptyStateVisibility() {
-        emptyStateLabel.isHidden = !hasLoadedQuizzes || !rows.isEmpty
+        [
+            .header(title: "Участвую"),
+            participating.isEmpty
+            ? .empty(text: "Нет квизов, в которых вы участвуете")
+            : .cards(items: participating),
+            .divider,
+            .header(title: "Провожу"),
+            hosting.isEmpty
+            ? .empty(text: "Нет квизов, которые вы проводите")
+            : .cards(items: hosting)
+        ]
     }
 
     private func configureNavbar() {
@@ -381,6 +351,15 @@ extension MainViewController: UITableViewDataSource {
             cell.configure(with: items)
 
             return cell
+        
+        case .empty(let text):
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: EmptyStateTableViewCell.reuseIdentifier, for: indexPath) as? EmptyStateTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(text: text)
+
+            return cell
 
         case .divider:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: DividerTableViewCell.reuseIdentifier, for: indexPath) as? DividerTableViewCell else {
@@ -398,7 +377,15 @@ extension MainViewController: UITableViewDelegate {
         switch rows[indexPath.row] {
         case .header: return 46
         case .cards: return 178
+        case .empty: return UITableView.automaticDimension
         case .divider: return 1
+        }
+    }
+
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        switch rows[indexPath.row] {
+        case .empty: return 34
+        default: return 44
         }
     }
 }

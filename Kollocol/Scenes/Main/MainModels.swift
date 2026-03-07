@@ -11,6 +11,7 @@ enum MainModels {
     enum Row {
         case header(title: String)
         case cards(items: [QuizInstanceViewData])
+        case empty(text: String)
         case divider
     }
 }
