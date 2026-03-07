@@ -99,7 +99,7 @@ final class MainCoordinator {
         )
         groupsNavController = groupsNav
 
-        let myQuizzesVC = MyQuizzesAssembly.build(router: self)
+        let myQuizzesVC = MyQuizzesAssembly.build(router: self, quizService: services.quizService)
         let myQuizzesNav = makeTabNavigationController(
             root: myQuizzesVC,
             tab: .myQuizzes
@@ -181,7 +181,9 @@ extension MainCoordinator: GroupsRouting {
 
 // MARK: - MyQuizzesRouting
 extension MainCoordinator: MyQuizzesRouting {
-
+    func routeToCreateTemplateScreen() {
+        // TODO: route to create template screen
+    }
 }
 
 // MARK: - ProfileRouting
@@ -209,8 +211,8 @@ protocol GroupsRouting: AnyObject {
 }
 
 @MainActor
-protocol MyQuizzesRouting: AnyObject {
-
+protocol MyQuizzesRouting: ErrorMessageDisplaying {
+    func routeToCreateTemplateScreen()
 }
 
 @MainActor

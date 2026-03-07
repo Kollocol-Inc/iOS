@@ -10,6 +10,7 @@ struct QuizInstanceViewData {
     let deadline: String?
     let id: String?
     let quizType: String?
+    let status: QuizStatus?
     let title: String?
     let totalQuestions: String?
     let totalTime: String?

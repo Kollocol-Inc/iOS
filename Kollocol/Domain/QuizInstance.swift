@@ -31,6 +31,7 @@ extension QuizInstance {
             deadline: self.deadline,
             id: self.id,
             quizType: self.quizType?.displayName,
+            status: self.status,
             title: self.title,
             totalQuestions: self.totalTime,
             totalTime: self.totalTime?.asHmsFromSeconds()
