@@ -8,8 +8,8 @@
 import Foundation
 
 enum QuizStatus: String {
-    case notStarted = "not_started"
-    case joined = "joined"
-    case inProgress = "in_progress"
-    case finished = "finished"
+    case waiting = "waiting"
+    case active = "active"
+    case pendingReview = "pending_review"
+    case reviewed = "reviewed"
 }
