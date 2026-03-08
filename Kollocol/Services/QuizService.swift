@@ -20,7 +20,7 @@ actor QuizServiceImpl: QuizService {
     // MARK: - Methods
     func getParticipatingQuizzes() async throws -> [ParticipatingInstance] {
         do {
-            let response = try await api.request(GetParticipatingQuizInstances())
+            let response = try await api.request(GetParticipatingQuizInstancesEndpoint())
             let instances = response.instances.map { $0.toDomain() }
             return instances
         } catch {
@@ -28,21 +28,32 @@ actor QuizServiceImpl: QuizService {
         }
     }
 
-  func getHostingQuizzes() async throws -> [QuizInstance] {
-    do {
-      let response = try await api.request(GetHostingQuizInstances())
-      let instances = response.instances.map { $0.toDomain() }
-      return instances
-    } catch {
-      throw QuizServiceError.wrap(error)
+    func getHostingQuizzes() async throws -> [QuizInstance] {
+        do {
+            let response = try await api.request(GetHostingQuizInstancesEndpoint())
+            let instances = response.instances.map { $0.toDomain() }
+            return instances
+        } catch {
+            throw QuizServiceError.wrap(error)
+        }
     }
-  }
+
+    func getTemplates() async throws -> [QuizTemplate] {
+        do {
+            let response = try await api.request(GetTemplatesEndpoint())
+            let templates = response.templates.map { $0.toDomain() }
+            return templates
+        } catch {
+            throw QuizServiceError.wrap(error)
+        }
+    }
 }
 
 // MARK: - UserServiceError
 protocol QuizService: Actor {
     func getParticipatingQuizzes() async throws -> [ParticipatingInstance]
     func getHostingQuizzes() async throws -> [QuizInstance]
+    func getTemplates() async throws -> [QuizTemplate]
 }
 
 // MARK: - UserServiceError

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct UpdateUserProfile: Endpoint {
+struct UpdateUserProfileEndpoint: Endpoint {
     typealias Response = UserDTO
 
     let name: String

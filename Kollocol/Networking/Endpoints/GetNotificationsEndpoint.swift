@@ -1,5 +1,5 @@
 //
-//  GetUserProfile.swift
+//  GetNotifications.swift
 //  Kollocol
 //
 //  Created by Arsenii Potiakin on 15.02.2026.
@@ -7,11 +7,11 @@
 
 import Foundation
 
-struct GetUserProfile: Endpoint {
-    typealias Response = UserDTO
+struct GetNotificationsEndpoint: Endpoint {
+    typealias Response = NotificationsSettingsDTO
 
     var method: HTTPMethod { .get }
-    var path: String { "/users/me" }
+    var path: String { "/users/me/notifications" }
     var body: AnyEncodable? { nil }
     var multipart: MultipartFormData? { nil }
 }

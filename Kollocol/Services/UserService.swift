@@ -24,7 +24,7 @@ actor UserServiceImpl: UserService {
     // MARK: - Methods
     func getUserProfile() async throws -> UserDTO {
         do {
-            return try await api.request(GetUserProfile())
+            return try await api.request(GetUserProfileEndpoint())
         } catch {
             throw UserServiceError.wrap(error)
         }
@@ -33,7 +33,7 @@ actor UserServiceImpl: UserService {
     func updateUserProfile(name: String, surname: String) async throws -> UserDTO {
         do {
             return try await api.request(
-                UpdateUserProfile(
+                UpdateUserProfileEndpoint(
                     name: name,
                     surname: surname
                 )
@@ -45,8 +45,8 @@ actor UserServiceImpl: UserService {
 
     func uploadAvatar(data: Data) async throws {
         do {
-            let file = UploadAvatar.AvatarFile(data: data)
-            _ = try await api.request(UploadAvatar(avatar: file))
+            let file = UploadAvatarEndpoint.AvatarFile(data: data)
+            _ = try await api.request(UploadAvatarEndpoint(avatar: file))
         } catch {
             throw UserServiceError.wrap(error)
         }
@@ -54,7 +54,7 @@ actor UserServiceImpl: UserService {
 
     func getNotifications() async throws -> NotificationsSettingsDTO {
         do {
-            return try await api.request(GetNotifications())
+            return try await api.request(GetNotificationsEndpoint())
         } catch {
             throw UserServiceError.wrap(error)
         }
@@ -68,7 +68,7 @@ actor UserServiceImpl: UserService {
     ) async throws -> NotificationsSettingsDTO {
         do {
             return try await api.request(
-                UpdateNotifications(
+                UpdateNotificationsEndpoint(
                     deadlineReminder: deadlineReminder,
                     groupInvites: groupInvites,
                     newQuizzes: newQuizzes,

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GetHostingQuizInstances: Endpoint {
+struct GetHostingQuizInstancesEndpoint: Endpoint {
     typealias Response = GetHostingInstancesResponse
 
     var method: HTTPMethod { .get }

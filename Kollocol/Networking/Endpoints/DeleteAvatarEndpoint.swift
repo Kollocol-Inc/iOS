@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DeleteAvatar: Endpoint {
+struct DeleteAvatarEndpoint: Endpoint {
     typealias Response = EmptyResponse
 
     var method: HTTPMethod { .delete }

@@ -86,7 +86,7 @@ final class MyQuizzesViewController: UIViewController {
         field.attributedPlaceholder = NSAttributedString(
             string: "Поиск шаблонов",
             attributes: [
-                .foregroundColor: UIColor.textSecondary,
+                .foregroundColor: UIColor.textPrimary,
                 .font: UIFont.systemFont(ofSize: 15, weight: .medium)
             ]
         )

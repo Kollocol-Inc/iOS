@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct UpdateNotifications: Endpoint {
+struct UpdateNotificationsEndpoint: Endpoint {
     typealias Response = NotificationsSettingsDTO
 
     let deadlineReminder: String

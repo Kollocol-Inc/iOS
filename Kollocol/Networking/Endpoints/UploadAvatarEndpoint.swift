@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct UploadAvatar: Endpoint {
+struct UploadAvatarEndpoint: Endpoint {
     typealias Response = UserDTO
 
     let avatar: AvatarFile
@@ -22,7 +22,7 @@ struct UploadAvatar: Endpoint {
     }
 }
 
-extension UploadAvatar {
+extension UploadAvatarEndpoint {
     struct AvatarFile: Sendable {
         let data: Data
         let fileName: String
