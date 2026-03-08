@@ -12,7 +12,7 @@ struct QuizTemplate {
     let description: String?
     let id: String?
     let questions: [Question]?
-    let quizType: String?
+    let quizType: QuizType?
     let settings: QuizSettings?
     let title: String?
     let updatedAt: Date?

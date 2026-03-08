@@ -86,12 +86,12 @@ final class MyQuizzesViewController: UIViewController {
         field.attributedPlaceholder = NSAttributedString(
             string: "Поиск шаблонов",
             attributes: [
-                .foregroundColor: UIColor.textPrimary,
+                .foregroundColor: UIColor.textSecondary,
                 .font: UIFont.systemFont(ofSize: 15, weight: .medium)
             ]
         )
         field.backgroundColor = .dividerPrimary
-        field.textColor = .textPrimary
+        field.textColor = .textSecondary
         field.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         field.layer.cornerRadius = 18
         field.addPadding(side: 12)
@@ -167,6 +167,7 @@ final class MyQuizzesViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnBackgroundTap()
         configureUI()
 
         Task {

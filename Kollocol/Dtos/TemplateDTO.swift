@@ -12,7 +12,7 @@ struct TemplateDTO: Decodable {
     let description: String?
     let id: String?
     let questions: [QuestionDTO]?
-    let quizType: String?
+    let quizType: QuizType?
     let settings: QuizSettingsDTO?
     let title: String?
     let updatedAt: Date?
@@ -61,7 +61,7 @@ extension TemplateDTO {
 
         questions = try container.decodeIfPresent([QuestionDTO].self, forKey: .id)
 
-        quizType = try container.decodeIfPresent(String.self, forKey: .quizType)
+        quizType = try container.decodeEnumIfPresent(QuizType.self, forKey: .quizType)
         settings = try container.decodeIfPresent(QuizSettingsDTO.self, forKey: .id)
         title = try container.decodeIfPresent(String.self, forKey: .title)
 
