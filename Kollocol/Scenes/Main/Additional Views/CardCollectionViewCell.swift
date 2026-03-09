@@ -94,6 +94,16 @@ final class CardCollectionViewCell: UICollectionViewCell {
 
     private let dividerView = DividerView()
 
+    private let startQuizButton: UIButton = {
+        let button = UIButton()
+        button.setWidth(44)
+        button.setHeight(44)
+        button.backgroundColor = .accentPrimary
+        button.layer.cornerRadius = 18
+        button.setImage(UIImage(systemName: "play.fill")?.withTintColor(.textWhite, renderingMode: .alwaysOriginal), for: .normal)
+        return button
+    }()
+
     // total time
 
     private let totalTimeLabel: UILabel = {
@@ -186,6 +196,7 @@ final class CardCollectionViewCell: UICollectionViewCell {
 
     // MARK: - Properties
     var onQuizTypeTap: ((QuizType) -> Void)?
+    var onQuizStartTap: (() -> Void)?
 
     private var currentQuizType: QuizType?
 
@@ -210,16 +221,22 @@ final class CardCollectionViewCell: UICollectionViewCell {
 
     // MARK: - Methods
 
-    func configure(with item: QuizInstanceViewData?) {
+    func configure(with item: QuizInstanceViewData?, isTemplate: Bool = false) {
         quizNameLabel.text = item?.title
-        codeLabel.text = item?.accessCode
         currentQuizType = item?.quizType
+
+        if (isTemplate == false) { startQuizButton.removeFromSuperview() }
+
+        if let quizCode = item?.accessCode {
+            codeLabel.text = quizCode
+        } else {
+            codeLabel.removeFromSuperview()
+        }
 
         if let quizType = item?.quizType {
             quizTypeLabel.text = quizType.displayName
-            quizTypeStackView.isHidden = false
         } else {
-            quizTypeStackView.isHidden = true
+            quizTypeLabel.removeFromSuperview()
         }
 
         if let totalTime = item?.totalTime {
@@ -282,6 +299,11 @@ final class CardCollectionViewCell: UICollectionViewCell {
         codeLabel.pinTop(to: cardView.topAnchor, 12)
         codeLabel.pinLeft(to: cardView.leadingAnchor, 16)
 
+        cardView.addSubview(startQuizButton)
+        startQuizButton.pinTop(to: cardView.topAnchor, 10)
+        startQuizButton.pinLeft(to: cardView.leadingAnchor, 10)
+        startQuizButton.addTarget(self, action: #selector(handleStartQuizTap), for: .touchUpInside)
+
         cardView.addSubview(quizTypeStackView)
         quizTypeStackView.pinLeft(to: cardView.leadingAnchor, 16)
         quizTypeStackView.pinBottom(to: dividerView.topAnchor, 6)
@@ -314,5 +336,10 @@ final class CardCollectionViewCell: UICollectionViewCell {
     private func handleQuizTypeTap() {
         guard let quizType = currentQuizType else { return }
         onQuizTypeTap?(quizType)
+    }
+
+    @objc
+    private func handleStartQuizTap() {
+        onQuizStartTap?()
     }
 }
