@@ -35,12 +35,22 @@ final class CardsTableViewCell: UITableViewCell {
     // MARK: - Constants
     static let reuseIdentifier = "CardTableViewCell"
 
+    private enum UIConstants {
+        static let collectionHeight: CGFloat = 150
+        static let pageControlTopInset: CGFloat = 8
+        static let pageControlBottomInset: CGFloat = 8
+        static let collectionBottomInsetWithoutPageControl: CGFloat = 16
+    }
+
     // MARK: - Properties
     var onQuizTypeTap: ((QuizType) -> Void)?
     var onQuizStartTap: ((QuizInstanceViewData) -> Void)?
 
     private var items: [QuizInstanceViewData] = []
     private var isTemplate = false
+    private var collectionBottomConstraintWithoutPageControl: NSLayoutConstraint?
+    private var pageControlTopConstraint: NSLayoutConstraint?
+    private var pageControlBottomConstraint: NSLayoutConstraint?
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -116,21 +126,33 @@ final class CardsTableViewCell: UITableViewCell {
 
         collectionView.pinTop(to: contentView.topAnchor)
         collectionView.pinHorizontal(to: contentView)
-        collectionView.setHeight(150)
+        collectionView.setHeight(UIConstants.collectionHeight)
 
-        pageControl.pinTop(to: collectionView.bottomAnchor, 8)
+        pageControlTopConstraint = pageControl.pinTop(to: collectionView.bottomAnchor, UIConstants.pageControlTopInset)
         pageControl.pinCenterX(to: contentView.centerXAnchor)
-        pageControl.pinBottom(to: contentView.bottomAnchor, 8)
+        pageControlBottomConstraint = pageControl.pinBottom(to: contentView.bottomAnchor, UIConstants.pageControlBottomInset)
+
+        collectionBottomConstraintWithoutPageControl = collectionView.pinBottom(
+            to: contentView.bottomAnchor,
+            UIConstants.collectionBottomInsetWithoutPageControl
+        )
+        collectionBottomConstraintWithoutPageControl?.isActive = false
     }
 
     private func reloadContent() {
         let itemsCount = items.count
+        let hasMultipleItems = itemsCount > 1
 
         pageControl.numberOfPages = itemsCount
         pageControl.currentPage = 0
-        pageControl.isHidden = itemsCount <= 1
+        pageControl.isHidden = !hasMultipleItems
 
-        collectionView.isScrollEnabled = itemsCount > 1
+        collectionView.isScrollEnabled = hasMultipleItems
+
+        pageControlTopConstraint?.isActive = hasMultipleItems
+        pageControlBottomConstraint?.isActive = hasMultipleItems
+        collectionBottomConstraintWithoutPageControl?.isActive = !hasMultipleItems
+
         collectionView.reloadData()
         collectionView.layoutIfNeeded()
         collectionView.setContentOffset(.zero, animated: false)

@@ -53,18 +53,9 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
     }
 
     func presentQuizTypeInfo(_ quizType: QuizType) async {
-        let description: String
-
-        switch quizType {
-        case .sync:
-            description = "Все участники проходят квиз одновременно под контролем создателя"
-        case .async:
-            description = "Участники могут проходить квиз в любое время до дедлайна"
-        }
-
         await router.showQuizTypeInfoBottomSheet(
             title: quizType.displayName,
-            description: description
+            description: quizType.infoDescription
         )
     }
 

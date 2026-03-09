@@ -42,4 +42,11 @@ final class MyQuizzesRouter: MyQuizzesPresenter, ServiceErrorHandling {
     func presentStartQuizScreen(templateId: String?) async {
         await router.routeToStartQuizScreen(templateId: templateId)
     }
+
+    func presentQuizTypeInfo(_ quizType: QuizType) async {
+        await router.showQuizTypeInfoBottomSheet(
+            title: quizType.displayName,
+            description: quizType.infoDescription
+        )
+    }
 }

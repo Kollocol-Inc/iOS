@@ -230,6 +230,7 @@ protocol GroupsRouting: AnyObject {
 protocol MyQuizzesRouting: ErrorMessageDisplaying {
     func routeToCreateTemplateScreen()
     func routeToStartQuizScreen(templateId: String?)
+    func showQuizTypeInfoBottomSheet(title: String, description: String)
 }
 
 @MainActor

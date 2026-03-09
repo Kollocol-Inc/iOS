@@ -50,6 +50,10 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
         await presenter.presentStartQuizScreen(templateId: templateId)
     }
 
+    func handleQuizTypeTap(_ quizType: QuizType) async {
+        await presenter.presentQuizTypeInfo(quizType)
+    }
+
     func handleTemplateSearchQueryChanged(_ query: String) {
         templateSearchQuery = query
 

@@ -19,4 +19,13 @@ extension QuizType {
         case .async: return "Асинхронный"
         }
     }
+
+    var infoDescription: String {
+        switch self {
+        case .sync:
+            return "Все участники проходят квиз одновременно под контролем создателя"
+        case .async:
+            return "Участники могут проходить квиз в любое время до дедлайна"
+        }
+    }
 }

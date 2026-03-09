@@ -12,6 +12,7 @@ protocol MyQuizzesInteractor {
     func fetchTemplates() async
     func routeToCreateTemplateScreen() async
     func routeToStartQuizScreen(templateId: String?) async
+    func handleQuizTypeTap(_ quizType: QuizType) async
     func handleTemplateSearchQueryChanged(_ query: String)
 }
 
@@ -21,4 +22,5 @@ protocol MyQuizzesPresenter {
     func presentServiceError(_ error: QuizServiceError) async
     func presentCreateTemplateScreen() async
     func presentStartQuizScreen(templateId: String?) async
+    func presentQuizTypeInfo(_ quizType: QuizType) async
 }
