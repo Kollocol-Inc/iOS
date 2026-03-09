@@ -30,7 +30,7 @@ extension QuizInstance {
             accessCode: self.accessCode,
             deadline: self.deadline,
             id: self.id,
-            quizType: self.quizType?.displayName,
+            quizType: self.quizType,
             status: self.status,
             title: self.title,
             totalQuestions: self.totalTime,

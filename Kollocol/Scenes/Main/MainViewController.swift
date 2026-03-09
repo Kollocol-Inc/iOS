@@ -349,6 +349,11 @@ extension MainViewController: UITableViewDataSource {
             }
 
             cell.configure(with: items)
+            cell.onQuizTypeTap = { [weak self] quizType in
+                Task { [weak self] in
+                    await self?.interactor.handleQuizTypeTap(quizType)
+                }
+            }
 
             return cell
         

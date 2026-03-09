@@ -163,6 +163,13 @@ extension MainCoordinator: AlertPresenting {
     }
 }
 
+// MARK: - InfoBottomSheetPresenting
+extension MainCoordinator: InfoBottomSheetPresenting {
+    var bottomSheetHostViewController: UIViewController? {
+        topMostViewController()
+    }
+}
+
 // MARK: - AuthRouting
 extension MainCoordinator: MainRouting {
     func routeToProfileScreen() {
@@ -171,6 +178,10 @@ extension MainCoordinator: MainRouting {
 
     func showError(title: String, message: String) {
         showAlert(title: title, message: message)
+    }
+
+    func showQuizTypeInfoBottomSheet(title: String, description: String) {
+        showInfoBottomSheet(title: title, description: description)
     }
 }
 
@@ -203,6 +214,7 @@ extension MainCoordinator: ProfileRouting {
 @MainActor
 protocol MainRouting: ErrorMessageDisplaying {
     func routeToProfileScreen()
+    func showQuizTypeInfoBottomSheet(title: String, description: String)
 }
 
 @MainActor

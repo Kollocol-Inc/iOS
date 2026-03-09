@@ -58,4 +58,8 @@ final class MainLogic: MainInteractor {
     func joinQuiz(code: String) async {
 //        await presenter.presentJoinQuizError()
     }
+
+    func handleQuizTypeTap(_ quizType: QuizType) async {
+        await presenter.presentQuizTypeInfo(quizType)
+    }
 }

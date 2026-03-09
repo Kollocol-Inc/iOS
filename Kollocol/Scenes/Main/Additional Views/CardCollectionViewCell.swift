@@ -184,6 +184,11 @@ final class CardCollectionViewCell: UICollectionViewCell {
         return stack
     }()
 
+    // MARK: - Properties
+    var onQuizTypeTap: ((QuizType) -> Void)?
+
+    private var currentQuizType: QuizType?
+
     // MARK: - Lifecycle
 
     override init(frame: CGRect) {
@@ -198,6 +203,9 @@ final class CardCollectionViewCell: UICollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        onQuizTypeTap = nil
+        currentQuizType = nil
+        quizTypeStackView.isHidden = false
     }
 
     // MARK: - Methods
@@ -205,11 +213,13 @@ final class CardCollectionViewCell: UICollectionViewCell {
     func configure(with item: QuizInstanceViewData?) {
         quizNameLabel.text = item?.title
         codeLabel.text = item?.accessCode
+        currentQuizType = item?.quizType
 
         if let quizType = item?.quizType {
-            quizTypeLabel.text = quizType
+            quizTypeLabel.text = quizType.displayName
+            quizTypeStackView.isHidden = false
         } else {
-            quizTypeStackView.removeFromSuperview()
+            quizTypeStackView.isHidden = true
         }
 
         if let totalTime = item?.totalTime {
@@ -277,6 +287,10 @@ final class CardCollectionViewCell: UICollectionViewCell {
         quizTypeStackView.pinBottom(to: dividerView.topAnchor, 6)
         quizTypeStackView.addArrangedSubview(quizTypeLabel)
         quizTypeStackView.addArrangedSubview(quizTypeImageView)
+        quizTypeStackView.isUserInteractionEnabled = true
+
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleQuizTypeTap))
+        quizTypeStackView.addGestureRecognizer(tapGesture)
 
         totalTimeStackView.addArrangedSubview(totalTimeLabel)
         totalTimeStackView.addArrangedSubview(totalTimeImageView)
@@ -293,5 +307,12 @@ final class CardCollectionViewCell: UICollectionViewCell {
         quizInfoStackView.addArrangedSubview(totalTimeStackView)
         quizInfoStackView.addArrangedSubview(totalQuestionsStackView)
         quizInfoStackView.addArrangedSubview(deadlineStackView)
+    }
+
+    // MARK: - Actions
+    @objc
+    private func handleQuizTypeTap() {
+        guard let quizType = currentQuizType else { return }
+        onQuizTypeTap?(quizType)
     }
 }

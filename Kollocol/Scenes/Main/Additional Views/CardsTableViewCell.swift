@@ -36,6 +36,8 @@ final class CardsTableViewCell: UITableViewCell {
     }()
 
     // MARK: - Properties
+    var onQuizTypeTap: ((QuizType) -> Void)?
+
     private var items: [QuizInstanceViewData] = []
 
     // MARK: - Lifecycle
@@ -64,6 +66,7 @@ final class CardsTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
 
+        onQuizTypeTap = nil
         items = []
 
         pageControl.numberOfPages = 0
@@ -156,6 +159,9 @@ extension CardsTableViewCell: UICollectionViewDataSource {
 
         let item: QuizInstanceViewData? = items.indices.contains(indexPath.item) ? items[indexPath.item] : nil
         cell.configure(with: item)
+        cell.onQuizTypeTap = { [weak self] quizType in
+            self?.onQuizTypeTap?(quizType)
+        }
 
         return cell
     }

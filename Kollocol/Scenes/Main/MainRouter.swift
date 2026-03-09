@@ -52,6 +52,22 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
         await view?.resetCodeFields()
     }
 
+    func presentQuizTypeInfo(_ quizType: QuizType) async {
+        let description: String
+
+        switch quizType {
+        case .sync:
+            description = "Все участники проходят квиз одновременно под контролем создателя"
+        case .async:
+            description = "Участники могут проходить квиз в любое время до дедлайна"
+        }
+
+        await router.showQuizTypeInfoBottomSheet(
+            title: quizType.displayName,
+            description: description
+        )
+    }
+
     func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String? {
         guard let quizServiceError = error as? QuizServiceError else { return nil }
 
