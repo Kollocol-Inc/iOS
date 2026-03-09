@@ -33,4 +33,8 @@ final class MyQuizzesRouter: MyQuizzesPresenter, ServiceErrorHandling {
     func presentCreateTemplateScreen() async {
         await router.routeToCreateTemplateScreen()
     }
+
+    func presentStartQuizScreen(templateId: String?) async {
+        await router.routeToStartQuizScreen(templateId: templateId)
+    }
 }

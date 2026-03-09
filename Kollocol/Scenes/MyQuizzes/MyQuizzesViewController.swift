@@ -391,6 +391,11 @@ extension MyQuizzesViewController: UITableViewDataSource {
             }
 
             cell.configure(with: items)
+            cell.onQuizStartTap = { [weak self] item in
+                Task { [weak self] in
+                    await self?.interactor.routeToStartQuizScreen(templateId: item.id)
+                }
+            }
             return cell
 
         case .empty(let text):

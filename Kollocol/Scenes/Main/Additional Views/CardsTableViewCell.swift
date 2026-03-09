@@ -8,9 +8,6 @@
 import UIKit
 
 final class CardsTableViewCell: UITableViewCell {
-    // MARK: - Constants
-    static let reuseIdentifier = "CardTableViewCell"
-
     // MARK: - UI Components
     private let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -35,10 +32,15 @@ final class CardsTableViewCell: UITableViewCell {
         return control
     }()
 
+    // MARK: - Constants
+    static let reuseIdentifier = "CardTableViewCell"
+
     // MARK: - Properties
     var onQuizTypeTap: ((QuizType) -> Void)?
+    var onQuizStartTap: ((QuizInstanceViewData) -> Void)?
 
     private var items: [QuizInstanceViewData] = []
+    private var isTemplate = false
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -67,7 +69,9 @@ final class CardsTableViewCell: UITableViewCell {
         super.prepareForReuse()
 
         onQuizTypeTap = nil
+        onQuizStartTap = nil
         items = []
+        isTemplate = false
 
         pageControl.numberOfPages = 0
         pageControl.currentPage = 0
@@ -77,8 +81,9 @@ final class CardsTableViewCell: UITableViewCell {
     }
 
     // MARK: - Methods
-    func configure(with items: [QuizInstanceViewData]) {
+    func configure(with items: [QuizInstanceViewData], isTemplate: Bool = false) {
         self.items = items
+        self.isTemplate = isTemplate
         reloadContent()
     }
 
@@ -158,9 +163,13 @@ extension CardsTableViewCell: UICollectionViewDataSource {
         }
 
         let item: QuizInstanceViewData? = items.indices.contains(indexPath.item) ? items[indexPath.item] : nil
-        cell.configure(with: item)
+        cell.configure(with: item, isTemplate: isTemplate)
         cell.onQuizTypeTap = { [weak self] quizType in
             self?.onQuizTypeTap?(quizType)
+        }
+        cell.onQuizStartTap = { [weak self] in
+            guard let self, let item else { return }
+            self.onQuizStartTap?(item)
         }
 
         return cell

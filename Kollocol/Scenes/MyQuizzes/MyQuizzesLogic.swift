@@ -31,4 +31,8 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
     func routeToCreateTemplateScreen() async {
         await presenter.presentCreateTemplateScreen()
     }
+
+    func routeToStartQuizScreen(templateId: String?) async {
+        await presenter.presentStartQuizScreen(templateId: templateId)
+    }
 }

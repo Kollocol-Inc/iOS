@@ -195,6 +195,10 @@ extension MainCoordinator: MyQuizzesRouting {
     func routeToCreateTemplateScreen() {
         // TODO: route to create template screen
     }
+
+    func routeToStartQuizScreen(templateId: String?) {
+        // TODO: route to start quiz screen
+    }
 }
 
 // MARK: - ProfileRouting
@@ -225,6 +229,7 @@ protocol GroupsRouting: AnyObject {
 @MainActor
 protocol MyQuizzesRouting: ErrorMessageDisplaying {
     func routeToCreateTemplateScreen()
+    func routeToStartQuizScreen(templateId: String?)
 }
 
 @MainActor

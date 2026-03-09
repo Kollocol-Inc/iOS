@@ -1,5 +1,5 @@
 //
-//  CardCollectionViewCell.swift
+//  QuizCardTableViewCell.swift
 //  Kollocol
 //
 //  Created by Arsenii Potiakin on 09.03.2026.
@@ -7,15 +7,16 @@
 
 import UIKit
 
-final class CardCollectionViewCell: UICollectionViewCell {
+final class QuizCardTableViewCell: UITableViewCell {
     // MARK: - UI Components
     private let quizCardView = QuizCardView()
 
     // MARK: - Constants
-    static let reuseIdentifier = "CardCollectionViewCell"
+    static let reuseIdentifier = "QuizCardTableViewCell"
 
     private enum UIConstants {
         static let horizontalInset: CGFloat = 24
+        static let verticalInset: CGFloat = 0
     }
 
     // MARK: - Properties
@@ -23,8 +24,8 @@ final class CardCollectionViewCell: UICollectionViewCell {
     var onQuizStartTap: (() -> Void)?
 
     // MARK: - Lifecycle
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
         configureUI()
     }
 
@@ -40,8 +41,7 @@ final class CardCollectionViewCell: UICollectionViewCell {
     }
 
     // MARK: - Methods
-    func configure(with item: QuizInstanceViewData?, isTemplate: Bool = false) {
-        guard let item else { return }
+    func configure(with item: QuizInstanceViewData, isTemplate: Bool = false) {
         quizCardView.configure(with: item, isTemplate: isTemplate)
     }
 
@@ -53,19 +53,17 @@ final class CardCollectionViewCell: UICollectionViewCell {
     }
 
     private func configureBackground() {
+        selectionStyle = .none
         backgroundColor = .clear
         contentView.backgroundColor = .clear
-        clipsToBounds = false
-        layer.masksToBounds = false
-        contentView.clipsToBounds = false
-        contentView.layer.masksToBounds = false
     }
 
     private func configureConstraints() {
         contentView.addSubview(quizCardView)
-        quizCardView.pinVertical(to: contentView)
+        quizCardView.pinTop(to: contentView.topAnchor, UIConstants.verticalInset)
+        quizCardView.pinBottom(to: contentView.bottomAnchor, UIConstants.verticalInset)
         quizCardView.pinLeft(to: contentView.leadingAnchor, UIConstants.horizontalInset)
-        quizCardView.pinCenterX(to: contentView.centerXAnchor)
+        quizCardView.pinRight(to: contentView.trailingAnchor, UIConstants.horizontalInset)
     }
 
     private func configureActions() {

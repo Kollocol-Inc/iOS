@@ -46,7 +46,7 @@ actor MockQuizServiceImpl: QuizService {
                         type: .openEnded
                     )
                 ],
-                quizType: .sync,
+                quizType: .async,
                 settings: QuizSettings(
                     allowReview: true,
                     randomOrder: true,
@@ -140,7 +140,7 @@ actor MockQuizServiceImpl: QuizService {
                 groupId: "123",
                 hostUserId: "123",
                 id: "123",
-                quizType: .async,
+                quizType: .sync,
                 settings: QuizSettings(
                     allowReview: true,
                     randomOrder: true,
