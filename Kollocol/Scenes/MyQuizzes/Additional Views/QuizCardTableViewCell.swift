@@ -16,7 +16,7 @@ final class QuizCardTableViewCell: UITableViewCell {
 
     private enum UIConstants {
         static let horizontalInset: CGFloat = 24
-        static let verticalInset: CGFloat = 0
+        static let verticalInset: CGFloat = 8
     }
 
     // MARK: - Properties

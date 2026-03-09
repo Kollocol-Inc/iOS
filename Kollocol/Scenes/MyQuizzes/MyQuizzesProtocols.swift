@@ -9,12 +9,15 @@ import UIKit
 
 protocol MyQuizzesInteractor {
     func fetchHostingQuizzes() async
+    func fetchTemplates() async
     func routeToCreateTemplateScreen() async
     func routeToStartQuizScreen(templateId: String?) async
+    func handleTemplateSearchQueryChanged(_ query: String)
 }
 
 protocol MyQuizzesPresenter {
     func presentHostingQuizzes(_ hosting: [QuizInstance]) async
+    func presentTemplates(_ templates: [QuizTemplate], emptyStateText: String?) async
     func presentServiceError(_ error: QuizServiceError) async
     func presentCreateTemplateScreen() async
     func presentStartQuizScreen(templateId: String?) async

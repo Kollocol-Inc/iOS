@@ -26,6 +26,11 @@ final class MyQuizzesRouter: MyQuizzesPresenter, ServiceErrorHandling {
         await view?.displayHostingQuizzes(items)
     }
 
+    func presentTemplates(_ templates: [QuizTemplate], emptyStateText: String?) async {
+        let items = templates.map { $0.toViewData() }
+        await view?.displayTemplates(items, emptyStateText: emptyStateText)
+    }
+
     func presentServiceError(_ error: QuizServiceError) async {
         await presentServiceError(error, useCase: .generic)
     }

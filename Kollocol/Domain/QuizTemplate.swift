@@ -18,3 +18,25 @@ struct QuizTemplate {
     let updatedAt: Date?
     let userId: String?
 }
+
+// MARK: - QuizTemplate -> QuizInstanceViewData
+extension QuizTemplate {
+    func toViewData() -> QuizInstanceViewData {
+        let questionsCount = questions?.count
+        let totalQuestionsText: String? = {
+            guard let questionsCount else { return nil }
+            return "\(questionsCount)"
+        }()
+
+        return QuizInstanceViewData(
+            accessCode: nil,
+            deadline: nil,
+            id: id,
+            quizType: quizType,
+            status: nil,
+            title: title,
+            totalQuestions: totalQuestionsText,
+            totalTime: nil
+        )
+    }
+}

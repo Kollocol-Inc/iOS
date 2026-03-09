@@ -56,6 +56,45 @@ actor MockQuizServiceImpl: QuizService {
                 title: "Testik",
                 updatedAt: Date(),
                 userId: "123"
+            ),
+            QuizTemplate(
+                createdAt: Date(),
+                description: "описание",
+                id: "123",
+                questions: [
+                    Question(
+                        aiAnswer: "",
+                        correctAnswer: "123",
+                        id: "123",
+                        maxScore: 5,
+                        options: [],
+                        orderIndex: 0,
+                        text: "Question 1",
+                        timeLimitSec: 30,
+                        type: .openEnded
+                    ),
+                    Question(
+                        aiAnswer: "",
+                        correctAnswer: "123",
+                        id: "123",
+                        maxScore: 5,
+                        options: [],
+                        orderIndex: 12,
+                        text: "Question 1",
+                        timeLimitSec: 30,
+                        type: .openEnded
+                    )
+                ],
+                quizType: .async,
+                settings: QuizSettings(
+                    allowReview: true,
+                    randomOrder: true,
+                    showCorrectAnswer: true,
+                    timeLimitTotal: true
+                ),
+                title: "Hello",
+                updatedAt: Date(),
+                userId: "123"
             )
         ]
     }

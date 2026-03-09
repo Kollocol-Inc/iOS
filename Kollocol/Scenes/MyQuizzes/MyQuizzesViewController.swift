@@ -81,6 +81,12 @@ final class MyQuizzesViewController: UIViewController {
         return control
     }()
 
+    private lazy var templatesRefreshControl: UIRefreshControl = {
+        let control = UIRefreshControl()
+        control.addTarget(self, action: #selector(handleTemplatesPullToRefresh), for: .valueChanged)
+        return control
+    }()
+
     private let templatesSearchTextField: UITextField = {
         let field = UITextField()
         field.attributedPlaceholder = NSAttributedString(
@@ -94,7 +100,18 @@ final class MyQuizzesViewController: UIViewController {
         field.textColor = .textSecondary
         field.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         field.layer.cornerRadius = 18
-        field.addPadding(side: 12)
+        let iconConfiguration = UIImage.SymbolConfiguration(font: UIFont.systemFont(ofSize: 15, weight: .medium))
+        let iconImage = UIImage(systemName: "magnifyingglass", withConfiguration: iconConfiguration)?
+            .withTintColor(.textSecondary, renderingMode: .alwaysOriginal)
+        let iconImageView = UIImageView(image: iconImage)
+        iconImageView.frame = CGRect(x: 12, y: 14.5, width: 15, height: 15)
+
+        let leftAccessoryView = UIView(frame: CGRect(x: 0, y: 0, width: 35, height: 44))
+        leftAccessoryView.addSubview(iconImageView)
+        field.leftView = leftAccessoryView
+        field.leftViewMode = .always
+
+        field.addPadding(right: 12)
         field.setHeight(44)
         return field
     }()
@@ -153,6 +170,8 @@ final class MyQuizzesViewController: UIViewController {
     private var interactor: MyQuizzesInteractor
     private var mode: MyQuizzesModels.Mode = .myQuizzes
     private var rows: [MyQuizzesModels.Row] = []
+    private var templateItems: [QuizInstanceViewData] = []
+    private var templatesEmptyStateText: String?
 
     // MARK: - Lifecycle
     init(interactor: MyQuizzesInteractor) {
@@ -173,6 +192,10 @@ final class MyQuizzesViewController: UIViewController {
         Task {
             await interactor.fetchHostingQuizzes()
         }
+
+        Task {
+            await interactor.fetchTemplates()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -191,6 +214,14 @@ final class MyQuizzesViewController: UIViewController {
         rows = buildRows(from: items)
         myQuizzesTableView.reloadData()
         myQuizzesRefreshControl.endRefreshing()
+    }
+
+    @MainActor
+    func displayTemplates(_ items: [QuizInstanceViewData], emptyStateText: String?) {
+        templateItems = items
+        templatesEmptyStateText = emptyStateText
+        templatesTableView.reloadData()
+        templatesRefreshControl.endRefreshing()
     }
 
     // MARK: - Private Methods
@@ -265,6 +296,10 @@ final class MyQuizzesViewController: UIViewController {
         myQuizzesTableView.dataSource = self
         myQuizzesTableView.delegate = self
 
+        templatesTableView.register(QuizCardTableViewCell.self, forCellReuseIdentifier: QuizCardTableViewCell.reuseIdentifier)
+        templatesTableView.register(EmptyStateTableViewCell.self, forCellReuseIdentifier: EmptyStateTableViewCell.reuseIdentifier)
+        templatesTableView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
+        templatesTableView.refreshControl = templatesRefreshControl
         templatesTableView.dataSource = self
         templatesTableView.delegate = self
     }
@@ -272,6 +307,7 @@ final class MyQuizzesViewController: UIViewController {
     private func configureActions() {
         modeSegmentedControl.addTarget(self, action: #selector(handlePickerValueChanged), for: .valueChanged)
         createTemplateButton.addTarget(self, action: #selector(handleCreateTemplateButtonTapped), for: .touchUpInside)
+        templatesSearchTextField.addTarget(self, action: #selector(handleTemplateSearchTextChanged), for: .editingChanged)
     }
 
     private func buildRows(from items: [QuizInstanceViewData]) -> [MyQuizzesModels.Row] {
@@ -359,22 +395,68 @@ final class MyQuizzesViewController: UIViewController {
             await interactor.routeToCreateTemplateScreen()
         }
     }
+
+    @objc
+    private func handleTemplateSearchTextChanged() {
+        interactor.handleTemplateSearchQueryChanged(templatesSearchTextField.text ?? "")
+    }
+
+    @objc
+    private func handleTemplatesPullToRefresh() {
+        templatesSearchTextField.text = nil
+        interactor.handleTemplateSearchQueryChanged("")
+
+        Task {
+            await interactor.fetchTemplates()
+        }
+    }
 }
 
 // MARK: - UITableViewDataSource
 extension MyQuizzesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if tableView === templatesTableView {
-            return 0
+            if templateItems.isEmpty, templatesEmptyStateText != nil {
+                return 1
+            }
+
+            return templateItems.count
         }
 
         return rows.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard tableView === myQuizzesTableView else {
-            return UITableViewCell()
+        if tableView === templatesTableView {
+            if templateItems.isEmpty, let emptyText = templatesEmptyStateText {
+                guard let cell = tableView.dequeueReusableCell(withIdentifier: EmptyStateTableViewCell.reuseIdentifier, for: indexPath) as? EmptyStateTableViewCell else {
+                    return UITableViewCell()
+                }
+
+                cell.configure(text: emptyText)
+                return cell
+            }
+
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: QuizCardTableViewCell.reuseIdentifier, for: indexPath) as? QuizCardTableViewCell else {
+                return UITableViewCell()
+            }
+
+            guard templateItems.indices.contains(indexPath.row) else {
+                return UITableViewCell()
+            }
+
+            let item = templateItems[indexPath.row]
+            cell.configure(with: item, isTemplate: true)
+            cell.onQuizStartTap = { [weak self] in
+                Task { [weak self] in
+                    await self?.interactor.routeToStartQuizScreen(templateId: item.id)
+                }
+            }
+
+            return cell
         }
+
+        guard tableView === myQuizzesTableView else { return UITableViewCell() }
 
         switch rows[indexPath.row] {
         case .header(let title):
@@ -419,6 +501,10 @@ extension MyQuizzesViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension MyQuizzesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if tableView === templatesTableView {
+            return templateItems.isEmpty ? UITableView.automaticDimension : 150
+        }
+
         guard tableView === myQuizzesTableView else { return 0 }
 
         switch rows[indexPath.row] {
@@ -430,6 +516,10 @@ extension MyQuizzesViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        if tableView === templatesTableView {
+            return templateItems.isEmpty ? 34 : 150
+        }
+
         guard tableView === myQuizzesTableView else { return 0 }
 
         switch rows[indexPath.row] {
