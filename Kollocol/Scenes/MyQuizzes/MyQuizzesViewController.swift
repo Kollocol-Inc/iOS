@@ -306,8 +306,32 @@ final class MyQuizzesViewController: UIViewController {
 
     private func configureActions() {
         modeSegmentedControl.addTarget(self, action: #selector(handlePickerValueChanged), for: .valueChanged)
-        createTemplateButton.addTarget(self, action: #selector(handleCreateTemplateButtonTapped), for: .touchUpInside)
+        configureCreateTemplateMenu()
         templatesSearchTextField.addTarget(self, action: #selector(handleTemplateSearchTextChanged), for: .editingChanged)
+    }
+
+    private func configureCreateTemplateMenu() {
+        let createFromScratchAction = UIAction(
+            title: "С нуля",
+            image: UIImage(systemName: "pencil.and.ruler.fill")
+        ) { [weak self] _ in
+            self?.handleCreateTemplateFromScratchTapped()
+        }
+
+        let createWithAIAction = UIAction(
+            title: "При помощи ИИ",
+            image: UIImage(systemName: "wand.and.sparkles")
+        ) { _ in
+        }
+
+        createTemplateButton.menu = UIMenu(
+            options: .displayInline,
+            children: [
+                createFromScratchAction,
+                createWithAIAction
+            ]
+        )
+        createTemplateButton.showsMenuAsPrimaryAction = true
     }
 
     private func buildRows(from items: [QuizInstanceViewData]) -> [MyQuizzesModels.Row] {
@@ -389,8 +413,7 @@ final class MyQuizzesViewController: UIViewController {
         }
     }
 
-    @objc
-    private func handleCreateTemplateButtonTapped() {
+    private func handleCreateTemplateFromScratchTapped() {
         Task {
             await interactor.routeToCreateTemplateScreen()
         }

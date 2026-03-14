@@ -1,0 +1,23 @@
+//
+//  TemplateCreatingModels.swift
+//  Kollocol
+//
+//  Created by Arsenii Potiakin on 14.03.2026.
+//
+
+import Foundation
+
+enum TemplateCreatingModels {
+    enum Row {
+        case header(String)
+        case nameInput
+        case settings
+        case divider
+    }
+
+    struct FormData {
+        let title: String?
+        let quizType: QuizType
+        let isRandomOrderEnabled: Bool
+    }
+}

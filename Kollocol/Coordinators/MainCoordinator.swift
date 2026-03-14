@@ -193,7 +193,13 @@ extension MainCoordinator: GroupsRouting {
 // MARK: - MyQuizzesRouting
 extension MainCoordinator: MyQuizzesRouting {
     func routeToCreateTemplateScreen() {
-        // TODO: route to create template screen
+        guard let myQuizzesNavController else { return }
+
+        let viewController = TemplateCreatingAssembly.build(
+            router: self,
+            quizService: services.quizService
+        )
+        myQuizzesNavController.pushViewController(viewController, animated: true)
     }
 
     func routeToStartQuizScreen(templateId: String?) {
@@ -215,6 +221,13 @@ extension MainCoordinator: ProfileRouting {
     }
 }
 
+// MARK: - TemplateCreatingRouting
+extension MainCoordinator: TemplateCreatingRouting {
+    func dismissTemplateCreatingScreen() {
+        myQuizzesNavController?.popViewController(animated: true)
+    }
+}
+
 @MainActor
 protocol MainRouting: ErrorMessageDisplaying {
     func routeToProfileScreen()
@@ -230,6 +243,12 @@ protocol GroupsRouting: AnyObject {
 protocol MyQuizzesRouting: ErrorMessageDisplaying {
     func routeToCreateTemplateScreen()
     func routeToStartQuizScreen(templateId: String?)
+    func showQuizTypeInfoBottomSheet(title: String, description: String)
+}
+
+@MainActor
+protocol TemplateCreatingRouting: ErrorMessageDisplaying {
+    func dismissTemplateCreatingScreen()
     func showQuizTypeInfoBottomSheet(title: String, description: String)
 }
 

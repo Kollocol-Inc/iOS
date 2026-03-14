@@ -1,0 +1,329 @@
+//
+//  TemplateCreatingViewController.swift
+//  Kollocol
+//
+//  Created by Arsenii Potiakin on 14.03.2026.
+//
+
+import UIKit
+
+final class TemplateCreatingViewController: UIViewController {
+    // MARK: - UI Components
+    private let tableBackgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .backgroundSecondary
+        view.layer.cornerRadius = 28
+        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        view.clipsToBounds = false
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowRadius = 20
+        view.layer.shadowOpacity = 0.2
+        return view
+    }()
+
+    private let tableView: UITableView = {
+        let table = UITableView()
+        table.backgroundColor = .clear
+        table.separatorStyle = .none
+        table.allowsSelection = false
+        table.keyboardDismissMode = .onDrag
+        table.sectionHeaderTopPadding = 0
+        table.layer.cornerRadius = 28
+        table.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        table.clipsToBounds = true
+        return table
+    }()
+
+    // MARK: - Constants
+    private enum UIConstants {
+        static let title = "Создание шаблона"
+    }
+
+    // MARK: - Properties
+    private var interactor: TemplateCreatingInteractor
+    private var rows: [TemplateCreatingModels.Row] = [
+        .header("Название"),
+        .nameInput,
+        .header("Параметры"),
+        .settings,
+        .divider
+    ]
+
+    private var titleText: String?
+    private var selectedQuizType: QuizType = .async
+    private var isRandomOrderEnabled = false
+    private var isLoading = false
+
+    private weak var nameInputCell: TemplateNameInputTableViewCell?
+    private weak var settingsCell: TemplateSettingsTableViewCell?
+    private var createButtonItem: UIBarButtonItem?
+    private var previousNavigationBarTintColor: UIColor?
+    private var previousBackIndicatorImage: UIImage?
+    private var previousBackIndicatorTransitionMaskImage: UIImage?
+
+    // MARK: - Lifecycle
+    init(interactor: TemplateCreatingInteractor) {
+        self.interactor = interactor
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        enableKeyboardDismissOnBackgroundTap()
+        configureUI()
+        configureNavigationBar()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        applyBackButtonAppearance()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        restoreBackButtonAppearance()
+    }
+
+    // MARK: - Methods
+    @MainActor
+    func displayCreateTemplateLoading(_ isLoading: Bool) {
+        self.isLoading = isLoading
+        createButtonItem?.isEnabled = !isLoading
+
+        if isLoading {
+            nameInputCell?.startAnimating()
+        } else {
+            nameInputCell?.stopAnimating()
+        }
+
+        if let nameInputCell {
+            nameInputCell.configure(title: titleText, isLoading: isLoading)
+        }
+
+        if let settingsCell {
+            settingsCell.configure(
+                quizType: selectedQuizType,
+                isRandomOrderEnabled: isRandomOrderEnabled,
+                isLoading: isLoading
+            )
+        }
+    }
+
+    // MARK: - Private Methods
+    private func configureUI() {
+        view.setPrimaryBackground()
+        configureConstraints()
+        configureTableView()
+    }
+
+    private func configureConstraints() {
+        view.addSubview(tableBackgroundView)
+        tableBackgroundView.pinLeft(to: view.leadingAnchor)
+        tableBackgroundView.pinRight(to: view.trailingAnchor)
+        tableBackgroundView.pinTop(to: view.safeAreaLayoutGuide.topAnchor, 8)
+        tableBackgroundView.pinBottom(to: view.bottomAnchor)
+
+        view.addSubview(tableView)
+        tableView.pin(to: tableBackgroundView)
+    }
+
+    private func configureTableView() {
+        tableView.register(HeaderTableViewCell.self, forCellReuseIdentifier: HeaderTableViewCell.reuseIdentifier)
+        tableView.register(TemplateNameInputTableViewCell.self, forCellReuseIdentifier: TemplateNameInputTableViewCell.reuseIdentifier)
+        tableView.register(TemplateSettingsTableViewCell.self, forCellReuseIdentifier: TemplateSettingsTableViewCell.reuseIdentifier)
+        tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
+        tableView.dataSource = self
+        tableView.delegate = self
+    }
+
+    private func configureNavigationBar() {
+        let titleLabel = UILabel()
+        titleLabel.text = UIConstants.title
+        titleLabel.textColor = .textSecondary
+        titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
+        navigationItem.titleView = titleLabel
+
+        let createAction = UIAction { [weak self] _ in
+            self?.handleCreateButtonTap()
+        }
+        let checkmarkConfiguration = UIImage.SymbolConfiguration(
+            font: .systemFont(ofSize: 17, weight: .semibold)
+        )
+        let barButton = UIBarButtonItem(
+            image: UIImage(systemName: "checkmark", withConfiguration: checkmarkConfiguration)?
+                .withTintColor(.backgroundGreen, renderingMode: .alwaysOriginal),
+            primaryAction: createAction
+        )
+
+        createButtonItem = barButton
+        navigationItem.rightBarButtonItem = barButton
+    }
+
+    private func applyBackButtonAppearance() {
+        guard let navigationBar = navigationController?.navigationBar else { return }
+
+        if previousNavigationBarTintColor == nil {
+            previousNavigationBarTintColor = navigationBar.tintColor
+        }
+        if previousBackIndicatorImage == nil {
+            previousBackIndicatorImage = navigationBar.backIndicatorImage
+        }
+        if previousBackIndicatorTransitionMaskImage == nil {
+            previousBackIndicatorTransitionMaskImage = navigationBar.backIndicatorTransitionMaskImage
+        }
+
+        navigationBar.tintColor = .textSecondary
+
+        let backConfiguration = UIImage.SymbolConfiguration(
+            font: .systemFont(ofSize: 17, weight: .semibold)
+        )
+        let backImage = UIImage(systemName: "chevron.backward", withConfiguration: backConfiguration)?
+            .withTintColor(.textSecondary, renderingMode: .alwaysOriginal)
+
+        if let backImage {
+            navigationBar.backIndicatorImage = backImage
+            navigationBar.backIndicatorTransitionMaskImage = backImage
+        }
+    }
+
+    private func restoreBackButtonAppearance() {
+        guard let navigationBar = navigationController?.navigationBar else { return }
+
+        if let previousNavigationBarTintColor {
+            navigationBar.tintColor = previousNavigationBarTintColor
+        }
+        navigationBar.backIndicatorImage = previousBackIndicatorImage
+        navigationBar.backIndicatorTransitionMaskImage = previousBackIndicatorTransitionMaskImage
+
+        previousNavigationBarTintColor = nil
+        previousBackIndicatorImage = nil
+        previousBackIndicatorTransitionMaskImage = nil
+    }
+
+    private func handleCreateButtonTap() {
+        titleText = nameInputCell?.currentText ?? titleText
+        selectedQuizType = settingsCell?.selectedQuizType ?? selectedQuizType
+        isRandomOrderEnabled = settingsCell?.isRandomOrderEnabled ?? isRandomOrderEnabled
+
+        let formData = TemplateCreatingModels.FormData(
+            title: titleText,
+            quizType: selectedQuizType,
+            isRandomOrderEnabled: isRandomOrderEnabled
+        )
+
+        Task {
+            await interactor.createTemplate(formData: formData)
+        }
+    }
+}
+
+// MARK: - UITableViewDataSource
+extension TemplateCreatingViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        rows.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let row = rows[indexPath.row]
+
+        switch row {
+        case .header(let title):
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: HeaderTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? HeaderTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(title: title)
+            return cell
+
+        case .nameInput:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: TemplateNameInputTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? TemplateNameInputTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(title: titleText, isLoading: isLoading)
+            cell.onTextChanged = { [weak self] newText in
+                self?.titleText = newText
+            }
+            nameInputCell = cell
+            return cell
+
+        case .settings:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: TemplateSettingsTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? TemplateSettingsTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(
+                quizType: selectedQuizType,
+                isRandomOrderEnabled: isRandomOrderEnabled,
+                isLoading: isLoading
+            )
+            cell.onQuizTypeChanged = { [weak self] newValue in
+                self?.selectedQuizType = newValue
+            }
+            cell.onRandomOrderChanged = { [weak self] newValue in
+                self?.isRandomOrderEnabled = newValue
+            }
+            cell.onQuizTypeInfoTap = { [weak self] selectedType in
+                guard let self else { return }
+                Task {
+                    await self.interactor.handleQuizTypeInfoTap(selectedType)
+                }
+            }
+            settingsCell = cell
+            return cell
+
+        case .divider:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: DividerTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? DividerTableViewCell else {
+                return UITableViewCell()
+            }
+
+            return cell
+        }
+    }
+}
+
+// MARK: - UITableViewDelegate
+extension TemplateCreatingViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        let row = rows[indexPath.row]
+
+        switch row {
+        case .header:
+            return 46
+        case .nameInput:
+            return UITableView.automaticDimension
+        case .settings:
+            return UITableView.automaticDimension
+        case .divider:
+            return 1
+        }
+    }
+
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        let row = rows[indexPath.row]
+
+        switch row {
+        case .settings:
+            return 104
+        default:
+            return 44
+        }
+    }
+}
