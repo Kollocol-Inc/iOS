@@ -47,6 +47,15 @@ actor QuizServiceImpl: QuizService {
             throw QuizServiceError.wrap(error)
         }
     }
+
+    func createTemplate(_ request: CreateTemplateRequest) async throws {
+        do {
+            let dto = request.toDto()
+            _ = try await api.request(CreateTemplateEndpoint(request: dto))
+        } catch {
+            throw QuizServiceError.wrap(error)
+        }
+    }
 }
 
 // MARK: - UserServiceError
@@ -54,6 +63,7 @@ protocol QuizService: Actor {
     func getParticipatingQuizzes() async throws -> [ParticipatingInstance]
     func getHostingQuizzes() async throws -> [QuizInstance]
     func getTemplates() async throws -> [QuizTemplate]
+    func createTemplate(_ request: CreateTemplateRequest) async throws
 }
 
 // MARK: - UserServiceError

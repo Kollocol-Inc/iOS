@@ -194,4 +194,7 @@ actor MockQuizServiceImpl: QuizService {
             )
         ]
     }
+
+    func createTemplate(_ request: CreateTemplateRequest) async throws {
+    }
 }

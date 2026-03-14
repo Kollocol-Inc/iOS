@@ -121,6 +121,41 @@
 - Для авторизации используется interceptor (`AuthInterceptor`) + `SessionManager`.
 - DTO маппятся в Domain-модели в слое DTO/Domain (`toDomain()`), затем в ViewData (`toViewData()`) при необходимости.
 
+## Правила для request-моделей (Domain -> DTO -> Endpoint)
+Цель: не тащить сетевые детали в interactor/domain и не раздувать сигнатуры сервисов множеством параметров.
+
+- Для сложных запросов создавать отдельную **domain request-модель** в `Domain/*`:
+  - пример: `CreateTemplateRequest`
+  - без `Encodable/Decodable`, без `CodingKeys`, без snake_case.
+- Сетевую модель запроса создавать в `Dtos/Request/*`:
+  - пример: `CreateTemplateRequestDTO: Encodable`
+  - все ключи API (`quiz_type`, `correct_answers` и т.д.) описываются только здесь.
+- Конвертацию `Domain -> DTO` делать через extension рядом с DTO:
+  - формат: `extension <DomainRequest> { func toDto() -> <RequestDTO> }`
+  - допускается маппинг вложенных доменных сущностей через их `toDto()`.
+- `Interactor`:
+  - собирает domain request-модель;
+  - передает ее в сервис;
+  - не создает `Endpoint`, не работает с `RequestDTO`, не зависит от `Encodable`.
+- `Service`:
+  - принимает domain request в публичном методе;
+  - внутри маппит в `RequestDTO`;
+  - вызывает endpoint.
+- `Endpoint`:
+  - принимает готовый `RequestDTO`;
+  - отдает его в `body` через `AnyEncodable`;
+  - внутренний `Body`-тип не обязателен, если уже есть отдельный `RequestDTO`.
+- Именование:
+  - Domain: `<Action><Entity>Request`
+  - DTO: `<Action><Entity>RequestDTO`
+  - Service method: глагол + сущность (`createTemplate(_ request: CreateTemplateRequest)`).
+
+### Анти-паттерны для request-цепочки
+- Не добавлять `Encodable` в domain request-модель.
+- Не передавать `RequestDTO` из interactor в service.
+- Не создавать endpoint в interactor.
+- Не прокидывать в service много разрозненных параметров вместо одной request-модели, если это сценарно один запрос.
+
 ## Стиль кода и соглашения проекта
 - `final class` по умолчанию, где нет необходимости в наследовании.
 - `@available(*, unavailable)` для `init(coder:)` в кодовых контроллерах/ячейках.
