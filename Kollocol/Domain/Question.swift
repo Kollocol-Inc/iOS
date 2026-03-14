@@ -9,7 +9,7 @@ import Foundation
 
 struct Question {
     let aiAnswer: String?
-    let correctAnswer: String?
+    let correctAnswers: [String]?
     let id: String?
     let maxScore: Int?
     let options: [String]?
@@ -17,4 +17,20 @@ struct Question {
     let text: String?
     let timeLimitSec: Int?
     let type: QuestionType?
+}
+
+// MARK: - Question -> QuestionInputDTO
+extension Question {
+    func toQuestionInputDto() -> QuestionInputDto {
+        QuestionInputDto(
+            correctAnswers: self.correctAnswers,
+            id: self.id,
+            maxScore: self.maxScore,
+            options: self.options,
+            orderIndex: self.orderIndex,
+            text: self.text,
+            timeLimitSec: self.timeLimitSec,
+            type: self.type
+        )
+    }
 }
