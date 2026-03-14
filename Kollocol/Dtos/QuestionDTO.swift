@@ -9,7 +9,7 @@ import Foundation
 
 struct QuestionDTO: Decodable {
     let aiAnswer: String?
-    let correctAnswer: String?
+    let correctAnswers: [String]?
     let id: String?
     let maxScore: Int?
     let options: [String]?
@@ -21,6 +21,7 @@ struct QuestionDTO: Decodable {
     private enum CodingKeys: String, CodingKey {
         case aiAnswer = "ai_answer"
         case correctAnswer = "correct_answer"
+        case correctAnswers = "correct_answers"
         case id
         case maxScore = "max_score"
         case options
@@ -36,7 +37,7 @@ extension QuestionDTO {
     func toDomain() -> Question {
         return Question(
             aiAnswer: self.aiAnswer,
-            correctAnswer: self.correctAnswer,
+            correctAnswers: self.correctAnswers,
             id: self.id,
             maxScore: self.maxScore,
             options: self.options,
@@ -54,7 +55,15 @@ extension QuestionDTO {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         aiAnswer = try container.decodeIfPresent(String.self, forKey: .aiAnswer)
-        correctAnswer = try container.decodeIfPresent(String.self, forKey: .correctAnswer)
+
+        if let answers = try container.decodeIfPresent([String].self, forKey: .correctAnswers) {
+            correctAnswers = answers
+        } else if let answer = try container.decodeIfPresent(String.self, forKey: .correctAnswer) {
+            correctAnswers = [answer]
+        } else {
+            correctAnswers = nil
+        }
+
         id = try container.decodeIfPresent(String.self, forKey: .id)
         maxScore = try container.decodeIfPresent(Int.self, forKey: .maxScore)
         options = try container.decodeIfPresent([String].self, forKey: .options)

@@ -13,3 +13,15 @@ struct QuizSettings {
     let showCorrectAnswer:  Bool?
     let timeLimitTotal:     Bool?
 }
+
+// MARK: - QuizSettings -> QuizSettingsDTO
+extension QuizSettings {
+    func toDto() -> QuizSettingsDTO {
+        return QuizSettingsDTO(
+            allowReview: self.allowReview,
+            randomOrder: self.randomOrder,
+            showCorrectAnswer: self.showCorrectAnswer,
+            timeLimitTotal: self.timeLimitTotal
+        )
+    }
+}

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct QuizSettingsDTO: Decodable {
+struct QuizSettingsDTO: Codable {
     let allowReview:        Bool?
     let randomOrder:        Bool?
     let showCorrectAnswer:  Bool?

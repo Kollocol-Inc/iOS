@@ -21,7 +21,7 @@ struct Question {
 
 // MARK: - Question -> QuestionInputDTO
 extension Question {
-    func toQuestionInputDto() -> QuestionInputDto {
+    func toDto() -> QuestionInputDto {
         QuestionInputDto(
             correctAnswers: self.correctAnswers,
             id: self.id,
