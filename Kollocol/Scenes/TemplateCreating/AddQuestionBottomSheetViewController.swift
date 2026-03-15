@@ -721,10 +721,10 @@ private final class AddQuestionTypePickerTableViewCell: UITableViewCell {
         contentView.backgroundColor = .clear
 
         contentView.addSubview(segmentedControl)
-        segmentedControl.pinTop(to: contentView.topAnchor, 8)
-        segmentedControl.pinBottom(to: contentView.bottomAnchor, 8)
+        segmentedControl.pinCenterY(to: contentView)
         segmentedControl.pinLeft(to: contentView.safeAreaLayoutGuide.leadingAnchor, 24)
         segmentedControl.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
+        segmentedControl.setHeight(36)
 
         segmentedControl.addTarget(self, action: #selector(handleValueChanged), for: .valueChanged)
     }
