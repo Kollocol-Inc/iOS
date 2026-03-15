@@ -284,7 +284,7 @@ final class VerifyCodeViewController: UIViewController {
             field.layer.borderColor = UIColor.accentPrimary.cgColor
         case .error:
             field.layer.borderWidth = UIConstants.activeBorderWidth
-            field.layer.borderColor = UIColor.backgroundRed.cgColor
+            field.layer.borderColor = UIColor.backgroundRedSecondary.cgColor
         }
     }
     

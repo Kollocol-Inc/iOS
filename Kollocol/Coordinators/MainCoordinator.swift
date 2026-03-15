@@ -198,7 +198,7 @@ extension MainCoordinator: MyQuizzesRouting {
         let previewQuestions: [Question] = [
             Question(
                 aiAnswer: nil,
-                correctAnswers: ["Swift"],
+                correctAnswer: .openText("Это очень-очень длинный вариант ответа для открытого вопроса, который должен проверить обрезку или перенос в карточке вопроса, чтобы визуально убедиться, что UI ведет себя корректно даже при длинных строках."),
                 id: "preview-question-1",
                 maxScore: 5,
                 options: nil,
@@ -209,14 +209,47 @@ extension MainCoordinator: MyQuizzesRouting {
             ),
             Question(
                 aiAnswer: nil,
-                correctAnswers: ["UIKit"],
+                correctAnswer: nil,
                 id: "preview-question-2",
-                maxScore: 3,
-                options: ["UIKit", "CoreData", "CloudKit"],
+                maxScore: 2,
+                options: nil,
                 orderIndex: 1,
-                text: "Какой фреймворк отвечает за UI?",
+                text: "Назови любую особенность async/await в Swift",
+                timeLimitSec: 45,
+                type: .openEnded
+            ),
+            Question(
+                aiAnswer: nil,
+                correctAnswer: .singleChoice(2),
+                id: "preview-question-3",
+                maxScore: 3,
+                options: ["CoreData", "CloudKit", "UIKit", "MapKit"],
+                orderIndex: 2,
+                text: "Какой фреймворк отвечает за построение интерфейса?",
                 timeLimitSec: 90,
                 type: .singleChoise
+            ),
+            Question(
+                aiAnswer: nil,
+                correctAnswer: .multipleChoice([1, 4, 8]),
+                id: "preview-question-4",
+                maxScore: 10,
+                options: [
+                    "Option 1",
+                    "Option 2",
+                    "Option 3",
+                    "Option 4",
+                    "Option 5",
+                    "Option 6",
+                    "Option 7",
+                    "Option 8",
+                    "Option 9",
+                    "Option 10"
+                ],
+                orderIndex: 3,
+                text: "Выбери 3 правильных варианта из 10",
+                timeLimitSec: 150,
+                type: .multiChoice
             )
         ]
 

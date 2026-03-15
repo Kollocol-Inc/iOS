@@ -9,7 +9,7 @@ import Foundation
 
 struct QuestionDTO: Decodable {
     let aiAnswer: String?
-    let correctAnswers: [String]?
+    let correctAnswer: QuestionCorrectAnswer?
     let id: String?
     let maxScore: Int?
     let options: [String]?
@@ -37,7 +37,7 @@ extension QuestionDTO {
     func toDomain() -> Question {
         return Question(
             aiAnswer: self.aiAnswer,
-            correctAnswers: self.correctAnswers,
+            correctAnswer: self.correctAnswer,
             id: self.id,
             maxScore: self.maxScore,
             options: self.options,
@@ -56,12 +56,24 @@ extension QuestionDTO {
 
         aiAnswer = try container.decodeIfPresent(String.self, forKey: .aiAnswer)
 
-        if let answers = try container.decodeIfPresent([String].self, forKey: .correctAnswers) {
-            correctAnswers = answers
-        } else if let answer = try container.decodeIfPresent(String.self, forKey: .correctAnswer) {
-            correctAnswers = [answer]
+        if let answerIndexes = try container.decodeIfPresent([Int].self, forKey: .correctAnswer) {
+            correctAnswer = .multipleChoice(answerIndexes)
+        } else if let answerIndex = try container.decodeIfPresent(Int.self, forKey: .correctAnswer) {
+            correctAnswer = .singleChoice(answerIndex)
+        } else if let answerText = try container.decodeIfPresent(String.self, forKey: .correctAnswer) {
+            correctAnswer = .openText(answerText)
+        } else if let legacyAnswers = try container.decodeIfPresent([String].self, forKey: .correctAnswers) {
+            if legacyAnswers.count == 1, let index = Int(legacyAnswers[0]) {
+                correctAnswer = .singleChoice(index)
+            } else if legacyAnswers.allSatisfy({ Int($0) != nil }) {
+                correctAnswer = .multipleChoice(legacyAnswers.compactMap(Int.init))
+            } else if let first = legacyAnswers.first {
+                correctAnswer = .openText(first)
+            } else {
+                correctAnswer = nil
+            }
         } else {
-            correctAnswers = nil
+            correctAnswer = nil
         }
 
         id = try container.decodeIfPresent(String.self, forKey: .id)

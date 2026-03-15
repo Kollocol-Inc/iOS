@@ -140,7 +140,7 @@ final class TemplateCreatingViewController: UIViewController {
         tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionActionsTableViewCell.self, forCellReuseIdentifier: TemplateQuestionActionsTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionsInfoTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsInfoTableViewCell.reuseIdentifier)
-        tableView.register(TemplateQuestionPlaceholderTableViewCell.self, forCellReuseIdentifier: TemplateQuestionPlaceholderTableViewCell.reuseIdentifier)
+        tableView.register(TemplateQuestionCardTableViewCell.self, forCellReuseIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -382,13 +382,22 @@ extension TemplateCreatingViewController: UITableViewDataSource {
 
         case .question(let index, _):
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: TemplateQuestionPlaceholderTableViewCell.reuseIdentifier,
+                withIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier,
                 for: indexPath
-            ) as? TemplateQuestionPlaceholderTableViewCell else {
+            ) as? TemplateQuestionCardTableViewCell else {
                 return UITableViewCell()
             }
 
-            cell.configure(index: index)
+            guard questions.indices.contains(index) else {
+                return UITableViewCell()
+            }
+
+            let isLastQuestion = index == questions.count - 1
+            cell.configure(
+                index: index,
+                question: questions[index],
+                isLastQuestion: isLastQuestion
+            )
             return cell
         }
     }
@@ -413,7 +422,7 @@ extension TemplateCreatingViewController: UITableViewDelegate {
         case .questionsSummary:
             return UITableView.automaticDimension
         case .question:
-            return 88
+            return UITableView.automaticDimension
         }
     }
 
@@ -426,7 +435,7 @@ extension TemplateCreatingViewController: UITableViewDelegate {
         case .questionsSummary:
             return 66
         case .question:
-            return 88
+            return 140
         case .settings:
             return 104
         default:

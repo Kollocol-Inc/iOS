@@ -25,7 +25,7 @@ actor MockQuizServiceImpl: QuizService {
                 questions: [
                     Question(
                         aiAnswer: "",
-                        correctAnswers: ["123"],
+                        correctAnswer: .openText("123"),
                         id: "123",
                         maxScore: 5,
                         options: [],
@@ -36,7 +36,7 @@ actor MockQuizServiceImpl: QuizService {
                     ),
                     Question(
                         aiAnswer: "",
-                        correctAnswers: ["123"],
+                        correctAnswer: .openText("123"),
                         id: "123",
                         maxScore: 5,
                         options: [],
@@ -64,7 +64,7 @@ actor MockQuizServiceImpl: QuizService {
                 questions: [
                     Question(
                         aiAnswer: "",
-                        correctAnswers: ["123"],
+                        correctAnswer: .openText("123"),
                         id: "123",
                         maxScore: 5,
                         options: [],
@@ -75,7 +75,7 @@ actor MockQuizServiceImpl: QuizService {
                     ),
                     Question(
                         aiAnswer: "",
-                        correctAnswers: ["123"],
+                        correctAnswer: .openText("123"),
                         id: "123",
                         maxScore: 5,
                         options: [],
