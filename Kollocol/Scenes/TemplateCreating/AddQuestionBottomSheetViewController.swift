@@ -104,6 +104,11 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         updatePreferredContentSizeIfNeeded()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        navigationController?.presentationController?.delegate = self
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
@@ -577,6 +582,17 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 extension AddQuestionBottomSheetViewController: AlertPresenting {
     func presentAlert(_ alert: UIAlertController) {
         present(alert, animated: true)
+    }
+}
+
+// MARK: - UIAdaptivePresentationControllerDelegate
+extension AddQuestionBottomSheetViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+        hasUnsavedChanges == false
+    }
+
+    func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
+        handleCloseTap()
     }
 }
 
