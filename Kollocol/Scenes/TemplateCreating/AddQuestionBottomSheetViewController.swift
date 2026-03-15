@@ -86,6 +86,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private var saveButtonItem: UIBarButtonItem?
     private weak var activeTimePopoverController: AddQuestionTimePopoverViewController?
     private var lastMeasuredSheetHeight: CGFloat = 0
+    private var keyboardBottomInset: CGFloat = 0
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -93,6 +94,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         enableKeyboardDismissOnBackgroundTap()
         rebuildRows()
         configureUI()
+        configureKeyboardObservers()
         configureNavigationBar()
         updateSaveButtonState()
     }
@@ -100,6 +102,10 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updatePreferredContentSizeIfNeeded()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - Private Methods
@@ -160,6 +166,21 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         )
         saveButtonItem = saveButton
         navigationItem.rightBarButtonItem = saveButton
+    }
+
+    private func configureKeyboardObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillChangeFrame(_:)),
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillChangeFrame(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
     }
 
     func preferredSheetHeight(maximumDetentValue: CGFloat) -> CGFloat {
@@ -501,6 +522,53 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         if #available(iOS 16.0, *) {
             navigationController?.sheetPresentationController?.invalidateDetents()
         }
+    }
+
+    private func applyKeyboardInset(
+        _ bottomInset: CGFloat,
+        duration: Double,
+        options: UIView.AnimationOptions
+    ) {
+        keyboardBottomInset = max(0, bottomInset)
+        UIView.animate(withDuration: duration, delay: 0, options: options) {
+            self.tableView.contentInset.bottom = self.keyboardBottomInset
+            self.tableView.verticalScrollIndicatorInsets.bottom = self.keyboardBottomInset
+            self.view.layoutIfNeeded()
+        } completion: { _ in
+            self.scrollFirstResponderAboveKeyboard()
+        }
+    }
+
+    private func scrollFirstResponderAboveKeyboard() {
+        guard let firstResponder = findFirstResponder(in: tableView) else { return }
+        let responderFrame = firstResponder.convert(firstResponder.bounds, to: tableView)
+        tableView.scrollRectToVisible(responderFrame.insetBy(dx: 0, dy: -12), animated: true)
+    }
+
+    private func findFirstResponder(in view: UIView) -> UIView? {
+        if view.isFirstResponder {
+            return view
+        }
+
+        for subview in view.subviews {
+            if let responder = findFirstResponder(in: subview) {
+                return responder
+            }
+        }
+
+        return nil
+    }
+
+    @objc
+    private func keyboardWillChangeFrame(_ notification: Notification) {
+        guard let change = KeyboardChange(notification) else { return }
+
+        let keyboardFrame = view.convert(change.endFrame, from: nil)
+        let keyboardTop = keyboardFrame.minY
+        let safeAreaBottom = view.safeAreaLayoutGuide.layoutFrame.maxY
+        let lift = max(0, safeAreaBottom - keyboardTop)
+
+        applyKeyboardInset(lift, duration: change.duration, options: change.options)
     }
 
 }
