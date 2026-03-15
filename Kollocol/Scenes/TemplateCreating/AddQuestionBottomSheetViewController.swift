@@ -69,6 +69,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         static let title = "Добавить вопрос"
         static let maxOptionsCount = 10
         static let minOptionsCount = 2
+        static let errorTitle = "Ошибка"
     }
 
     // MARK: - Properties
@@ -138,7 +139,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
             font: .systemFont(ofSize: 17, weight: .semibold)
         )
         let closeAction = UIAction { [weak self] _ in
-            self?.dismiss(animated: true)
+            self?.handleCloseTap()
         }
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "xmark", withConfiguration: closeConfiguration)?
@@ -199,30 +200,9 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     }
 
     private func updateSaveButtonState() {
-        let isQuestionFilled = questionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
-        let isValidForMode: Bool
-
-        switch mode {
-        case .openEnded:
-            isValidForMode = true
-
-        case .single, .multi:
-            let filledOptions = options.filter {
-                $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
-            }
-            let hasEmptyOption = options.contains {
-                $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            }
-            let selectedCount = options.filter(\.isCorrect).count
-            isValidForMode = filledOptions.count >= UIConstants.minOptionsCount
-                && hasEmptyOption == false
-                && selectedCount > 0
-        }
-
-        let isEnabled = isQuestionFilled && isValidForMode && timeLimitSec > 0
-        saveButtonItem?.isEnabled = isEnabled
-        saveButtonItem?.customView?.alpha = isEnabled ? 1 : 0.5
-        navigationItem.rightBarButtonItem?.tintColor = isEnabled
+        let isValid = validationErrorMessage == nil
+        saveButtonItem?.isEnabled = true
+        navigationItem.rightBarButtonItem?.tintColor = isValid
             ? .backgroundGreen
             : .backgroundGreen.withAlphaComponent(0.5)
     }
@@ -433,9 +413,82 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     }
 
     private func handleSaveTap() {
-        guard saveButtonItem?.isEnabled == true else { return }
+        if let validationErrorMessage {
+            showAlert(
+                title: UIConstants.errorTitle,
+                message: validationErrorMessage
+            )
+            return
+        }
+
         onSaveQuestion?(buildQuestion())
         dismiss(animated: true)
+    }
+
+    private func handleCloseTap() {
+        guard hasUnsavedChanges else {
+            dismiss(animated: true)
+            return
+        }
+
+        showConfirmationAlert(
+            title: "Внимание",
+            message: "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно",
+            cancelTitle: "Отмена",
+            confirmTitle: "Выйти",
+            confirmStyle: .destructive
+        ) { [weak self] in
+            self?.dismiss(animated: true)
+        }
+    }
+
+    private var hasUnsavedChanges: Bool {
+        if questionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
+            return true
+        }
+
+        if options.isEmpty == false {
+            return true
+        }
+
+        return false
+    }
+
+    private var validationErrorMessage: String? {
+        let isQuestionFilled = questionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+        guard isQuestionFilled else {
+            return "Укажите название квиза"
+        }
+
+        switch mode {
+        case .openEnded:
+            break
+        case .single, .multi:
+            if options.count < UIConstants.minOptionsCount {
+                return "Недостаточно вариантов ответа"
+            }
+
+            let hasEmptyOption = options.contains {
+                $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+            if hasEmptyOption {
+                return "Заполните все добавленные варианты ответа"
+            }
+
+            let selectedCount = options.filter(\.isCorrect).count
+            if selectedCount == 0 {
+                switch mode {
+                case .single:
+                    return "Укажите верный вариант ответа"
+                case .multi:
+                    return "Укажите хотя бы один верный ответ"
+                case .openEnded:
+                    break
+                }
+            }
+        }
+
+        return nil
     }
 
     private func updatePreferredContentSizeIfNeeded() {
@@ -450,6 +503,13 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         }
     }
 
+}
+
+// MARK: - AlertPresenting
+extension AddQuestionBottomSheetViewController: AlertPresenting {
+    func presentAlert(_ alert: UIAlertController) {
+        present(alert, animated: true)
+    }
 }
 
 // MARK: - UITableViewDataSource
