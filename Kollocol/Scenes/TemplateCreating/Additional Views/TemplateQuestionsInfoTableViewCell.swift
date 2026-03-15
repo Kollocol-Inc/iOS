@@ -70,6 +70,7 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
     private let searchToggleImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.tintColor = .accentPrimary
+        imageView.contentMode = .scaleAspectFit
         imageView.setWidth(14)
         imageView.setHeight(14)
         return imageView
@@ -82,6 +83,7 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
     var onAddQuestionTap: (() -> Void)?
     var onSearchToggleTap: (() -> Void)?
     private var currentSearchSymbolName: String?
+    private var isSearchVisibleState = false
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -99,6 +101,7 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
         onAddQuestionTap = nil
         onSearchToggleTap = nil
         currentSearchSymbolName = nil
+        isSearchVisibleState = false
     }
 
     // MARK: - Methods
@@ -113,7 +116,10 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
             totalScore: totalScore,
             totalTimeText: totalTimeText
         )
-        configureSearchToggleButton(isSearchVisible: isSearchVisible)
+        configureSearchToggleButton(
+            isSearchVisible: isSearchVisible,
+            animated: false
+        )
     }
 
     // MARK: - Private Methods
@@ -166,10 +172,15 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
         searchToggleButton.addTarget(self, action: #selector(handleSearchToggleTap), for: .touchUpInside)
     }
 
-    private func configureSearchToggleButton(isSearchVisible: Bool) {
+    private func configureSearchToggleButton(
+        isSearchVisible: Bool,
+        animated: Bool
+    ) {
+        isSearchVisibleState = isSearchVisible
         let symbolName = isSearchVisible ? "xmark" : "magnifyingglass"
         let symbolConfiguration = UIImage.SymbolConfiguration(
-            font: .systemFont(ofSize: 12, weight: .semibold)
+            pointSize: 14,
+            weight: .semibold
         )
         guard let image = UIImage(systemName: symbolName, withConfiguration: symbolConfiguration)?
             .withRenderingMode(.alwaysTemplate)
@@ -177,13 +188,14 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
             return
         }
 
-        if #available(iOS 17.0, *) {
-            if currentSearchSymbolName == nil {
+        if #available(iOS 17.0, *), animated {
+            if currentSearchSymbolName == nil || currentSearchSymbolName == symbolName {
                 searchToggleImageView.image = image
-            } else if currentSearchSymbolName != symbolName {
+            } else {
                 searchToggleImageView.setSymbolImage(
                     image,
-                    contentTransition: .replace.magic(fallback: .downUp.byLayer)
+                    contentTransition: .replace.magic(fallback: .downUp.byLayer),
+                    options: .nonRepeating
                 )
             }
         } else {
@@ -242,6 +254,10 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
 
     @objc
     private func handleSearchToggleTap() {
+        configureSearchToggleButton(
+            isSearchVisible: !isSearchVisibleState,
+            animated: true
+        )
         onSearchToggleTap?()
     }
 }
