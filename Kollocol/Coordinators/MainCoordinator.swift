@@ -258,6 +258,7 @@ extension MainCoordinator: MyQuizzesRouting {
             quizService: services.quizService,
             questions: previewQuestions
         )
+        viewController.hidesBottomBarWhenPushed = true
         myQuizzesNavController.pushViewController(viewController, animated: true)
     }
 
