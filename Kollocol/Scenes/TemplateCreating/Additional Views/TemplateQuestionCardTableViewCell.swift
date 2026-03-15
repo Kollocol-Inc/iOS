@@ -126,8 +126,9 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         view.backgroundColor = .backgroundSecondary
         view.layer.cornerRadius = 18
         view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowRadius = 20
-        view.layer.shadowOpacity = 0.2
+        view.layer.shadowOffset = CGSize(width: 0, height: 1.5)
+        view.layer.shadowRadius = 9
+        view.layer.shadowOpacity = 0.1
         return view
     }()
 
@@ -219,8 +220,8 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     private enum UIConstants {
         static let cardCornerRadius: CGFloat = 18
         static let cardHorizontalInset: CGFloat = 24
-        static let cardVerticalInset: CGFloat = 8
-        static let cardBottomInsetForLastQuestion: CGFloat = 16
+        static let cardVerticalInset: CGFloat = 10
+        static let cardBottomInsetForLastQuestion: CGFloat = 18
 
         static let topInset: CGFloat = 8
         static let topHorizontalInset: CGFloat = 12
