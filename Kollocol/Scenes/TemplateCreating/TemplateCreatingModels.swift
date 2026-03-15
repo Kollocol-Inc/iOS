@@ -15,6 +15,7 @@ enum TemplateCreatingModels {
         case divider
         case questionActions
         case questionsSummary
+        case questionsSearch
         case question(index: Int, question: Question)
     }
 

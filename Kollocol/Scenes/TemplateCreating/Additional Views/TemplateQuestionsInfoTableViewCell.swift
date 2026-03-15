@@ -45,11 +45,34 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
         return button
     }()
 
+    private let searchToggleButtonContainerView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 17
+        view.clipsToBounds = true
+        view.setWidth(34)
+        view.setHeight(34)
+        return view
+    }()
+
+    private let searchToggleGlassBackgroundView: UIVisualEffectView = {
+        if #available(iOS 26.0, *) {
+            return UIVisualEffectView(effect: UIGlassEffect(style: .regular))
+        } else {
+            return UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        }
+    }()
+
+    private let searchToggleButton: UIButton = {
+        let button = UIButton(type: .system)
+        return button
+    }()
+
     // MARK: - Constants
     static let reuseIdentifier = "TemplateQuestionsInfoTableViewCell"
 
     // MARK: - Properties
     var onAddQuestionTap: (() -> Void)?
+    var onSearchToggleTap: (() -> Void)?
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -65,19 +88,22 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         onAddQuestionTap = nil
+        onSearchToggleTap = nil
     }
 
     // MARK: - Methods
     func configure(
         questionsCount: Int,
         totalScore: Int,
-        totalTimeText: String
+        totalTimeText: String,
+        isSearchVisible: Bool
     ) {
         summaryLabel.attributedText = makeSummaryAttributedText(
             questionsCount: questionsCount,
             totalScore: totalScore,
             totalTimeText: totalTimeText
         )
+        configureSearchToggleButton(isSearchVisible: isSearchVisible)
     }
 
     // MARK: - Private Methods
@@ -103,17 +129,38 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
         addQuestionButtonContainerView.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
         addQuestionButtonContainerView.pinCenterY(to: summaryLabel)
 
-        summaryLabel.pinRight(to: addQuestionButtonContainerView.leadingAnchor, 8, .lsOE)
+        contentView.addSubview(searchToggleButtonContainerView)
+        searchToggleButtonContainerView.pinRight(to: addQuestionButtonContainerView.leadingAnchor, 8)
+        searchToggleButtonContainerView.pinCenterY(to: summaryLabel)
+
+        summaryLabel.pinRight(to: searchToggleButtonContainerView.leadingAnchor, 8, .lsOE)
 
         addQuestionButtonContainerView.addSubview(addQuestionGlassBackgroundView)
         addQuestionGlassBackgroundView.pin(to: addQuestionButtonContainerView)
 
         addQuestionButtonContainerView.addSubview(addQuestionButton)
         addQuestionButton.pin(to: addQuestionButtonContainerView)
+
+        searchToggleButtonContainerView.addSubview(searchToggleGlassBackgroundView)
+        searchToggleGlassBackgroundView.pin(to: searchToggleButtonContainerView)
+
+        searchToggleButtonContainerView.addSubview(searchToggleButton)
+        searchToggleButton.pin(to: searchToggleButtonContainerView)
     }
 
     private func configureActions() {
         addQuestionButton.addTarget(self, action: #selector(handleAddQuestionTap), for: .touchUpInside)
+        searchToggleButton.addTarget(self, action: #selector(handleSearchToggleTap), for: .touchUpInside)
+    }
+
+    private func configureSearchToggleButton(isSearchVisible: Bool) {
+        let symbolName = isSearchVisible ? "xmark" : "magnifyingglass"
+        let symbolConfiguration = UIImage.SymbolConfiguration(
+            font: .systemFont(ofSize: 12, weight: .semibold)
+        )
+        let image = UIImage(systemName: symbolName, withConfiguration: symbolConfiguration)?
+            .withTintColor(.accentPrimary, renderingMode: .alwaysOriginal)
+        searchToggleButton.setImage(image, for: .normal)
     }
 
     private func makeSummaryAttributedText(
@@ -161,5 +208,10 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
     @objc
     private func handleAddQuestionTap() {
         onAddQuestionTap?()
+    }
+
+    @objc
+    private func handleSearchToggleTap() {
+        onSearchToggleTap?()
     }
 }

@@ -49,6 +49,9 @@ final class TemplateCreatingViewController: UIViewController {
     private var selectedQuizType: QuizType = .async
     private var isRandomOrderEnabled = false
     private var isLoading = false
+    private var isSearchVisible = false
+    private var searchText = ""
+    private var shouldFocusSearchField = false
 
     private weak var nameInputCell: TemplateNameInputTableViewCell?
     private weak var settingsCell: TemplateSettingsTableViewCell?
@@ -140,6 +143,7 @@ final class TemplateCreatingViewController: UIViewController {
         tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionActionsTableViewCell.self, forCellReuseIdentifier: TemplateQuestionActionsTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionsInfoTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsInfoTableViewCell.reuseIdentifier)
+        tableView.register(TemplateQuestionsSearchTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsSearchTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionCardTableViewCell.self, forCellReuseIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
@@ -226,6 +230,8 @@ final class TemplateCreatingViewController: UIViewController {
     }
 
     private func rebuildRows() {
+        let visibleQuestions = filteredQuestions()
+
         var newRows: [TemplateCreatingModels.Row] = [
             .header("Название"),
             .nameInput,
@@ -236,7 +242,10 @@ final class TemplateCreatingViewController: UIViewController {
         if questions.isEmpty == false {
             newRows.append(.divider)
             newRows.append(.questionsSummary)
-            questions.enumerated().forEach { index, question in
+            if isSearchVisible {
+                newRows.append(.questionsSearch)
+            }
+            visibleQuestions.enumerated().forEach { index, question in
                 newRows.append(.question(index: index, question: question))
             }
         }
@@ -245,6 +254,17 @@ final class TemplateCreatingViewController: UIViewController {
         newRows.append(.questionActions)
 
         rows = newRows
+    }
+
+    private func filteredQuestions() -> [Question] {
+        let trimmedText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedText.isEmpty == false else {
+            return questions
+        }
+
+        return questions.filter { question in
+            (question.text ?? "").localizedCaseInsensitiveContains(trimmedText)
+        }
     }
 
     private func totalScore() -> Int {
@@ -268,6 +288,58 @@ final class TemplateCreatingViewController: UIViewController {
     }
 
     private func handleCompleteWithAITap() {
+    }
+
+    private func toggleQuestionsSearch() {
+        guard questions.isEmpty == false else { return }
+
+        let wasVisible = isSearchVisible
+        let oldRows = rows
+
+        isSearchVisible.toggle()
+        if isSearchVisible {
+            shouldFocusSearchField = true
+        } else {
+            searchText = ""
+            shouldFocusSearchField = false
+        }
+
+        rebuildRows()
+
+        guard
+            let oldSearchRowIndex = oldRows.firstIndex(where: { row in
+                if case .questionsSearch = row { return true }
+                return false
+            }),
+            wasVisible
+        else {
+            if let newSearchRowIndex = rows.firstIndex(where: { row in
+                if case .questionsSearch = row { return true }
+                return false
+            }) {
+                tableView.performBatchUpdates {
+                    tableView.insertRows(at: [IndexPath(row: newSearchRowIndex, section: 0)], with: .automatic)
+                } completion: { _ in
+                    self.tableView.reloadData()
+                }
+            } else {
+                tableView.reloadData()
+            }
+            return
+        }
+
+        tableView.performBatchUpdates {
+            tableView.deleteRows(at: [IndexPath(row: oldSearchRowIndex, section: 0)], with: .automatic)
+        } completion: { _ in
+            self.tableView.reloadData()
+        }
+    }
+
+    private func handleSearchTextChanged(_ text: String) {
+        searchText = text
+        shouldFocusSearchField = true
+        rebuildRows()
+        tableView.reloadData()
     }
 }
 
@@ -373,14 +445,36 @@ extension TemplateCreatingViewController: UITableViewDataSource {
             cell.configure(
                 questionsCount: questions.count,
                 totalScore: totalScore(),
-                totalTimeText: totalTimeText()
+                totalTimeText: totalTimeText(),
+                isSearchVisible: isSearchVisible
             )
             cell.onAddQuestionTap = { [weak self] in
                 self?.handleAddQuestionTap()
             }
+            cell.onSearchToggleTap = { [weak self] in
+                self?.toggleQuestionsSearch()
+            }
             return cell
 
-        case .question(let index, _):
+        case .questionsSearch:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: TemplateQuestionsSearchTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? TemplateQuestionsSearchTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(
+                text: searchText,
+                shouldFocus: shouldFocusSearchField
+            )
+            cell.onTextChanged = { [weak self] newValue in
+                self?.handleSearchTextChanged(newValue)
+            }
+            shouldFocusSearchField = false
+            return cell
+
+        case .question(let index, let question):
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier,
                 for: indexPath
@@ -388,14 +482,15 @@ extension TemplateCreatingViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
 
-            guard questions.indices.contains(index) else {
+            let visibleQuestions = filteredQuestions()
+            guard visibleQuestions.indices.contains(index) else {
                 return UITableViewCell()
             }
 
-            let isLastQuestion = index == questions.count - 1
+            let isLastQuestion = index == visibleQuestions.count - 1
             cell.configure(
                 index: index,
-                question: questions[index],
+                question: question,
                 isLastQuestion: isLastQuestion
             )
             return cell
@@ -421,6 +516,8 @@ extension TemplateCreatingViewController: UITableViewDelegate {
             return UITableView.automaticDimension
         case .questionsSummary:
             return UITableView.automaticDimension
+        case .questionsSearch:
+            return UITableView.automaticDimension
         case .question:
             return UITableView.automaticDimension
         }
@@ -434,6 +531,8 @@ extension TemplateCreatingViewController: UITableViewDelegate {
             return 74
         case .questionsSummary:
             return 66
+        case .questionsSearch:
+            return 60
         case .question:
             return 140
         case .settings:
