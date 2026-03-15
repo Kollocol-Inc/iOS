@@ -230,12 +230,25 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private func handleModeChanged(_ newMode: QuestionMode) {
         guard mode != newMode else { return }
 
+        let selectedIndexesBeforeModeChange = options.enumerated().compactMap { index, option in
+            option.isCorrect ? index : nil
+        }
         let oldRows = rows
         let oldMode = mode
         mode = newMode
 
         if newMode == .single, oldMode == .multi {
             options = options.map { .init(text: $0.text, isCorrect: false) }
+        }
+
+        if oldMode != .openEnded, newMode != .openEnded {
+            if newMode == .single, oldMode == .multi {
+                selectedIndexesBeforeModeChange.forEach { index in
+                    animateOptionSwitchChange(at: index, isOn: false)
+                }
+            }
+            updateSaveButtonState()
+            return
         }
 
         rebuildRows()
@@ -321,13 +334,17 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private func handleOptionToggleChanged(index: Int, isOn: Bool) {
         guard options.indices.contains(index) else { return }
 
-        let previousStates = options.map(\.isCorrect)
-
         switch mode {
         case .single:
+            let indexesToTurnOff = options.indices.filter {
+                $0 != index && options[$0].isCorrect
+            }
             if isOn {
                 for itemIndex in options.indices {
                     options[itemIndex].isCorrect = itemIndex == index
+                }
+                indexesToTurnOff.forEach { optionIndex in
+                    animateOptionSwitchChange(at: optionIndex, isOn: false)
                 }
             } else {
                 options[index].isCorrect = false
@@ -338,16 +355,6 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
         case .openEnded:
             break
-        }
-
-        let changedIndexes = options.indices.filter { previousStates[$0] != options[$0].isCorrect }
-        if mode == .single {
-            let rowsToReload = changedIndexes
-                .filter { $0 != index }
-                .map { indexPathForOption($0) }
-            if rowsToReload.isEmpty == false {
-                tableView.reloadRows(at: rowsToReload, with: .none)
-            }
         }
 
         updateSaveButtonState()
@@ -665,6 +672,17 @@ private extension AddQuestionBottomSheetViewController {
 
     var dynamicRowsStartIndex: Int {
         6
+    }
+
+    func animateOptionSwitchChange(at optionIndex: Int, isOn: Bool) {
+        let indexPath = indexPathForOption(optionIndex)
+        guard
+            let cell = tableView.cellForRow(at: indexPath) as? AddQuestionOptionTableViewCell
+        else {
+            return
+        }
+
+        cell.setSwitch(isOn: isOn, animated: true)
     }
 }
 
@@ -1215,6 +1233,11 @@ private final class AddQuestionOptionTableViewCell: UITableViewCell {
         optionTextField.text = text
         toggleSwitch.isOn = isSwitchOn
         toggleSwitch.isEnabled = isSwitchEnabled
+    }
+
+    func setSwitch(isOn: Bool, animated: Bool) {
+        guard toggleSwitch.isOn != isOn else { return }
+        toggleSwitch.setOn(isOn, animated: animated)
     }
 
     // MARK: - Private Methods
