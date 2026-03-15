@@ -79,10 +79,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private var openAnswerText: String = ""
     private var score: Int = 1
     private var timeLimitSec: Int = 30
-    private var options: [OptionItem] = [
-        .init(text: "", isCorrect: false),
-        .init(text: "", isCorrect: false)
-    ]
+    private var options: [OptionItem] = []
 
     private var saveButtonItem: UIBarButtonItem?
     private weak var activeTimePopoverController: AddQuestionTimePopoverViewController?
@@ -91,6 +88,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        enableKeyboardDismissOnBackgroundTap()
         rebuildRows()
         configureUI()
         configureNavigationBar()
@@ -231,6 +229,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private func handleModeChanged(_ newMode: QuestionMode) {
         guard mode != newMode else { return }
 
+        let oldRows = rows
         let oldMode = mode
         mode = newMode
 
@@ -238,16 +237,24 @@ final class AddQuestionBottomSheetViewController: UIViewController {
             options = options.map { .init(text: $0.text, isCorrect: false) }
         }
 
-        if (newMode == .single || newMode == .multi) && options.count < UIConstants.minOptionsCount {
-            options = [
-                .init(text: "", isCorrect: false),
-                .init(text: "", isCorrect: false)
-            ]
-        }
-
         rebuildRows()
-        tableView.reloadData()
-        updateSaveButtonState()
+        let oldDynamicRows = oldRows.indices
+            .filter { $0 >= dynamicRowsStartIndex }
+            .map { IndexPath(row: $0, section: 0) }
+        let newDynamicRows = rows.indices
+            .filter { $0 >= dynamicRowsStartIndex }
+            .map { IndexPath(row: $0, section: 0) }
+
+        tableView.performBatchUpdates {
+            if oldDynamicRows.isEmpty == false {
+                tableView.deleteRows(at: oldDynamicRows, with: .fade)
+            }
+            if newDynamicRows.isEmpty == false {
+                tableView.insertRows(at: newDynamicRows, with: .fade)
+            }
+        } completion: { [weak self] _ in
+            self?.updateSaveButtonState()
+        }
     }
 
     private func handleAddOptionTap() {
@@ -313,6 +320,8 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private func handleOptionToggleChanged(index: Int, isOn: Bool) {
         guard options.indices.contains(index) else { return }
 
+        let previousStates = options.map(\.isCorrect)
+
         switch mode {
         case .single:
             if isOn {
@@ -330,7 +339,16 @@ final class AddQuestionBottomSheetViewController: UIViewController {
             break
         }
 
-        tableView.reloadData()
+        let changedIndexes = options.indices.filter { previousStates[$0] != options[$0].isCorrect }
+        if mode == .single {
+            let rowsToReload = changedIndexes
+                .filter { $0 != index }
+                .map { indexPathForOption($0) }
+            if rowsToReload.isEmpty == false {
+                tableView.reloadRows(at: rowsToReload, with: .none)
+            }
+        }
+
         updateSaveButtonState()
     }
 
@@ -642,6 +660,10 @@ private extension AddQuestionBottomSheetViewController {
             if case .parameters = row { return true }
             return false
         }) ?? 0
+    }
+
+    var dynamicRowsStartIndex: Int {
+        6
     }
 }
 
@@ -1188,7 +1210,7 @@ private final class AddQuestionOptionTableViewCell: UITableViewCell {
         toggleSwitch.setContentHuggingPriority(.required, for: .horizontal)
         toggleSwitch.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        optionTextField.addTarget(self, action: #selector(handleTextChanged), for: .editingChanged)
+        optionTextField.delegate = self
         toggleSwitch.addTarget(self, action: #selector(handleSwitchChanged), for: .valueChanged)
 
         let contextInteraction = UIContextMenuInteraction(delegate: self)
@@ -1196,11 +1218,6 @@ private final class AddQuestionOptionTableViewCell: UITableViewCell {
     }
 
     // MARK: - Actions
-    @objc
-    private func handleTextChanged() {
-        onTextChanged?(optionTextField.text ?? "")
-    }
-
     @objc
     private func handleSwitchChanged() {
         onToggleChanged?(toggleSwitch.isOn)
@@ -1227,6 +1244,13 @@ extension AddQuestionOptionTableViewCell: UIContextMenuInteractionDelegate {
 
             return UIMenu(children: [delete])
         }
+    }
+}
+
+// MARK: - UITextFieldDelegate
+extension AddQuestionOptionTableViewCell: UITextFieldDelegate {
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        onTextChanged?(textField.text ?? "")
     }
 }
 
