@@ -86,6 +86,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
     private var saveButtonItem: UIBarButtonItem?
     private weak var activeTimePopoverController: AddQuestionTimePopoverViewController?
+    private var lastMeasuredSheetHeight: CGFloat = 0
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -94,6 +95,11 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         configureUI()
         configureNavigationBar()
         updateSaveButtonState()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updatePreferredContentSizeIfNeeded()
     }
 
     // MARK: - Private Methods
@@ -154,6 +160,18 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         )
         saveButtonItem = saveButton
         navigationItem.rightBarButtonItem = saveButton
+    }
+
+    func preferredSheetHeight(maximumDetentValue: CGFloat) -> CGFloat {
+        loadViewIfNeeded()
+        view.layoutIfNeeded()
+
+        let tableContentHeight = tableView.contentSize.height
+        let navigationBarHeight = navigationController?.navigationBar.frame.height ?? 44
+        let extraInsets = view.safeAreaInsets.top + view.safeAreaInsets.bottom + 12
+        let measuredHeight = tableContentHeight + navigationBarHeight + extraInsets
+
+        return min(max(measuredHeight, 220), maximumDetentValue)
     }
 
     private func rebuildRows() {
@@ -392,6 +410,18 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         guard saveButtonItem?.isEnabled == true else { return }
         onSaveQuestion?(buildQuestion())
         dismiss(animated: true)
+    }
+
+    private func updatePreferredContentSizeIfNeeded() {
+        let measuredHeight = preferredSheetHeight(maximumDetentValue: .greatestFiniteMagnitude)
+        guard abs(lastMeasuredSheetHeight - measuredHeight) > 0.5 else { return }
+
+        lastMeasuredSheetHeight = measuredHeight
+        preferredContentSize = CGSize(width: view.bounds.width, height: measuredHeight)
+
+        if #available(iOS 16.0, *) {
+            navigationController?.sheetPresentationController?.invalidateDetents()
+        }
     }
 
 }

@@ -311,8 +311,29 @@ final class TemplateCreatingViewController: UIViewController {
 
         let navigationController = UINavigationController(rootViewController: viewController)
         navigationController.modalPresentationStyle = .pageSheet
+        viewController.loadViewIfNeeded()
         if let sheet = navigationController.sheetPresentationController {
-            sheet.detents = [.large()]
+            if #available(iOS 16.0, *) {
+                let fitDetent = UISheetPresentationController.Detent.custom(
+                    identifier: .init("add.question.bottom.sheet.fit")
+                ) { [weak viewController] context in
+                    guard let viewController else {
+                        return context.maximumDetentValue * 0.75
+                    }
+
+                    let preferredHeight = viewController.preferredContentSize.height
+                    if preferredHeight > 0 {
+                        return min(preferredHeight, context.maximumDetentValue)
+                    }
+
+                    return viewController.preferredSheetHeight(
+                        maximumDetentValue: context.maximumDetentValue
+                    )
+                }
+                sheet.detents = [fitDetent]
+            } else {
+                sheet.detents = [.medium()]
+            }
             sheet.prefersGrabberVisible = true
             sheet.prefersScrollingExpandsWhenScrolledToEdge = false
             sheet.preferredCornerRadius = 24
