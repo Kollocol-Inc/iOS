@@ -230,18 +230,19 @@ final class TemplateCreatingViewController: UIViewController {
             .header("Название"),
             .nameInput,
             .header("Параметры"),
-            .settings,
-            .divider
+            .settings
         ]
 
-        if questions.isEmpty {
-            newRows.append(.questionActions)
-        } else {
+        if questions.isEmpty == false {
+            newRows.append(.divider)
             newRows.append(.questionsSummary)
             questions.enumerated().forEach { index, question in
                 newRows.append(.question(index: index, question: question))
             }
         }
+
+        newRows.append(.divider)
+        newRows.append(.questionActions)
 
         rows = newRows
     }
