@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import QuartzCore
 
 final class AddQuestionBottomSheetViewController: UIViewController {
     // MARK: - Typealias
@@ -766,7 +767,7 @@ private final class AddQuestionParametersTableViewCell: UITableViewCell {
 
     private let scoreLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 17, weight: .medium)
+        label.font = UIFont.monospacedDigitSystemFont(ofSize: 17, weight: .medium)
         label.textColor = .textWhite
         label.textAlignment = .center
         return label
@@ -846,6 +847,7 @@ private final class AddQuestionParametersTableViewCell: UITableViewCell {
     func configure(score: Int, timeLimitSec: Int) {
         self.score = max(1, score)
         scoreLabel.text = "\(self.score)"
+        updateMinusButtonState()
         self.timeLimitSec = max(0, timeLimitSec)
         timeLabel.text = formatTime(self.timeLimitSec)
     }
@@ -905,21 +907,45 @@ private final class AddQuestionParametersTableViewCell: UITableViewCell {
     @objc
     private func handleMinusTap() {
         guard score > 1 else { return }
+        let previousValue = score
         score -= 1
-        scoreLabel.text = "\(score)"
+        animateScoreLabelTransition(
+            from: previousValue,
+            to: score
+        )
+        updateMinusButtonState()
         onScoreChanged?(score)
     }
 
     @objc
     private func handlePlusTap() {
+        let previousValue = score
         score += 1
-        scoreLabel.text = "\(score)"
+        animateScoreLabelTransition(
+            from: previousValue,
+            to: score
+        )
+        updateMinusButtonState()
         onScoreChanged?(score)
     }
 
     @objc
     private func handleTimeTap() {
         onTimeTap?(timeCapsuleButton)
+    }
+
+    private func animateScoreLabelTransition(from oldValue: Int, to newValue: Int) {
+        let transition = CATransition()
+        transition.type = .push
+        transition.duration = 0.2
+        transition.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        transition.subtype = newValue > oldValue ? .fromBottom : .fromTop
+        scoreLabel.layer.add(transition, forKey: "scoreChangePush")
+        scoreLabel.text = "\(newValue)"
+    }
+
+    private func updateMinusButtonState() {
+        scoreMinusButton.alpha = score <= 1 ? 0.5 : 1.0
     }
 
 }
