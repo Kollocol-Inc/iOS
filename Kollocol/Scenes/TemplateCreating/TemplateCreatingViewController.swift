@@ -86,11 +86,13 @@ final class TemplateCreatingViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         applyBackButtonAppearance()
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         restoreBackButtonAppearance()
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
     }
 
     // MARK: - Methods
@@ -159,6 +161,19 @@ final class TemplateCreatingViewController: UIViewController {
         titleLabel.textColor = .textSecondary
         titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
         navigationItem.titleView = titleLabel
+        navigationItem.hidesBackButton = true
+
+        let backConfiguration = UIImage.SymbolConfiguration(
+            font: .systemFont(ofSize: 17, weight: .semibold)
+        )
+        let backAction = UIAction { [weak self] _ in
+            self?.handleBackTap()
+        }
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "chevron.backward", withConfiguration: backConfiguration)?
+                .withTintColor(.textSecondary, renderingMode: .alwaysOriginal),
+            primaryAction: backAction
+        )
 
         let createAction = UIAction { [weak self] _ in
             self?.handleCreateButtonTap()
@@ -232,6 +247,29 @@ final class TemplateCreatingViewController: UIViewController {
         Task {
             await interactor.createTemplate(formData: formData)
         }
+    }
+
+    private func handleBackTap() {
+        guard hasUnsavedChanges else {
+            navigationController?.popViewController(animated: true)
+            return
+        }
+
+        showConfirmationAlert(
+            title: "Внимание",
+            message: "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно",
+            cancelTitle: "Отмена",
+            confirmTitle: "Выйти",
+            confirmStyle: .destructive
+        ) { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+    }
+
+    private var hasUnsavedChanges: Bool {
+        let currentTitle = (nameInputCell?.currentText ?? titleText ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return currentTitle.isEmpty == false || questions.isEmpty == false
     }
 
     private func rebuildRows() {
@@ -414,6 +452,13 @@ final class TemplateCreatingViewController: UIViewController {
         shouldFocusSearchField = false
         rebuildRows()
         tableView.reloadData()
+    }
+}
+
+// MARK: - AlertPresenting
+extension TemplateCreatingViewController: AlertPresenting {
+    func presentAlert(_ alert: UIAlertController) {
+        present(alert, animated: true)
     }
 }
 

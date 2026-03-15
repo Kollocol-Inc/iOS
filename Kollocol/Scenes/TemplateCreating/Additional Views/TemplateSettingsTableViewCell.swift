@@ -179,13 +179,40 @@ final class TemplateSettingsTableViewCell: UITableViewCell {
         guard quizType != type else { return }
         quizType = type
         applyQuizType()
+        applyRandomOrderAvailability(
+            animated: true,
+            notifyIfForcedOff: true
+        )
         onQuizTypeChanged?(type)
     }
 
     private func applyInteractivity() {
         quizTypeInfoButton.isEnabled = !isLoading
         quizTypeButton.isEnabled = !isLoading
-        randomOrderSwitch.isEnabled = !isLoading
+        applyRandomOrderAvailability(
+            animated: false,
+            notifyIfForcedOff: false
+        )
+    }
+
+    private func applyRandomOrderAvailability(
+        animated: Bool,
+        notifyIfForcedOff: Bool
+    ) {
+        let isRandomOrderAvailable = quizType == .async
+        let targetAlpha: CGFloat = isRandomOrderAvailable ? 1.0 : 0.5
+
+        randomOrderTitleLabel.alpha = targetAlpha
+        randomOrderSwitch.alpha = targetAlpha
+
+        if isRandomOrderAvailable == false, randomOrderSwitch.isOn {
+            randomOrderSwitch.setOn(false, animated: animated)
+            if notifyIfForcedOff {
+                onRandomOrderChanged?(false)
+            }
+        }
+
+        randomOrderSwitch.isEnabled = isLoading == false && isRandomOrderAvailable
     }
 
     private func abbreviatedDisplayName(for quizType: QuizType) -> String {
@@ -200,6 +227,12 @@ final class TemplateSettingsTableViewCell: UITableViewCell {
     // MARK: - Actions
     @objc
     private func handleRandomOrderChanged() {
+        guard quizType == .async else {
+            randomOrderSwitch.setOn(false, animated: true)
+            onRandomOrderChanged?(false)
+            return
+        }
+
         onRandomOrderChanged?(randomOrderSwitch.isOn)
     }
 
