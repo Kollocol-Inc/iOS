@@ -67,12 +67,21 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
         return button
     }()
 
+    private let searchToggleImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.tintColor = .accentPrimary
+        imageView.setWidth(14)
+        imageView.setHeight(14)
+        return imageView
+    }()
+
     // MARK: - Constants
     static let reuseIdentifier = "TemplateQuestionsInfoTableViewCell"
 
     // MARK: - Properties
     var onAddQuestionTap: (() -> Void)?
     var onSearchToggleTap: (() -> Void)?
+    private var currentSearchSymbolName: String?
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -89,6 +98,7 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
         super.prepareForReuse()
         onAddQuestionTap = nil
         onSearchToggleTap = nil
+        currentSearchSymbolName = nil
     }
 
     // MARK: - Methods
@@ -146,6 +156,9 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
 
         searchToggleButtonContainerView.addSubview(searchToggleButton)
         searchToggleButton.pin(to: searchToggleButtonContainerView)
+
+        searchToggleButton.addSubview(searchToggleImageView)
+        searchToggleImageView.pinCenter(to: searchToggleButton)
     }
 
     private func configureActions() {
@@ -158,9 +171,26 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
         let symbolConfiguration = UIImage.SymbolConfiguration(
             font: .systemFont(ofSize: 12, weight: .semibold)
         )
-        let image = UIImage(systemName: symbolName, withConfiguration: symbolConfiguration)?
-            .withTintColor(.accentPrimary, renderingMode: .alwaysOriginal)
-        searchToggleButton.setImage(image, for: .normal)
+        guard let image = UIImage(systemName: symbolName, withConfiguration: symbolConfiguration)?
+            .withRenderingMode(.alwaysTemplate)
+        else {
+            return
+        }
+
+        if #available(iOS 17.0, *) {
+            if currentSearchSymbolName == nil {
+                searchToggleImageView.image = image
+            } else if currentSearchSymbolName != symbolName {
+                searchToggleImageView.setSymbolImage(
+                    image,
+                    contentTransition: .replace.magic(fallback: .downUp.byLayer)
+                )
+            }
+        } else {
+            searchToggleImageView.image = image
+        }
+
+        currentSearchSymbolName = symbolName
     }
 
     private func makeSummaryAttributedText(
