@@ -47,7 +47,7 @@ final class TemplateQuestionsSearchTableViewCell: UITableViewCell {
     static let reuseIdentifier = "TemplateQuestionsSearchTableViewCell"
 
     // MARK: - Properties
-    var onTextChanged: ((String) -> Void)?
+    var onEditingDidEnd: ((String) -> Void)?
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -62,7 +62,7 @@ final class TemplateQuestionsSearchTableViewCell: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        onTextChanged = nil
+        onEditingDidEnd = nil
     }
 
     // MARK: - Methods
@@ -90,14 +90,14 @@ final class TemplateQuestionsSearchTableViewCell: UITableViewCell {
         searchTextField.pinLeft(to: contentView.safeAreaLayoutGuide.leadingAnchor, 24)
         searchTextField.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
 
-        searchTextField.addTarget(self, action: #selector(handleTextChanged), for: .editingChanged)
+        searchTextField.addTarget(self, action: #selector(handleEditingDidEnd), for: .editingDidEnd)
         searchTextField.addTarget(self, action: #selector(handleEditingDidEndOnExit), for: .editingDidEndOnExit)
     }
 
     // MARK: - Actions
     @objc
-    private func handleTextChanged() {
-        onTextChanged?(searchTextField.text ?? "")
+    private func handleEditingDidEnd() {
+        onEditingDidEnd?(searchTextField.text ?? "")
     }
 
     @objc

@@ -293,18 +293,34 @@ final class TemplateCreatingViewController: UIViewController {
     private func toggleQuestionsSearch() {
         guard questions.isEmpty == false else { return }
 
+        if isSearchVisible {
+            view.endEditing(true)
+            DispatchQueue.main.async { [weak self] in
+                self?.performToggleQuestionsSearch()
+            }
+            return
+        }
+
+        performToggleQuestionsSearch()
+    }
+
+    private func performToggleQuestionsSearch() {
+        guard questions.isEmpty == false else { return }
+
         let wasVisible = isSearchVisible
         let oldRows = rows
 
         isSearchVisible.toggle()
         if isSearchVisible {
-            shouldFocusSearchField = true
+            shouldFocusSearchField = false
         } else {
-            searchText = ""
             shouldFocusSearchField = false
         }
 
         rebuildRows()
+
+        let oldRowsCount = oldRows.count
+        let newRowsCount = rows.count
 
         guard
             let oldSearchRowIndex = oldRows.firstIndex(where: { row in
@@ -316,7 +332,7 @@ final class TemplateCreatingViewController: UIViewController {
             if let newSearchRowIndex = rows.firstIndex(where: { row in
                 if case .questionsSearch = row { return true }
                 return false
-            }) {
+            }), newRowsCount == oldRowsCount + 1 {
                 tableView.performBatchUpdates {
                     tableView.insertRows(at: [IndexPath(row: newSearchRowIndex, section: 0)], with: .automatic)
                 } completion: { _ in
@@ -328,16 +344,20 @@ final class TemplateCreatingViewController: UIViewController {
             return
         }
 
-        tableView.performBatchUpdates {
-            tableView.deleteRows(at: [IndexPath(row: oldSearchRowIndex, section: 0)], with: .automatic)
-        } completion: { _ in
-            self.tableView.reloadData()
+        if newRowsCount == oldRowsCount - 1 {
+            tableView.performBatchUpdates {
+                tableView.deleteRows(at: [IndexPath(row: oldSearchRowIndex, section: 0)], with: .automatic)
+            } completion: { _ in
+                self.tableView.reloadData()
+            }
+        } else {
+            tableView.reloadData()
         }
     }
 
     private func handleSearchTextChanged(_ text: String) {
         searchText = text
-        shouldFocusSearchField = true
+        shouldFocusSearchField = false
         rebuildRows()
         tableView.reloadData()
     }
@@ -468,7 +488,7 @@ extension TemplateCreatingViewController: UITableViewDataSource {
                 text: searchText,
                 shouldFocus: shouldFocusSearchField
             )
-            cell.onTextChanged = { [weak self] newValue in
+            cell.onEditingDidEnd = { [weak self] newValue in
                 self?.handleSearchTextChanged(newValue)
             }
             shouldFocusSearchField = false
