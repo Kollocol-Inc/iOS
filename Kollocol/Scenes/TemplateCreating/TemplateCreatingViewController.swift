@@ -41,13 +41,9 @@ final class TemplateCreatingViewController: UIViewController {
 
     // MARK: - Properties
     private var interactor: TemplateCreatingInteractor
-    private var rows: [TemplateCreatingModels.Row] = [
-        .header("Название"),
-        .nameInput,
-        .header("Параметры"),
-        .settings,
-        .divider
-    ]
+    private var rows: [TemplateCreatingModels.Row] = []
+    private var questions: [Question]
+    private var isAiButtonEnabled = true
 
     private var titleText: String?
     private var selectedQuizType: QuizType = .async
@@ -62,8 +58,12 @@ final class TemplateCreatingViewController: UIViewController {
     private var previousBackIndicatorTransitionMaskImage: UIImage?
 
     // MARK: - Lifecycle
-    init(interactor: TemplateCreatingInteractor) {
+    init(
+        interactor: TemplateCreatingInteractor,
+        questions: [Question]? = nil
+    ) {
         self.interactor = interactor
+        self.questions = questions ?? []
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -75,6 +75,7 @@ final class TemplateCreatingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         enableKeyboardDismissOnBackgroundTap()
+        rebuildRows()
         configureUI()
         configureNavigationBar()
     }
@@ -137,6 +138,9 @@ final class TemplateCreatingViewController: UIViewController {
         tableView.register(TemplateNameInputTableViewCell.self, forCellReuseIdentifier: TemplateNameInputTableViewCell.reuseIdentifier)
         tableView.register(TemplateSettingsTableViewCell.self, forCellReuseIdentifier: TemplateSettingsTableViewCell.reuseIdentifier)
         tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
+        tableView.register(TemplateQuestionActionsTableViewCell.self, forCellReuseIdentifier: TemplateQuestionActionsTableViewCell.reuseIdentifier)
+        tableView.register(TemplateQuestionsInfoTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsInfoTableViewCell.reuseIdentifier)
+        tableView.register(TemplateQuestionPlaceholderTableViewCell.self, forCellReuseIdentifier: TemplateQuestionPlaceholderTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -220,6 +224,50 @@ final class TemplateCreatingViewController: UIViewController {
             await interactor.createTemplate(formData: formData)
         }
     }
+
+    private func rebuildRows() {
+        var newRows: [TemplateCreatingModels.Row] = [
+            .header("Название"),
+            .nameInput,
+            .header("Параметры"),
+            .settings,
+            .divider
+        ]
+
+        if questions.isEmpty {
+            newRows.append(.questionActions)
+        } else {
+            newRows.append(.questionsSummary)
+            questions.enumerated().forEach { index, question in
+                newRows.append(.question(index: index, question: question))
+            }
+        }
+
+        rows = newRows
+    }
+
+    private func totalScore() -> Int {
+        questions.reduce(0) { partialResult, question in
+            partialResult + (question.maxScore ?? 0)
+        }
+    }
+
+    private func totalTimeInSeconds() -> Int {
+        questions.reduce(0) { partialResult, question in
+            partialResult + (question.timeLimitSec ?? 0)
+        }
+    }
+
+    private func totalTimeText() -> String {
+        let seconds = totalTimeInSeconds()
+        return "\(seconds)".asHmsFromSeconds() ?? "0 с."
+    }
+
+    private func handleAddQuestionTap() {
+    }
+
+    private func handleCompleteWithAITap() {
+    }
 }
 
 // MARK: - UITableViewDataSource
@@ -295,6 +343,52 @@ extension TemplateCreatingViewController: UITableViewDataSource {
             }
 
             return cell
+
+        case .questionActions:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: TemplateQuestionActionsTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? TemplateQuestionActionsTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(isAiButtonEnabled: isAiButtonEnabled)
+            cell.onAddQuestionTap = { [weak self] in
+                self?.handleAddQuestionTap()
+            }
+            cell.onCompleteWithAITap = { [weak self] in
+                self?.handleCompleteWithAITap()
+            }
+            return cell
+
+        case .questionsSummary:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: TemplateQuestionsInfoTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? TemplateQuestionsInfoTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(
+                questionsCount: questions.count,
+                totalScore: totalScore(),
+                totalTimeText: totalTimeText()
+            )
+            cell.onAddQuestionTap = { [weak self] in
+                self?.handleAddQuestionTap()
+            }
+            return cell
+
+        case .question(let index, _):
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: TemplateQuestionPlaceholderTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? TemplateQuestionPlaceholderTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(index: index)
+            return cell
         }
     }
 }
@@ -313,6 +407,12 @@ extension TemplateCreatingViewController: UITableViewDelegate {
             return UITableView.automaticDimension
         case .divider:
             return 1
+        case .questionActions:
+            return UITableView.automaticDimension
+        case .questionsSummary:
+            return UITableView.automaticDimension
+        case .question:
+            return 88
         }
     }
 
@@ -320,6 +420,12 @@ extension TemplateCreatingViewController: UITableViewDelegate {
         let row = rows[indexPath.row]
 
         switch row {
+        case .questionActions:
+            return 74
+        case .questionsSummary:
+            return 66
+        case .question:
+            return 88
         case .settings:
             return 104
         default:

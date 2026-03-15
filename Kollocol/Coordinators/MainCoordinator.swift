@@ -195,9 +195,35 @@ extension MainCoordinator: MyQuizzesRouting {
     func routeToCreateTemplateScreen() {
         guard let myQuizzesNavController else { return }
 
+        let previewQuestions: [Question] = [
+            Question(
+                aiAnswer: nil,
+                correctAnswers: ["Swift"],
+                id: "preview-question-1",
+                maxScore: 5,
+                options: nil,
+                orderIndex: 0,
+                text: "Что такое протокол в Swift?",
+                timeLimitSec: 60,
+                type: .openEnded
+            ),
+            Question(
+                aiAnswer: nil,
+                correctAnswers: ["UIKit"],
+                id: "preview-question-2",
+                maxScore: 3,
+                options: ["UIKit", "CoreData", "CloudKit"],
+                orderIndex: 1,
+                text: "Какой фреймворк отвечает за UI?",
+                timeLimitSec: 90,
+                type: .singleChoise
+            )
+        ]
+
         let viewController = TemplateCreatingAssembly.build(
             router: self,
-            quizService: services.quizService
+            quizService: services.quizService,
+            questions: previewQuestions
         )
         myQuizzesNavController.pushViewController(viewController, animated: true)
     }

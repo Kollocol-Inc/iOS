@@ -13,6 +13,9 @@ enum TemplateCreatingModels {
         case nameInput
         case settings
         case divider
+        case questionActions
+        case questionsSummary
+        case question(index: Int, question: Question)
     }
 
     struct FormData {
