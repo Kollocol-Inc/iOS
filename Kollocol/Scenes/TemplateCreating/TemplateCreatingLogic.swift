@@ -38,7 +38,7 @@ actor TemplateCreatingLogic: TemplateCreatingInteractor {
 
             let request = CreateTemplateRequest(
                 description: nil,
-                questions: nil,
+                questions: formData.questions.isEmpty ? nil : formData.questions,
                 quizType: formData.quizType,
                 settings: QuizSettings(
                     allowReview: nil,

@@ -23,5 +23,6 @@ enum TemplateCreatingModels {
         let title: String?
         let quizType: QuizType
         let isRandomOrderEnabled: Bool
+        let questions: [Question]
     }
 }

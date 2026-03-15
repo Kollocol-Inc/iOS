@@ -1,5 +1,5 @@
 //
-//  TemplateNameInputTableViewCell.swift
+//  TextInputTableViewCell.swift
 //  Kollocol
 //
 //  Created by Arsenii Potiakin on 14.03.2026.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class TemplateNameInputTableViewCell: UITableViewCell {
+final class TextInputTableViewCell: UITableViewCell {
     // MARK: - UI Components
     private let titleTextField: StripedLoadingTextField = {
         let field = StripedLoadingTextField()
@@ -29,7 +29,7 @@ final class TemplateNameInputTableViewCell: UITableViewCell {
     }()
 
     // MARK: - Constants
-    static let reuseIdentifier = "TemplateNameInputTableViewCell"
+    static let reuseIdentifier = "TextInputTableViewCell"
 
     // MARK: - Properties
     var onTextChanged: ((String) -> Void)?
@@ -50,7 +50,18 @@ final class TemplateNameInputTableViewCell: UITableViewCell {
     }
 
     // MARK: - Methods
-    func configure(title: String?, isLoading: Bool) {
+    func configure(
+        title: String?,
+        placeholder: String,
+        isLoading: Bool
+    ) {
+        titleTextField.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: [
+                .foregroundColor: UIColor.textSecondary,
+                .font: UIFont.systemFont(ofSize: 15, weight: .medium)
+            ]
+        )
         titleTextField.text = title
 
         if isLoading {

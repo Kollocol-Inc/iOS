@@ -53,7 +53,7 @@ final class TemplateCreatingViewController: UIViewController {
     private var searchText = ""
     private var shouldFocusSearchField = false
 
-    private weak var nameInputCell: TemplateNameInputTableViewCell?
+    private weak var nameInputCell: TextInputTableViewCell?
     private weak var settingsCell: TemplateSettingsTableViewCell?
     private var createButtonItem: UIBarButtonItem?
     private var previousNavigationBarTintColor: UIColor?
@@ -106,7 +106,11 @@ final class TemplateCreatingViewController: UIViewController {
         }
 
         if let nameInputCell {
-            nameInputCell.configure(title: titleText, isLoading: isLoading)
+            nameInputCell.configure(
+                title: titleText,
+                placeholder: "Введите название",
+                isLoading: isLoading
+            )
         }
 
         if let settingsCell {
@@ -138,7 +142,7 @@ final class TemplateCreatingViewController: UIViewController {
 
     private func configureTableView() {
         tableView.register(HeaderTableViewCell.self, forCellReuseIdentifier: HeaderTableViewCell.reuseIdentifier)
-        tableView.register(TemplateNameInputTableViewCell.self, forCellReuseIdentifier: TemplateNameInputTableViewCell.reuseIdentifier)
+        tableView.register(TextInputTableViewCell.self, forCellReuseIdentifier: TextInputTableViewCell.reuseIdentifier)
         tableView.register(TemplateSettingsTableViewCell.self, forCellReuseIdentifier: TemplateSettingsTableViewCell.reuseIdentifier)
         tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionActionsTableViewCell.self, forCellReuseIdentifier: TemplateQuestionActionsTableViewCell.reuseIdentifier)
@@ -221,7 +225,8 @@ final class TemplateCreatingViewController: UIViewController {
         let formData = TemplateCreatingModels.FormData(
             title: titleText,
             quizType: selectedQuizType,
-            isRandomOrderEnabled: isRandomOrderEnabled
+            isRandomOrderEnabled: isRandomOrderEnabled,
+            questions: questions
         )
 
         Task {
@@ -285,6 +290,34 @@ final class TemplateCreatingViewController: UIViewController {
     }
 
     private func handleAddQuestionTap() {
+        let viewController = AddQuestionBottomSheetViewController()
+        viewController.onSaveQuestion = { [weak self] question in
+            guard let self else { return }
+            let normalizedQuestion = Question(
+                aiAnswer: question.aiAnswer,
+                correctAnswer: question.correctAnswer,
+                id: question.id,
+                maxScore: question.maxScore,
+                options: question.options,
+                orderIndex: self.questions.count,
+                text: question.text,
+                timeLimitSec: question.timeLimitSec,
+                type: question.type
+            )
+            self.questions.append(normalizedQuestion)
+            self.rebuildRows()
+            self.tableView.reloadData()
+        }
+
+        let navigationController = UINavigationController(rootViewController: viewController)
+        navigationController.modalPresentationStyle = .pageSheet
+        if let sheet = navigationController.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.preferredCornerRadius = 24
+        }
+        present(navigationController, animated: true)
     }
 
     private func handleCompleteWithAITap() {
@@ -386,13 +419,17 @@ extension TemplateCreatingViewController: UITableViewDataSource {
 
         case .nameInput:
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: TemplateNameInputTableViewCell.reuseIdentifier,
+                withIdentifier: TextInputTableViewCell.reuseIdentifier,
                 for: indexPath
-            ) as? TemplateNameInputTableViewCell else {
+            ) as? TextInputTableViewCell else {
                 return UITableViewCell()
             }
 
-            cell.configure(title: titleText, isLoading: isLoading)
+            cell.configure(
+                title: titleText,
+                placeholder: "Введите название",
+                isLoading: isLoading
+            )
             cell.onTextChanged = { [weak self] newText in
                 self?.titleText = newText
             }

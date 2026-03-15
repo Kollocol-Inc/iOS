@@ -195,68 +195,9 @@ extension MainCoordinator: MyQuizzesRouting {
     func routeToCreateTemplateScreen() {
         guard let myQuizzesNavController else { return }
 
-        let previewQuestions: [Question] = [
-            Question(
-                aiAnswer: nil,
-                correctAnswer: .openText("Это очень-очень длинный вариант ответа для открытого вопроса, который должен проверить обрезку или перенос в карточке вопроса, чтобы визуально убедиться, что UI ведет себя корректно даже при длинных строках."),
-                id: "preview-question-1",
-                maxScore: 5,
-                options: nil,
-                orderIndex: 0,
-                text: "Что такое протокол в Swift?",
-                timeLimitSec: 60,
-                type: .openEnded
-            ),
-            Question(
-                aiAnswer: nil,
-                correctAnswer: nil,
-                id: "preview-question-2",
-                maxScore: 2,
-                options: nil,
-                orderIndex: 1,
-                text: "Назови любую особенность async/await в Swift",
-                timeLimitSec: 45,
-                type: .openEnded
-            ),
-            Question(
-                aiAnswer: nil,
-                correctAnswer: .singleChoice(2),
-                id: "preview-question-3",
-                maxScore: 3,
-                options: ["CoreData", "CloudKit", "UIKit", "MapKit"],
-                orderIndex: 2,
-                text: "Какой фреймворк отвечает за построение интерфейса?",
-                timeLimitSec: 90,
-                type: .singleChoise
-            ),
-            Question(
-                aiAnswer: nil,
-                correctAnswer: .multipleChoice([1, 4, 8]),
-                id: "preview-question-4",
-                maxScore: 10,
-                options: [
-                    "Option 1",
-                    "Option 2",
-                    "Option 3",
-                    "Option 4",
-                    "Option 5",
-                    "Option 6",
-                    "Option 7",
-                    "Option 8",
-                    "Option 9",
-                    "Option 10"
-                ],
-                orderIndex: 3,
-                text: "Выбери 3 правильных варианта из 10",
-                timeLimitSec: 150,
-                type: .multiChoice
-            )
-        ]
-
         let viewController = TemplateCreatingAssembly.build(
             router: self,
-            quizService: services.quizService,
-            questions: previewQuestions
+            quizService: services.quizService
         )
         viewController.hidesBottomBarWhenPushed = true
         myQuizzesNavController.pushViewController(viewController, animated: true)
