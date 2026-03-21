@@ -9,6 +9,6 @@ import Foundation
 
 enum QuestionType: String {
     case openEnded = "open"
-    case singleChoise = "single_choice"
-    case multiChoice = "multiple_choice"
+    case singleChoice = "single"
+    case multiChoice = "multiple"
 }

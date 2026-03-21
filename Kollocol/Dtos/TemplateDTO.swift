@@ -27,7 +27,7 @@ struct TemplateDTO: Decodable {
         case settings
         case title
         case updatedAt = "updated_at"
-        case userId
+        case userId = "user_id"
     }
 }
 
@@ -59,10 +59,10 @@ extension TemplateDTO {
         description = try container.decodeIfPresent(String.self, forKey: .description)
         id = try container.decodeIfPresent(String.self, forKey: .id)
 
-        questions = try container.decodeIfPresent([QuestionDTO].self, forKey: .id)
+        questions = try container.decodeIfPresent([QuestionDTO].self, forKey: .questions)
 
         quizType = try container.decodeEnumIfPresent(QuizType.self, forKey: .quizType)
-        settings = try container.decodeIfPresent(QuizSettingsDTO.self, forKey: .id)
+        settings = try container.decodeIfPresent(QuizSettingsDTO.self, forKey: .settings)
         title = try container.decodeIfPresent(String.self, forKey: .title)
 
         let updatedAtString = try container.decode(String.self, forKey: .updatedAt)

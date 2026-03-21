@@ -24,23 +24,19 @@ actor MockQuizServiceImpl: QuizService {
                 id: "123",
                 questions: [
                     Question(
-                        aiAnswer: "",
                         correctAnswer: .openText("123"),
                         id: "123",
                         maxScore: 5,
                         options: [],
-                        orderIndex: 0,
                         text: "Question 1",
                         timeLimitSec: 30,
                         type: .openEnded
                     ),
                     Question(
-                        aiAnswer: "",
                         correctAnswer: .openText("123"),
                         id: "123",
                         maxScore: 5,
                         options: [],
-                        orderIndex: 12,
                         text: "Question 1",
                         timeLimitSec: 30,
                         type: .openEnded
@@ -63,23 +59,19 @@ actor MockQuizServiceImpl: QuizService {
                 id: "123",
                 questions: [
                     Question(
-                        aiAnswer: "",
                         correctAnswer: .openText("123"),
                         id: "123",
                         maxScore: 5,
                         options: [],
-                        orderIndex: 0,
                         text: "Question 1",
                         timeLimitSec: 30,
                         type: .openEnded
                     ),
                     Question(
-                        aiAnswer: "",
                         correctAnswer: .openText("123"),
                         id: "123",
                         maxScore: 5,
                         options: [],
-                        orderIndex: 12,
                         text: "Question 1",
                         timeLimitSec: 30,
                         type: .openEnded

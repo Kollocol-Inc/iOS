@@ -282,7 +282,7 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         switch question.type {
         case .openEnded:
             configureOpenAnswer(question.correctAnswer)
-        case .singleChoise:
+        case .singleChoice:
             configureChoiceAnswers(question: question, kind: .singleChoice)
         case .multiChoice:
             configureChoiceAnswers(question: question, kind: .multipleChoice)
@@ -373,7 +373,7 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         switch type {
         case .multiChoice:
             return "MULTI"
-        case .singleChoise:
+        case .singleChoice:
             return "SINGLE"
         case .openEnded:
             return "OPEN ENDED"

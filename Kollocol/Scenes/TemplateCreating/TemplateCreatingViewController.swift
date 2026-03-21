@@ -331,18 +331,7 @@ final class TemplateCreatingViewController: UIViewController {
         let viewController = AddQuestionBottomSheetViewController()
         viewController.onSaveQuestion = { [weak self] question in
             guard let self else { return }
-            let normalizedQuestion = Question(
-                aiAnswer: question.aiAnswer,
-                correctAnswer: question.correctAnswer,
-                id: question.id,
-                maxScore: question.maxScore,
-                options: question.options,
-                orderIndex: self.questions.count,
-                text: question.text,
-                timeLimitSec: question.timeLimitSec,
-                type: question.type
-            )
-            self.questions.append(normalizedQuestion)
+            self.questions.append(question)
             self.rebuildRows()
             self.tableView.reloadData()
         }

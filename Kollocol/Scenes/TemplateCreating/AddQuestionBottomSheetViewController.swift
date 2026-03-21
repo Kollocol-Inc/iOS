@@ -29,7 +29,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         var questionType: QuestionType {
             switch self {
             case .single:
-                return .singleChoise
+                return .singleChoice
             case .multi:
                 return .multiChoice
             case .openEnded:
@@ -385,12 +385,10 @@ final class AddQuestionBottomSheetViewController: UIViewController {
                 : .openText(normalizedOpenAnswer)
 
             return Question(
-                aiAnswer: nil,
                 correctAnswer: correctAnswer,
-                id: UUID().uuidString,
+                id: nil,
                 maxScore: score,
                 options: nil,
-                orderIndex: nil,
                 text: normalizedQuestion,
                 timeLimitSec: timeLimitSec,
                 type: .openEnded
@@ -404,15 +402,13 @@ final class AddQuestionBottomSheetViewController: UIViewController {
             let correctAnswer = selectedIndex.map(QuestionCorrectAnswer.singleChoice)
 
             return Question(
-                aiAnswer: nil,
                 correctAnswer: correctAnswer,
-                id: UUID().uuidString,
+                id: nil,
                 maxScore: score,
                 options: normalizedOptions,
-                orderIndex: nil,
                 text: normalizedQuestion,
                 timeLimitSec: timeLimitSec,
-                type: .singleChoise
+                type: .singleChoice
             )
 
         case .multi:
@@ -425,12 +421,10 @@ final class AddQuestionBottomSheetViewController: UIViewController {
                 }
 
             return Question(
-                aiAnswer: nil,
                 correctAnswer: .multipleChoice(selectedIndexes),
-                id: UUID().uuidString,
+                id: nil,
                 maxScore: score,
                 options: normalizedOptions,
-                orderIndex: nil,
                 text: normalizedQuestion,
                 timeLimitSec: timeLimitSec,
                 type: .multiChoice
