@@ -25,7 +25,7 @@ final class TemplateCreatingViewController: UIViewController {
         let table = UITableView()
         table.backgroundColor = .clear
         table.separatorStyle = .none
-        table.allowsSelection = false
+        table.allowsSelection = true
         table.keyboardDismissMode = .onDrag
         table.sectionHeaderTopPadding = 0
         table.layer.cornerRadius = 28
@@ -37,10 +37,44 @@ final class TemplateCreatingViewController: UIViewController {
     // MARK: - Constants
     private enum UIConstants {
         static let title = "Создание шаблона"
+        static let validationErrorTitle = "Ошибка"
+        static let titleRequiredMessage = "Укажите название шаблона"
+        static let questionsRequiredMessage = "Недостаточно вопросов"
+        static let deleteTemplateAlertTitle = "Удаление шаблона"
+        static let deleteTemplateAlertMessage = "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
+        static let editUnsavedChangesAlertMessage = "Вы уверены, что хотите вернуться назад? Все изменения будут утеряны безвозвратно"
+        static let createUnsavedChangesAlertMessage = "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно"
+    }
+
+    private struct QuestionSnapshot: Equatable {
+        enum CorrectAnswer: Equatable {
+            case none
+            case openText(String)
+            case singleChoice(Int)
+            case multipleChoice([Int])
+        }
+
+        let id: String?
+        let maxScore: Int?
+        let options: [String]?
+        let text: String?
+        let timeLimitSec: Int?
+        let type: QuestionType?
+        let correctAnswer: CorrectAnswer
+    }
+
+    private struct TemplateStateSnapshot: Equatable {
+        let title: String
+        let quizType: QuizType
+        let isRandomOrderEnabled: Bool
+        let questions: [QuestionSnapshot]
     }
 
     // MARK: - Properties
     private var interactor: TemplateCreatingInteractor
+    private let sourceTemplate: QuizTemplate?
+    private let initialStateSnapshot: TemplateStateSnapshot
+
     private var rows: [TemplateCreatingModels.Row] = []
     private var questions: [Question]
     private var isAiButtonEnabled = true
@@ -56,17 +90,43 @@ final class TemplateCreatingViewController: UIViewController {
     private weak var nameInputCell: TextInputTableViewCell?
     private weak var settingsCell: TemplateSettingsTableViewCell?
     private var createButtonItem: UIBarButtonItem?
+    private var deleteButtonItem: UIBarButtonItem?
     private var previousNavigationBarTintColor: UIColor?
     private var previousBackIndicatorImage: UIImage?
     private var previousBackIndicatorTransitionMaskImage: UIImage?
 
+    private var isEditingTemplate: Bool {
+        sourceTemplate != nil
+    }
+
+    private var editingTemplateId: String? {
+        sourceTemplate?.id
+    }
+
     // MARK: - Lifecycle
     init(
         interactor: TemplateCreatingInteractor,
+        template: QuizTemplate? = nil,
         questions: [Question]? = nil
     ) {
+        let templateQuestions = template?.questions ?? []
+        let initialQuestions = templateQuestions.isEmpty ? (questions ?? []) : templateQuestions
+        let initialTitle = template?.title
+        let initialQuizType = template?.quizType ?? .async
+        let initialRandomOrder = template?.settings?.randomOrder ?? false
+
         self.interactor = interactor
-        self.questions = questions ?? []
+        self.sourceTemplate = template
+        self.questions = initialQuestions
+        self.titleText = initialTitle
+        self.selectedQuizType = initialQuizType
+        self.isRandomOrderEnabled = initialRandomOrder
+        self.initialStateSnapshot = TemplateStateSnapshot(
+            title: Self.normalizedTitle(initialTitle),
+            quizType: initialQuizType,
+            isRandomOrderEnabled: initialRandomOrder,
+            questions: initialQuestions.map { Self.makeQuestionSnapshot(from: $0) }
+        )
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -100,6 +160,8 @@ final class TemplateCreatingViewController: UIViewController {
     func displayCreateTemplateLoading(_ isLoading: Bool) {
         self.isLoading = isLoading
         createButtonItem?.isEnabled = !isLoading
+        deleteButtonItem?.isEnabled = !isLoading
+        navigationItem.leftBarButtonItem?.isEnabled = !isLoading
 
         if isLoading {
             nameInputCell?.startAnimating()
@@ -175,20 +237,50 @@ final class TemplateCreatingViewController: UIViewController {
             primaryAction: backAction
         )
 
-        let createAction = UIAction { [weak self] _ in
-            self?.handleCreateButtonTap()
-        }
-        let checkmarkConfiguration = UIImage.SymbolConfiguration(
-            font: .systemFont(ofSize: 17, weight: .semibold)
-        )
-        let barButton = UIBarButtonItem(
-            image: UIImage(systemName: "checkmark", withConfiguration: checkmarkConfiguration)?
-                .withTintColor(.backgroundGreen, renderingMode: .alwaysOriginal),
-            primaryAction: createAction
-        )
+        if isEditingTemplate {
+            let deleteAction = UIAction { [weak self] _ in
+                self?.handleDeleteTemplateTap()
+            }
+            let deleteConfiguration = UIImage.SymbolConfiguration(
+                font: .systemFont(ofSize: 17, weight: .semibold)
+            )
+            let deleteBarButton = UIBarButtonItem(
+                image: UIImage(systemName: "trash.fill", withConfiguration: deleteConfiguration)?
+                    .withTintColor(.backgroundRedPrimary, renderingMode: .alwaysOriginal),
+                primaryAction: deleteAction
+            )
 
-        createButtonItem = barButton
-        navigationItem.rightBarButtonItem = barButton
+            let createAction = UIAction { [weak self] _ in
+                self?.handleCreateButtonTap()
+            }
+            let checkmarkConfiguration = UIImage.SymbolConfiguration(
+                font: .systemFont(ofSize: 17, weight: .semibold)
+            )
+            let saveBarButton = UIBarButtonItem(
+                image: UIImage(systemName: "checkmark", withConfiguration: checkmarkConfiguration)?
+                    .withTintColor(.backgroundGreen, renderingMode: .alwaysOriginal),
+                primaryAction: createAction
+            )
+
+            createButtonItem = saveBarButton
+            deleteButtonItem = deleteBarButton
+            navigationItem.rightBarButtonItems = [saveBarButton, deleteBarButton]
+        } else {
+            let createAction = UIAction { [weak self] _ in
+                self?.handleCreateButtonTap()
+            }
+            let checkmarkConfiguration = UIImage.SymbolConfiguration(
+                font: .systemFont(ofSize: 17, weight: .semibold)
+            )
+            let barButton = UIBarButtonItem(
+                image: UIImage(systemName: "checkmark", withConfiguration: checkmarkConfiguration)?
+                    .withTintColor(.backgroundGreen, renderingMode: .alwaysOriginal),
+                primaryAction: createAction
+            )
+            createButtonItem = barButton
+            deleteButtonItem = nil
+            navigationItem.rightBarButtonItem = barButton
+        }
     }
 
     private func applyBackButtonAppearance() {
@@ -234,15 +326,54 @@ final class TemplateCreatingViewController: UIViewController {
 
     private func handleCreateButtonTap() {
         titleText = nameInputCell?.currentText ?? titleText
+        let normalizedTitle = Self.normalizedTitle(titleText)
+
+        guard normalizedTitle.isEmpty == false else {
+            showAlert(
+                title: UIConstants.validationErrorTitle,
+                message: UIConstants.titleRequiredMessage
+            )
+            return
+        }
+
+        guard questions.isEmpty == false else {
+            showAlert(
+                title: UIConstants.validationErrorTitle,
+                message: UIConstants.questionsRequiredMessage
+            )
+            return
+        }
+
+        titleText = normalizedTitle
         selectedQuizType = settingsCell?.selectedQuizType ?? selectedQuizType
         isRandomOrderEnabled = settingsCell?.isRandomOrderEnabled ?? isRandomOrderEnabled
 
         let formData = TemplateCreatingModels.FormData(
-            title: titleText,
+            title: normalizedTitle,
             quizType: selectedQuizType,
             isRandomOrderEnabled: isRandomOrderEnabled,
             questions: questions
         )
+
+        if isEditingTemplate {
+            guard currentStateSnapshot != initialStateSnapshot else {
+                navigationController?.popViewController(animated: true)
+                return
+            }
+
+            guard let templateId = editingTemplateId else {
+                showAlert(
+                    title: UIConstants.validationErrorTitle,
+                    message: "Не удалось определить шаблон для обновления"
+                )
+                return
+            }
+
+            Task {
+                await interactor.updateTemplate(by: templateId, formData: formData)
+            }
+            return
+        }
 
         Task {
             await interactor.createTemplate(formData: formData)
@@ -255,9 +386,13 @@ final class TemplateCreatingViewController: UIViewController {
             return
         }
 
+        let message = isEditingTemplate
+            ? UIConstants.editUnsavedChangesAlertMessage
+            : UIConstants.createUnsavedChangesAlertMessage
+
         showConfirmationAlert(
             title: "Внимание",
-            message: "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно",
+            message: message,
             cancelTitle: "Отмена",
             confirmTitle: "Выйти",
             confirmStyle: .destructive
@@ -266,10 +401,44 @@ final class TemplateCreatingViewController: UIViewController {
         }
     }
 
+    private func handleDeleteTemplateTap() {
+        guard let templateId = editingTemplateId else { return }
+
+        let templateTitle = Self.normalizedTitle(sourceTemplate?.title)
+        let displayTitle = templateTitle.isEmpty ? "без названия" : "«\(templateTitle)»"
+        let message = String(format: UIConstants.deleteTemplateAlertMessage, displayTitle)
+
+        showConfirmationAlert(
+            title: UIConstants.deleteTemplateAlertTitle,
+            message: message,
+            cancelTitle: "Отмена",
+            confirmTitle: "Удалить",
+            confirmStyle: .destructive
+        ) { [weak self] in
+            guard let self else { return }
+            Task {
+                await self.interactor.deleteTemplate(by: templateId)
+            }
+        }
+    }
+
     private var hasUnsavedChanges: Bool {
+        if isEditingTemplate {
+            return currentStateSnapshot != initialStateSnapshot
+        }
+
         let currentTitle = (nameInputCell?.currentText ?? titleText ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         return currentTitle.isEmpty == false || questions.isEmpty == false
+    }
+
+    private var currentStateSnapshot: TemplateStateSnapshot {
+        TemplateStateSnapshot(
+            title: Self.normalizedTitle(nameInputCell?.currentText ?? titleText),
+            quizType: settingsCell?.selectedQuizType ?? selectedQuizType,
+            isRandomOrderEnabled: settingsCell?.isRandomOrderEnabled ?? isRandomOrderEnabled,
+            questions: questions.map { Self.makeQuestionSnapshot(from: $0) }
+        )
     }
 
     private func rebuildRows() {
@@ -288,8 +457,14 @@ final class TemplateCreatingViewController: UIViewController {
             if isSearchVisible {
                 newRows.append(.questionsSearch)
             }
-            visibleQuestions.enumerated().forEach { index, question in
-                newRows.append(.question(index: index, question: question))
+            visibleQuestions.enumerated().forEach { visibleIndex, item in
+                newRows.append(
+                    .question(
+                        index: visibleIndex,
+                        sourceIndex: item.sourceIndex,
+                        question: item.question
+                    )
+                )
             }
         }
 
@@ -299,14 +474,18 @@ final class TemplateCreatingViewController: UIViewController {
         rows = newRows
     }
 
-    private func filteredQuestions() -> [Question] {
+    private func filteredQuestions() -> [(sourceIndex: Int, question: Question)] {
         let trimmedText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedText.isEmpty == false else {
-            return questions
+            return questions.enumerated().map { index, question in
+                (sourceIndex: index, question: question)
+            }
         }
 
-        return questions.filter { question in
-            (question.text ?? "").localizedCaseInsensitiveContains(trimmedText)
+        return questions.enumerated().compactMap { index, question in
+            let matchesQuery = (question.text ?? "").localizedCaseInsensitiveContains(trimmedText)
+            guard matchesQuery else { return nil }
+            return (sourceIndex: index, question: question)
         }
     }
 
@@ -336,6 +515,50 @@ final class TemplateCreatingViewController: UIViewController {
             self.tableView.reloadData()
         }
 
+        presentQuestionBottomSheet(viewController)
+    }
+
+    private func handleEditQuestionTap(sourceIndex: Int) {
+        guard questions.indices.contains(sourceIndex) else { return }
+
+        let oldRows = rows
+        let editingQuestion = questions[sourceIndex]
+        let viewController = AddQuestionBottomSheetViewController(question: editingQuestion)
+        viewController.onSaveQuestion = { [weak self] updatedQuestion in
+            guard let self else { return }
+            guard self.questions.indices.contains(sourceIndex) else { return }
+
+            self.questions[sourceIndex] = updatedQuestion
+            self.rebuildRows()
+            self.reloadRowsAfterQuestionEdit(
+                sourceIndex: sourceIndex,
+                previousRows: oldRows
+            )
+        }
+
+        presentQuestionBottomSheet(viewController)
+    }
+
+    private func handleDeleteQuestionTap(sourceIndex: Int) {
+        guard questions.indices.contains(sourceIndex) else { return }
+
+        showConfirmationAlert(
+            title: "Удаление вопроса",
+            message: "Вы уверены, что хотите удалить вопрос?",
+            cancelTitle: "Отмена",
+            confirmTitle: "Удалить",
+            confirmStyle: .destructive
+        ) { [weak self] in
+            guard let self else { return }
+            guard self.questions.indices.contains(sourceIndex) else { return }
+
+            self.questions.remove(at: sourceIndex)
+            self.rebuildRows()
+            self.tableView.reloadData()
+        }
+    }
+
+    private func presentQuestionBottomSheet(_ viewController: AddQuestionBottomSheetViewController) {
         let navigationController = UINavigationController(rootViewController: viewController)
         navigationController.modalPresentationStyle = .pageSheet
         viewController.loadViewIfNeeded()
@@ -366,6 +589,57 @@ final class TemplateCreatingViewController: UIViewController {
             sheet.preferredCornerRadius = 24
         }
         present(navigationController, animated: true)
+    }
+
+    private func reloadRowsAfterQuestionEdit(
+        sourceIndex: Int,
+        previousRows: [TemplateCreatingModels.Row]
+    ) {
+        let previousQuestionRowIndex = previousRows.firstIndex(where: { row in
+            if case .question(_, let rowSourceIndex, _) = row {
+                return rowSourceIndex == sourceIndex
+            }
+            return false
+        })
+        let updatedQuestionRowIndex = rows.firstIndex(where: { row in
+            if case .question(_, let rowSourceIndex, _) = row {
+                return rowSourceIndex == sourceIndex
+            }
+            return false
+        })
+
+        guard let previousQuestionRowIndex else { return }
+        let previousQuestionIndexPath = IndexPath(row: previousQuestionRowIndex, section: 0)
+
+        let updatedSummaryRowIndex = rows.firstIndex(where: { row in
+            if case .questionsSummary = row { return true }
+            return false
+        })
+
+        tableView.performBatchUpdates {
+            switch updatedQuestionRowIndex {
+            case .some(let updatedQuestionRowIndex):
+                let updatedQuestionIndexPath = IndexPath(row: updatedQuestionRowIndex, section: 0)
+                if updatedQuestionRowIndex == previousQuestionRowIndex {
+                    tableView.reloadRows(at: [updatedQuestionIndexPath], with: .none)
+                } else {
+                    tableView.deleteRows(at: [previousQuestionIndexPath], with: .none)
+                    tableView.insertRows(at: [updatedQuestionIndexPath], with: .none)
+                }
+
+            case .none:
+                tableView.deleteRows(at: [previousQuestionIndexPath], with: .fade)
+            }
+        } completion: { [weak self] _ in
+            guard let self else { return }
+            guard let updatedSummaryRowIndex else { return }
+            guard self.rows.indices.contains(updatedSummaryRowIndex) else { return }
+
+            self.tableView.reloadRows(
+                at: [IndexPath(row: updatedSummaryRowIndex, section: 0)],
+                with: .none
+            )
+        }
     }
 
     private func handleCompleteWithAITap() {
@@ -441,6 +715,35 @@ final class TemplateCreatingViewController: UIViewController {
         shouldFocusSearchField = false
         rebuildRows()
         tableView.reloadData()
+    }
+
+    private static func normalizedTitle(_ title: String?) -> String {
+        (title ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func makeQuestionSnapshot(from question: Question) -> QuestionSnapshot {
+        let answerSnapshot: QuestionSnapshot.CorrectAnswer = {
+            switch question.correctAnswer {
+            case .openText(let value):
+                return .openText(value)
+            case .singleChoice(let index):
+                return .singleChoice(index)
+            case .multipleChoice(let indexes):
+                return .multipleChoice(indexes)
+            case .none:
+                return .none
+            }
+        }()
+
+        return QuestionSnapshot(
+            id: question.id,
+            maxScore: question.maxScore,
+            options: question.options,
+            text: question.text,
+            timeLimitSec: question.timeLimitSec,
+            type: question.type,
+            correctAnswer: answerSnapshot
+        )
     }
 }
 
@@ -586,7 +889,7 @@ extension TemplateCreatingViewController: UITableViewDataSource {
             shouldFocusSearchField = false
             return cell
 
-        case .question(let index, let question):
+        case .question(let index, let sourceIndex, let question):
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier,
                 for: indexPath
@@ -594,17 +897,16 @@ extension TemplateCreatingViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
 
-            let visibleQuestions = filteredQuestions()
-            guard visibleQuestions.indices.contains(index) else {
-                return UITableViewCell()
-            }
-
-            let isLastQuestion = index == visibleQuestions.count - 1
+            let visibleQuestionsCount = filteredQuestions().count
+            let isLastQuestion = index == visibleQuestionsCount - 1
             cell.configure(
                 index: index,
                 question: question,
                 isLastQuestion: isLastQuestion
             )
+            cell.onDeleteTap = { [weak self] in
+                self?.handleDeleteQuestionTap(sourceIndex: sourceIndex)
+            }
             return cell
         }
     }
@@ -652,5 +954,14 @@ extension TemplateCreatingViewController: UITableViewDelegate {
         default:
             return 44
         }
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+
+        guard rows.indices.contains(indexPath.row) else { return }
+        guard case .question(_, let sourceIndex, _) = rows[indexPath.row] else { return }
+
+        handleEditQuestionTap(sourceIndex: sourceIndex)
     }
 }

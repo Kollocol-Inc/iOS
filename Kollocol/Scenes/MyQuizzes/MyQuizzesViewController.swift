@@ -172,6 +172,7 @@ final class MyQuizzesViewController: UIViewController {
     private var rows: [MyQuizzesModels.Row] = []
     private var templateItems: [QuizInstanceViewData] = []
     private var templatesEmptyStateText: String?
+    private var shouldRefreshTemplatesOnAppear = false
 
     // MARK: - Lifecycle
     init(interactor: MyQuizzesInteractor) {
@@ -201,6 +202,13 @@ final class MyQuizzesViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
+
+        if shouldRefreshTemplatesOnAppear {
+            shouldRefreshTemplatesOnAppear = false
+            Task {
+                await interactor.fetchTemplates()
+            }
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -222,6 +230,11 @@ final class MyQuizzesViewController: UIViewController {
         templatesEmptyStateText = emptyStateText
         templatesTableView.reloadData()
         templatesRefreshControl.endRefreshing()
+    }
+
+    @MainActor
+    func scheduleTemplatesRefreshOnAppear() {
+        shouldRefreshTemplatesOnAppear = true
     }
 
     // MARK: - Private Methods
@@ -298,6 +311,7 @@ final class MyQuizzesViewController: UIViewController {
 
         templatesTableView.register(QuizCardTableViewCell.self, forCellReuseIdentifier: QuizCardTableViewCell.reuseIdentifier)
         templatesTableView.register(EmptyStateTableViewCell.self, forCellReuseIdentifier: EmptyStateTableViewCell.reuseIdentifier)
+        templatesTableView.allowsSelection = true
         templatesTableView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
         templatesTableView.refreshControl = templatesRefreshControl
         templatesTableView.dataSource = self
@@ -475,10 +489,8 @@ extension MyQuizzesViewController: UITableViewDataSource {
                     await self?.interactor.handleQuizTypeTap(quizType)
                 }
             }
-            cell.onQuizStartTap = { [weak self] in
-                Task { [weak self] in
-                    await self?.interactor.routeToStartQuizScreen(templateId: item.id)
-                }
+            cell.onQuizStartTap = {
+                print("start quiz")
             }
 
             return cell
@@ -558,6 +570,18 @@ extension MyQuizzesViewController: UITableViewDelegate {
         switch rows[indexPath.row] {
         case .empty: return 34
         default: return 44
+        }
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard tableView === templatesTableView else { return }
+        tableView.deselectRow(at: indexPath, animated: true)
+
+        guard templateItems.indices.contains(indexPath.row) else { return }
+        guard let templateId = templateItems[indexPath.row].id else { return }
+
+        Task {
+            await interactor.handleTemplateTap(templateId: templateId)
         }
     }
 }

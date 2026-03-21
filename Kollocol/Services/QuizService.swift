@@ -48,10 +48,37 @@ actor QuizServiceImpl: QuizService {
         }
     }
 
+    func getTemplate(by templateId: String) async throws -> QuizTemplate {
+        do {
+            let response = try await api.request(GetTemplateByIdEndpoint(templateId: templateId))
+            let template = response.template.toDomain()
+            return template
+        } catch {
+            throw QuizServiceError.wrap(error)
+        }
+    }
+
     func createTemplate(_ request: CreateTemplateRequest) async throws {
         do {
             let dto = request.toDto()
             _ = try await api.request(CreateTemplateEndpoint(request: dto))
+        } catch {
+            throw QuizServiceError.wrap(error)
+        }
+    }
+
+    func updateTemplate(by templateId: String, _ request: CreateTemplateRequest) async throws {
+        do {
+            let dto = request.toDto()
+            _ = try await api.request(UpdateTemplateEndpoint(templateId: templateId, request: dto))
+        } catch {
+            throw QuizServiceError.wrap(error)
+        }
+    }
+
+    func deleteTemplate(by templateId: String) async throws {
+        do {
+            _ = try await api.request(DeleteTemplateEndpoint(templateId: templateId))
         } catch {
             throw QuizServiceError.wrap(error)
         }
@@ -63,7 +90,10 @@ protocol QuizService: Actor {
     func getParticipatingQuizzes() async throws -> [ParticipatingInstance]
     func getHostingQuizzes() async throws -> [QuizInstance]
     func getTemplates() async throws -> [QuizTemplate]
+    func getTemplate(by templateId: String) async throws -> QuizTemplate
+    func updateTemplate(by templateId: String, _ request: CreateTemplateRequest) async throws
     func createTemplate(_ request: CreateTemplateRequest) async throws
+    func deleteTemplate(by templateId: String) async throws
 }
 
 // MARK: - UserServiceError

@@ -38,9 +38,18 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         }
     }
 
-    private struct OptionItem {
+    private struct OptionItem: Equatable {
         var text: String
         var isCorrect: Bool
+    }
+
+    private struct StateSnapshot: Equatable {
+        let mode: QuestionMode
+        let questionText: String
+        let openAnswerText: String
+        let score: Int
+        let timeLimitSec: Int
+        let options: [OptionItem]
     }
 
     private enum Row {
@@ -82,6 +91,9 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private var score: Int = 1
     private var timeLimitSec: Int = 30
     private var options: [OptionItem] = []
+    private let editingQuestionId: String?
+    private let isEditingQuestion: Bool
+    private let initialStateSnapshot: StateSnapshot
 
     private var saveButtonItem: UIBarButtonItem?
     private weak var activeTimePopoverController: AddQuestionTimePopoverViewController?
@@ -89,6 +101,73 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private var keyboardBottomInset: CGFloat = 0
 
     // MARK: - Lifecycle
+    init(question: Question? = nil) {
+        let isEditingQuestion = question != nil
+        let mode: QuestionMode = {
+            switch question?.type {
+            case .multiChoice:
+                return .multi
+            case .openEnded:
+                return .openEnded
+            case .singleChoice, .none:
+                return .single
+            }
+        }()
+
+        let questionText = question?.text ?? ""
+        let openAnswerText: String = {
+            guard case let .openText(value)? = question?.correctAnswer else { return "" }
+            return value
+        }()
+        let score = question?.maxScore ?? 1
+        let timeLimitSec = question?.timeLimitSec ?? 30
+        let options: [OptionItem] = {
+            guard mode != .openEnded else { return [] }
+
+            let allOptions = question?.options ?? []
+            let correctIndexes: Set<Int> = {
+                switch question?.correctAnswer {
+                case .singleChoice(let index):
+                    return [index]
+                case .multipleChoice(let indexes):
+                    return Set(indexes)
+                default:
+                    return []
+                }
+            }()
+
+            return allOptions.enumerated().map { index, option in
+                OptionItem(
+                    text: option,
+                    isCorrect: correctIndexes.contains(index)
+                )
+            }
+        }()
+
+        self.mode = mode
+        self.questionText = questionText
+        self.openAnswerText = openAnswerText
+        self.score = score
+        self.timeLimitSec = timeLimitSec
+        self.options = options
+        self.editingQuestionId = question?.id
+        self.isEditingQuestion = isEditingQuestion
+        self.initialStateSnapshot = StateSnapshot(
+            mode: mode,
+            questionText: questionText,
+            openAnswerText: openAnswerText,
+            score: score,
+            timeLimitSec: timeLimitSec,
+            options: options
+        )
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         enableKeyboardDismissOnBackgroundTap()
@@ -386,7 +465,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
             return Question(
                 correctAnswer: correctAnswer,
-                id: nil,
+                id: editingQuestionId,
                 maxScore: score,
                 options: nil,
                 text: normalizedQuestion,
@@ -403,7 +482,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
             return Question(
                 correctAnswer: correctAnswer,
-                id: nil,
+                id: editingQuestionId,
                 maxScore: score,
                 options: normalizedOptions,
                 text: normalizedQuestion,
@@ -422,7 +501,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
             return Question(
                 correctAnswer: .multipleChoice(selectedIndexes),
-                id: nil,
+                id: editingQuestionId,
                 maxScore: score,
                 options: normalizedOptions,
                 text: normalizedQuestion,
@@ -433,6 +512,11 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     }
 
     private func handleSaveTap() {
+        if isEditingQuestion, currentStateSnapshot == initialStateSnapshot {
+            dismiss(animated: true)
+            return
+        }
+
         if let validationErrorMessage {
             showAlert(
                 title: UIConstants.errorTitle,
@@ -463,6 +547,10 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     }
 
     private var hasUnsavedChanges: Bool {
+        if isEditingQuestion {
+            return currentStateSnapshot != initialStateSnapshot
+        }
+
         if questionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
             return true
         }
@@ -472,6 +560,17 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         }
 
         return false
+    }
+
+    private var currentStateSnapshot: StateSnapshot {
+        StateSnapshot(
+            mode: mode,
+            questionText: questionText,
+            openAnswerText: openAnswerText,
+            score: score,
+            timeLimitSec: timeLimitSec,
+            options: options
+        )
     }
 
     private var validationErrorMessage: String? {

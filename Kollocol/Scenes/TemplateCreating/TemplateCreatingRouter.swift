@@ -26,7 +26,11 @@ final class TemplateCreatingRouter: TemplateCreatingPresenter, ServiceErrorHandl
     }
 
     func presentCreateTemplateSuccess() async {
-        await router.dismissTemplateCreatingScreen()
+        await router.dismissTemplateCreatingScreen(shouldRefreshTemplates: true)
+    }
+
+    func presentDeleteTemplateSuccess() async {
+        await router.dismissTemplateCreatingScreen(shouldRefreshTemplates: true)
     }
 
     func presentServiceError(_ error: QuizServiceError) async {

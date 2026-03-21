@@ -16,7 +16,7 @@ enum TemplateCreatingModels {
         case questionActions
         case questionsSummary
         case questionsSearch
-        case question(index: Int, question: Question)
+        case question(index: Int, sourceIndex: Int, question: Question)
     }
 
     struct FormData {

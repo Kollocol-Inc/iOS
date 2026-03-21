@@ -77,6 +77,10 @@ final class APIClient {
                 throw NetworkError.httpStatus(code: status, data: data)
             }
 
+            if isResponseBodyEmpty(data), let emptyResponse = EmptyResponse() as? E.Response {
+                return emptyResponse
+            }
+
             do {
                 return try decoder.decode(E.Response.self, from: data)
             } catch {
@@ -232,5 +236,11 @@ final class APIClient {
         }
 
         return "bytes=\(data.count)"
+    }
+
+    private func isResponseBodyEmpty(_ data: Data) -> Bool {
+        guard data.isEmpty == false else { return true }
+        guard let text = String(data: data, encoding: .utf8) else { return false }
+        return text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }

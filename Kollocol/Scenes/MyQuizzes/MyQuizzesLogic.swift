@@ -50,6 +50,14 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
         await presenter.presentStartQuizScreen(templateId: templateId)
     }
 
+    func handleTemplateTap(templateId: String) async {
+        guard let template = allTemplates.first(where: { $0.id == templateId }) else {
+            return
+        }
+
+        await presenter.presentTemplateEditingScreen(template)
+    }
+
     func handleQuizTypeTap(_ quizType: QuizType) async {
         await presenter.presentQuizTypeInfo(quizType)
     }

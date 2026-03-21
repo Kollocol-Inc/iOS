@@ -91,6 +91,44 @@ actor MockQuizServiceImpl: QuizService {
         ]
     }
 
+    func getTemplate(by templateId: String) async throws -> QuizTemplate {
+        return QuizTemplate(
+            createdAt: Date(),
+            description: "описание",
+            id: "123",
+            questions: [
+                Question(
+                    correctAnswer: .openText("123"),
+                    id: "123",
+                    maxScore: 5,
+                    options: [],
+                    text: "Question 1",
+                    timeLimitSec: 30,
+                    type: .openEnded
+                ),
+                Question(
+                    correctAnswer: .openText("123"),
+                    id: "123",
+                    maxScore: 5,
+                    options: [],
+                    text: "Question 1",
+                    timeLimitSec: 30,
+                    type: .openEnded
+                )
+            ],
+            quizType: .async,
+            settings: QuizSettings(
+                allowReview: true,
+                randomOrder: true,
+                showCorrectAnswer: true,
+                timeLimitTotal: true
+            ),
+            title: "Testik",
+            updatedAt: Date(),
+            userId: "123"
+        )
+    }
+
     func getParticipatingQuizzes() async throws -> [ParticipatingInstance] {
         return [
             ParticipatingInstance(
@@ -188,5 +226,14 @@ actor MockQuizServiceImpl: QuizService {
     }
 
     func createTemplate(_ request: CreateTemplateRequest) async throws {
+
+    }
+
+    func updateTemplate(by templateId: String, _ request: CreateTemplateRequest) async throws {
+
+    }
+
+    func deleteTemplate(by templateId: String) async throws {
+
     }
 }

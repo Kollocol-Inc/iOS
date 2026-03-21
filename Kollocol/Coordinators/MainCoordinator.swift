@@ -154,6 +154,11 @@ final class MainCoordinator {
 
         return resolve(from: navigationController)
     }
+
+    private func myQuizzesViewController() -> MyQuizzesViewController? {
+        guard let myQuizzesNavController else { return nil }
+        return myQuizzesNavController.viewControllers.first { $0 is MyQuizzesViewController } as? MyQuizzesViewController
+    }
 }
 
 // MARK: - AlertPresenting
@@ -203,6 +208,18 @@ extension MainCoordinator: MyQuizzesRouting {
         myQuizzesNavController.pushViewController(viewController, animated: true)
     }
 
+    func routeToEditTemplateScreen(template: QuizTemplate) {
+        guard let myQuizzesNavController else { return }
+
+        let viewController = TemplateCreatingAssembly.build(
+            router: self,
+            quizService: services.quizService,
+            template: template
+        )
+        viewController.hidesBottomBarWhenPushed = true
+        myQuizzesNavController.pushViewController(viewController, animated: true)
+    }
+
     func routeToStartQuizScreen(templateId: String?) {
         // TODO: route to start quiz screen
     }
@@ -224,7 +241,11 @@ extension MainCoordinator: ProfileRouting {
 
 // MARK: - TemplateCreatingRouting
 extension MainCoordinator: TemplateCreatingRouting {
-    func dismissTemplateCreatingScreen() {
+    func dismissTemplateCreatingScreen(shouldRefreshTemplates: Bool) {
+        if shouldRefreshTemplates {
+            myQuizzesViewController()?.scheduleTemplatesRefreshOnAppear()
+        }
+
         myQuizzesNavController?.popViewController(animated: true)
     }
 }
@@ -243,13 +264,14 @@ protocol GroupsRouting: AnyObject {
 @MainActor
 protocol MyQuizzesRouting: ErrorMessageDisplaying {
     func routeToCreateTemplateScreen()
+    func routeToEditTemplateScreen(template: QuizTemplate)
     func routeToStartQuizScreen(templateId: String?)
     func showQuizTypeInfoBottomSheet(title: String, description: String)
 }
 
 @MainActor
 protocol TemplateCreatingRouting: ErrorMessageDisplaying {
-    func dismissTemplateCreatingScreen()
+    func dismissTemplateCreatingScreen(shouldRefreshTemplates: Bool)
     func showQuizTypeInfoBottomSheet(title: String, description: String)
 }
 

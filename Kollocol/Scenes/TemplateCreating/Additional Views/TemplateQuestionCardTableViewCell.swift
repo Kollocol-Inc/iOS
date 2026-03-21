@@ -141,17 +141,6 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         return label
     }()
 
-    private let editButton: UIButton = {
-        let button = UIButton(type: .system)
-        let configuration = UIImage.SymbolConfiguration(
-            font: .systemFont(ofSize: 12, weight: .medium)
-        )
-        let image = UIImage(systemName: "pencil", withConfiguration: configuration)?
-            .withTintColor(.textSecondary, renderingMode: .alwaysOriginal)
-        button.setImage(image, for: .normal)
-        return button
-    }()
-
     private let deleteButton: UIButton = {
         let button = UIButton(type: .system)
         let configuration = UIImage.SymbolConfiguration(
@@ -237,6 +226,8 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     private var questionBottomConstraint: NSLayoutConstraint?
     private var cardBottomConstraint: NSLayoutConstraint?
 
+    var onDeleteTap: (() -> Void)?
+
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -250,6 +241,7 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        onDeleteTap = nil
         questionLabel.text = nil
         metadataLabel.text = nil
         openAnswerLabel.text = nil
@@ -296,6 +288,7 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         configureBackground()
         configureStacks()
         configureConstraints()
+        configureActions()
     }
 
     private func configureBackground() {
@@ -307,11 +300,14 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     }
 
     private func configureStacks() {
-        actionsStackView.addArrangedSubview(editButton)
         actionsStackView.addArrangedSubview(deleteButton)
 
         topLineStackView.addArrangedSubview(metadataLabel)
         topLineStackView.addArrangedSubview(actionsStackView)
+    }
+
+    private func configureActions() {
+        deleteButton.addTarget(self, action: #selector(handleDeleteTap), for: .touchUpInside)
     }
 
     private func configureConstraints() {
@@ -462,5 +458,10 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         case .openText, .none:
             return []
         }
+    }
+
+    @objc
+    private func handleDeleteTap() {
+        onDeleteTap?()
     }
 }
