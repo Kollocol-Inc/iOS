@@ -10,7 +10,7 @@ import Foundation
 struct QuizInstance {
     let accessCode:     String?
     let createdAt:      Date?
-    let deadline:       String?
+    let deadline:       Date?
     let groupId:        String?
     let hostUserId:     String?
     let id:             String?
@@ -28,13 +28,27 @@ extension QuizInstance {
     func toViewData() -> QuizInstanceViewData {
         return QuizInstanceViewData(
             accessCode: self.accessCode,
-            deadline: self.deadline,
+            deadline: Self.formatDeadline(deadline),
             id: self.id,
             quizType: self.quizType,
             status: self.status,
             title: self.title,
-            totalQuestions: self.totalTime,
+            totalQuestions: self.totalQuestions,
             totalTime: self.totalTime?.asHmsFromSeconds()
         )
+    }
+}
+
+// MARK: - Private Methods
+private extension QuizInstance {
+    private static func formatDeadline(_ deadline: Date?) -> String? {
+        guard let deadline else { return nil }
+
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.timeZone = .autoupdatingCurrent
+        formatter.dateFormat = "dd.MM.yyyy HH:mm"
+
+        return "До \(formatter.string(from: deadline))"
     }
 }

@@ -135,7 +135,7 @@ actor MockQuizServiceImpl: QuizService {
                 instance: QuizInstance(
                     accessCode: "127287",
                     createdAt: Date(),
-                    deadline: "До 01.01.2026 12:00",
+                    deadline: Date(),
                     groupId: "123",
                     hostUserId: "123",
                     id: "123",
@@ -158,7 +158,7 @@ actor MockQuizServiceImpl: QuizService {
                 instance: QuizInstance(
                     accessCode: "127287",
                     createdAt: Date(),
-                    deadline: "До 01.01.2026 12:00",
+                    deadline: Date(),
                     groupId: "123",
                     hostUserId: "123",
                     id: "123",
@@ -185,7 +185,7 @@ actor MockQuizServiceImpl: QuizService {
             QuizInstance(
                 accessCode: "127287",
                 createdAt: Date(),
-                deadline: "До 01.01.2026 12:00",
+                deadline: Date(),
                 groupId: "123",
                 hostUserId: "123",
                 id: "123",
@@ -205,7 +205,7 @@ actor MockQuizServiceImpl: QuizService {
             QuizInstance(
                 accessCode: "127287",
                 createdAt: Date(),
-                deadline: "До 01.01.2026 12:00",
+                deadline: Date(),
                 groupId: "123",
                 hostUserId: "123",
                 id: "123",
@@ -234,6 +234,10 @@ actor MockQuizServiceImpl: QuizService {
     }
 
     func deleteTemplate(by templateId: String) async throws {
+
+    }
+
+    func createQuizInstance(_ request: CreateInstanceRequest) async throws {
 
     }
 }

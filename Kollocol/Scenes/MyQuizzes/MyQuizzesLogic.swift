@@ -47,7 +47,12 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
     }
 
     func routeToStartQuizScreen(templateId: String?) async {
-        await presenter.presentStartQuizScreen(templateId: templateId)
+        guard let templateId else { return }
+        guard let template = allTemplates.first(where: { $0.id == templateId }) else {
+            return
+        }
+
+        await presenter.presentStartQuizScreen(template: template)
     }
 
     func handleTemplateTap(templateId: String) async {

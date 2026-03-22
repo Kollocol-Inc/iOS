@@ -22,7 +22,7 @@ protocol MyQuizzesPresenter {
     func presentTemplates(_ templates: [QuizTemplate], emptyStateText: String?) async
     func presentServiceError(_ error: QuizServiceError) async
     func presentCreateTemplateScreen() async
-    func presentStartQuizScreen(templateId: String?) async
+    func presentStartQuizScreen(template: QuizTemplate) async
     func presentTemplateEditingScreen(_ template: QuizTemplate) async
     func presentQuizTypeInfo(_ quizType: QuizType) async
 }

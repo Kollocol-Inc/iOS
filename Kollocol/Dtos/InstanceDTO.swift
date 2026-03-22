@@ -10,7 +10,7 @@ import Foundation
 struct InstanceDTO: Decodable {
     let accessCode:     String?
     let createdAt:      Date?
-    let deadline:       String?
+    let deadline:       Date?
     let groupId:        String?
     let hostUserId:     String?
     let id:             String?
@@ -70,7 +70,12 @@ extension InstanceDTO {
         let createdAtString = try container.decode(String.self, forKey: .createdAt)
         createdAt = try Self.parseRFC3339(createdAtString, key: .createdAt)
 
-        deadline = try container.decodeIfPresent(String.self, forKey: .deadline)
+        if let deadlineString = try container.decodeIfPresent(String.self, forKey: .deadline) {
+            deadline = try Self.parseRFC3339(deadlineString, key: .deadline)
+        } else {
+            deadline = nil
+        }
+
         groupId = try container.decodeIfPresent(String.self, forKey: .groupId)
         hostUserId = try container.decodeIfPresent(String.self, forKey: .hostUserId)
         id = try container.decode(String.self, forKey: .id)
@@ -80,8 +85,8 @@ extension InstanceDTO {
         status = try container.decodeEnumIfPresent(QuizStatus.self, forKey: .status)
         templateId = try container.decodeIfPresent(String.self, forKey: .templateId)
         title = try container.decodeIfPresent(String.self, forKey: .title)
-        totalQuestions = try container.decodeIfPresent(String.self, forKey: .totalQuestions)
-        totalTime = try container.decodeIfPresent(String.self, forKey: .totalTime)
+        totalQuestions = try container.decodeStringFromStringOrIntIfPresent(forKey: .totalQuestions)
+        totalTime = try container.decodeStringFromStringOrIntIfPresent(forKey: .totalTime)
     }
 }
 

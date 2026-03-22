@@ -36,7 +36,8 @@ final class TemplateCreatingViewController: UIViewController {
 
     // MARK: - Constants
     private enum UIConstants {
-        static let title = "Создание шаблона"
+        static let createTitle = "Создание шаблона"
+        static let editTitle = "Изменение шаблона"
         static let validationErrorTitle = "Ошибка"
         static let titleRequiredMessage = "Укажите название шаблона"
         static let questionsRequiredMessage = "Недостаточно вопросов"
@@ -219,9 +220,9 @@ final class TemplateCreatingViewController: UIViewController {
 
     private func configureNavigationBar() {
         let titleLabel = UILabel()
-        titleLabel.text = UIConstants.title
+        titleLabel.text = isEditingTemplate ? UIConstants.editTitle : UIConstants.createTitle
         titleLabel.textColor = .textSecondary
-        titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
+        titleLabel.font = .systemFont(ofSize: 19, weight: .bold)
         navigationItem.titleView = titleLabel
         navigationItem.hidesBackButton = true
 

@@ -83,6 +83,15 @@ actor QuizServiceImpl: QuizService {
             throw QuizServiceError.wrap(error)
         }
     }
+
+    func createQuizInstance(_ request: CreateInstanceRequest) async throws {
+        do {
+            let dto = request.toDto()
+            _ = try await api.request(StartQuizEndpoint(request: dto))
+        } catch {
+            throw QuizServiceError.wrap(error)
+        }
+    }
 }
 
 // MARK: - UserServiceError
@@ -94,6 +103,7 @@ protocol QuizService: Actor {
     func updateTemplate(by templateId: String, _ request: CreateTemplateRequest) async throws
     func createTemplate(_ request: CreateTemplateRequest) async throws
     func deleteTemplate(by templateId: String) async throws
+    func createQuizInstance(_ request: CreateInstanceRequest) async throws
 }
 
 // MARK: - UserServiceError

@@ -489,8 +489,10 @@ extension MyQuizzesViewController: UITableViewDataSource {
                     await self?.interactor.handleQuizTypeTap(quizType)
                 }
             }
-            cell.onQuizStartTap = {
-                print("start quiz")
+            cell.onQuizStartTap = { [weak self] in
+                Task { [weak self] in
+                    await self?.interactor.routeToStartQuizScreen(templateId: item.id)
+                }
             }
 
             return cell
