@@ -52,6 +52,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let authService = AuthServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
         let userService = UserServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
         let quizService = QuizServiceImpl(api: api)
+        let quizParticipationService = QuizParticipationServiceImpl(
+            baseURL: baseURL,
+            sessionManager: sessionManager
+        )
 
         let services = Services(
             authService: authService,
@@ -59,7 +63,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             tokenStore: tokenStore,
             udService: udService,
             userService: userService,
-            quizService: quizService
+            quizService: quizService,
+            quizParticipationService: quizParticipationService
         )
 
         let coordinator = AppCoordinator(

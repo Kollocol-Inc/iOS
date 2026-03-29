@@ -20,7 +20,7 @@ protocol MainPresenter {
     func presentQuizzes(participating: [QuizInstance], hosting: [QuizInstance]) async
     func presentServiceError(_ error: any UserFacingError) async
     func presentProfileScreen() async
-    func presentJoinQuizSuccess() async
-    func presentJoinQuizError(_ error: QuizServiceError) async
+    func presentJoinQuizSuccess(accessCode: String) async
+    func presentJoinQuizError(_ error: QuizParticipationServiceError) async
     func presentQuizTypeInfo(_ quizType: QuizType) async
 }

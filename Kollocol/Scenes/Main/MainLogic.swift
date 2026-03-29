@@ -12,16 +12,23 @@ final class MainLogic: MainInteractor {
     private let presenter: MainPresenter
     private let userService: UserService
     private let quizService: QuizService
+    private let quizParticipationService: QuizParticipationService
 
     // MARK: - Properties
     var participatingInstances: [ParticipatingInstance] = []
     var hostingInstances: [QuizInstance] = []
 
     // MARK: - Lifecycle
-    init(presenter: MainPresenter, userService: UserService, quizService: QuizService) {
+    init(
+        presenter: MainPresenter,
+        userService: UserService,
+        quizService: QuizService,
+        quizParticipationService: QuizParticipationService
+    ) {
         self.presenter = presenter
         self.userService = userService
         self.quizService = quizService
+        self.quizParticipationService = quizParticipationService
     }
 
     // MARK: - Methods
@@ -56,7 +63,12 @@ final class MainLogic: MainInteractor {
     }
 
     func joinQuiz(code: String) async {
-//        await presenter.presentJoinQuizError()
+        do {
+            try await quizParticipationService.connect(accessCode: code)
+            await presenter.presentJoinQuizSuccess(accessCode: code)
+        } catch {
+            await presenter.presentJoinQuizError(QuizParticipationServiceError.wrap(error))
+        }
     }
 
     func handleQuizTypeTap(_ quizType: QuizType) async {

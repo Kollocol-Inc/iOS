@@ -55,6 +55,7 @@ final class MainCoordinator {
     private var groupsNavController: UINavigationController?
     private var myQuizzesNavController: UINavigationController?
     private var profileNavController: UINavigationController?
+    private var quizWaitingRoomCoordinator: QuizWaitingRoomCoordinator?
 
     // MARK: - Lifecycle
     init(
@@ -85,7 +86,12 @@ final class MainCoordinator {
     }
 
     private func makeTabs() -> [UIViewController] {
-        let mainVC = MainAssembly.build(router: self, userService: services.userService, quizService: services.quizService)
+        let mainVC = MainAssembly.build(
+            router: self,
+            userService: services.userService,
+            quizService: services.quizService,
+            quizParticipationService: services.quizParticipationService
+        )
         let mainNav = makeTabNavigationController(
             root: mainVC,
             tab: .main
@@ -159,6 +165,23 @@ final class MainCoordinator {
         guard let myQuizzesNavController else { return nil }
         return myQuizzesNavController.viewControllers.first { $0 is MyQuizzesViewController } as? MyQuizzesViewController
     }
+
+    private func startQuizWaitingRoom(
+        on navigationController: UINavigationController,
+        accessCode: String
+    ) {
+        let coordinator = QuizWaitingRoomCoordinator(
+            navigationController: navigationController,
+            quizParticipationService: services.quizParticipationService,
+            initialData: .init(accessCode: accessCode),
+            onFinish: { [weak self] in
+                self?.quizWaitingRoomCoordinator = nil
+            }
+        )
+
+        quizWaitingRoomCoordinator = coordinator
+        coordinator.start()
+    }
 }
 
 // MARK: - AlertPresenting
@@ -179,6 +202,11 @@ extension MainCoordinator: InfoBottomSheetPresenting {
 extension MainCoordinator: MainRouting {
     func routeToProfileScreen() {
         tabBarController.selectedIndex = 3
+    }
+
+    func routeToQuizWaitingRoom(accessCode: String) {
+        guard let mainNavController else { return }
+        startQuizWaitingRoom(on: mainNavController, accessCode: accessCode)
     }
 
     func showError(title: String, message: String) {
@@ -226,7 +254,8 @@ extension MainCoordinator: MyQuizzesRouting {
         let viewController = StartQuizAssembly.build(
             router: self,
             template: template,
-            quizService: services.quizService
+            quizService: services.quizService,
+            quizParticipationService: services.quizParticipationService
         )
         viewController.hidesBottomBarWhenPushed = true
         myQuizzesNavController.pushViewController(viewController, animated: true)
@@ -263,11 +292,19 @@ extension MainCoordinator: StartQuizRouting {
     func dismissStartQuizScreen() {
         myQuizzesNavController?.popViewController(animated: true)
     }
+
+    func routeToQuizWaitingRoomFromStartQuiz(accessCode: String) {
+        guard let myQuizzesNavController else { return }
+
+        myQuizzesNavController.popViewController(animated: false)
+        startQuizWaitingRoom(on: myQuizzesNavController, accessCode: accessCode)
+    }
 }
 
 @MainActor
 protocol MainRouting: ErrorMessageDisplaying {
     func routeToProfileScreen()
+    func routeToQuizWaitingRoom(accessCode: String)
     func showQuizTypeInfoBottomSheet(title: String, description: String)
 }
 
@@ -293,6 +330,7 @@ protocol TemplateCreatingRouting: ErrorMessageDisplaying {
 @MainActor
 protocol StartQuizRouting: ErrorMessageDisplaying {
     func dismissStartQuizScreen()
+    func routeToQuizWaitingRoomFromStartQuiz(accessCode: String)
 }
 
 @MainActor

@@ -75,4 +75,5 @@ struct Services {
     let udService: UserDefaultsService
     let userService: UserService
     let quizService: QuizService
+    let quizParticipationService: QuizParticipationService
 }

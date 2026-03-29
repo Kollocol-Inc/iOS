@@ -15,6 +15,8 @@ protocol StartQuizInteractor: Actor {
 protocol StartQuizPresenter {
     func presentStartQuizLoading(_ isLoading: Bool) async
     func presentStartQuizSuccess() async
+    func presentStartSyncQuizSuccess(accessCode: String) async
     func presentServiceError(_ error: QuizServiceError) async
+    func presentJoinQuizError(_ error: QuizParticipationServiceError) async
     func presentCloseScreen() async
 }

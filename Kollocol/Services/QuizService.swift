@@ -84,10 +84,13 @@ actor QuizServiceImpl: QuizService {
         }
     }
 
-    func createQuizInstance(_ request: CreateInstanceRequest) async throws {
+    @discardableResult
+    func createQuizInstance(_ request: CreateInstanceRequest) async throws -> String? {
         do {
             let dto = request.toDto()
-            _ = try await api.request(StartQuizEndpoint(request: dto))
+            let response = try await api.request(StartQuizEndpoint(request: dto))
+            let accessCode = response.accessCode?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return accessCode?.isEmpty == false ? accessCode : nil
         } catch {
             throw QuizServiceError.wrap(error)
         }
@@ -103,7 +106,8 @@ protocol QuizService: Actor {
     func updateTemplate(by templateId: String, _ request: CreateTemplateRequest) async throws
     func createTemplate(_ request: CreateTemplateRequest) async throws
     func deleteTemplate(by templateId: String) async throws
-    func createQuizInstance(_ request: CreateInstanceRequest) async throws
+    @discardableResult
+    func createQuizInstance(_ request: CreateInstanceRequest) async throws -> String?
 }
 
 // MARK: - UserServiceError

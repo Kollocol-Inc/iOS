@@ -43,12 +43,14 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
         await router.routeToProfileScreen()
     }
 
-    func presentJoinQuizSuccess() async {
-        // TODO: Handle success
+    func presentJoinQuizSuccess(accessCode: String) async {
+        await view?.resetCodeFields()
+        await router.routeToQuizWaitingRoom(accessCode: accessCode)
     }
 
-    func presentJoinQuizError(_ error: QuizServiceError) async {
-        await presentServiceError(error, useCase: .joinQuiz, title: "Неверный код")
+    func presentJoinQuizError(_ error: QuizParticipationServiceError) async {
+        let title = error == .invalidCode ? "Неверный код" : "Ошибка"
+        await presentServiceError(error, useCase: .joinQuiz, title: title)
         await view?.resetCodeFields()
     }
 
@@ -60,11 +62,10 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
     }
 
     func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String? {
-        guard let quizServiceError = error as? QuizServiceError else { return nil }
-
         switch useCase {
         case .joinQuiz:
-            if quizServiceError == .badRequest {
+            if let quizParticipationError = error as? QuizParticipationServiceError,
+               quizParticipationError == .invalidCode {
                 return "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
             }
             return nil

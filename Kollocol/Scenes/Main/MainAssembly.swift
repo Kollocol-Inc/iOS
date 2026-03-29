@@ -12,10 +12,16 @@ enum MainAssembly {
     static func build(
         router: MainRouting,
         userService: UserService,
-        quizService: QuizService
+        quizService: QuizService,
+        quizParticipationService: QuizParticipationService
     ) -> UIViewController {
         let presenter = MainRouter(router: router)
-        let interactor = MainLogic(presenter: presenter, userService: userService, quizService: quizService)
+        let interactor = MainLogic(
+            presenter: presenter,
+            userService: userService,
+            quizService: quizService,
+            quizParticipationService: quizParticipationService
+        )
         let view = MainViewController(interactor: interactor)
         presenter.view = view
         

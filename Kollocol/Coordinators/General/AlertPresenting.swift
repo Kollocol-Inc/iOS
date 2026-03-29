@@ -110,6 +110,31 @@ extension QuizServiceError: UserFacingError {
     }
 }
 
+extension QuizParticipationServiceError: UserFacingError {
+    var userMessage: String {
+        switch self {
+        case .invalidCode:
+            return "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
+        case .offline:
+            return "Нет интернета"
+        case .unauthorized:
+            return "Ошибка авторизации. Выполните вход снова"
+        case .connectionClosed:
+            return "Соединение с квизом разорвано"
+        case .connectionTimeout:
+            return "Не удалось подключиться к квизу. Попробуйте еще раз"
+        case .notConnected:
+            return "Нет активного подключения к квизу"
+        case .invalidConfiguration:
+            return "Ошибка конфигурации websocket. Обратитесь к разработчику"
+        case .encodingFailed:
+            return "Не удалось отправить данные на сервер"
+        case .unknown:
+            return "Что-то пошло не так"
+        }
+    }
+}
+
 // MARK: - ServiceErrorHandling
 enum ServiceErrorUseCase {
     case generic

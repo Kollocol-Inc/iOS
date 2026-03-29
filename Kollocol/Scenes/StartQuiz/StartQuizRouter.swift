@@ -29,8 +29,16 @@ final class StartQuizRouter: StartQuizPresenter, ServiceErrorHandling {
         await router.dismissStartQuizScreen()
     }
 
+    func presentStartSyncQuizSuccess(accessCode: String) async {
+        await router.routeToQuizWaitingRoomFromStartQuiz(accessCode: accessCode)
+    }
+
     func presentServiceError(_ error: QuizServiceError) async {
         await presentServiceError(error, useCase: .generic)
+    }
+
+    func presentJoinQuizError(_ error: QuizParticipationServiceError) async {
+        await presentServiceError(error, useCase: .joinQuiz)
     }
 
     func presentCloseScreen() async {

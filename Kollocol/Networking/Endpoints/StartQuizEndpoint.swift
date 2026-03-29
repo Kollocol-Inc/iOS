@@ -8,7 +8,7 @@
 import Foundation
 
 struct StartQuizEndpoint: Endpoint {
-    typealias Response = EmptyResponse
+    typealias Response = CreateQuizInstanceResponse
 
     let request: CreateInstanceRequestDTO
 

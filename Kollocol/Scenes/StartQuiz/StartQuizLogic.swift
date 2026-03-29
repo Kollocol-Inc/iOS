@@ -11,16 +11,19 @@ actor StartQuizLogic: StartQuizInteractor {
     // MARK: - Properties
     private let presenter: StartQuizPresenter
     private let quizService: QuizService
+    private let quizParticipationService: QuizParticipationService
     private let template: QuizTemplate
 
     // MARK: - Lifecycle
     init(
         presenter: StartQuizPresenter,
         quizService: QuizService,
+        quizParticipationService: QuizParticipationService,
         template: QuizTemplate
     ) {
         self.presenter = presenter
         self.quizService = quizService
+        self.quizParticipationService = quizParticipationService
         self.template = template
     }
 
@@ -34,9 +37,29 @@ actor StartQuizLogic: StartQuizInteractor {
 
         do {
             let request = makeCreateInstanceRequest(from: formData)
-            try await quizService.createQuizInstance(request)
-            await presenter.presentStartQuizLoading(false)
-            await presenter.presentStartQuizSuccess()
+            let accessCode = try await quizService.createQuizInstance(request)
+
+            guard template.quizType == .sync else {
+                await presenter.presentStartQuizLoading(false)
+                await presenter.presentStartQuizSuccess()
+                return
+            }
+
+            let normalizedAccessCode = accessCode?.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let normalizedAccessCode, normalizedAccessCode.isEmpty == false else {
+                await presenter.presentStartQuizLoading(false)
+                await presenter.presentServiceError(.unknown)
+                return
+            }
+
+            do {
+                try await quizParticipationService.connect(accessCode: normalizedAccessCode)
+                await presenter.presentStartQuizLoading(false)
+                await presenter.presentStartSyncQuizSuccess(accessCode: normalizedAccessCode)
+            } catch {
+                await presenter.presentStartQuizLoading(false)
+                await presenter.presentJoinQuizError(QuizParticipationServiceError.wrap(error))
+            }
         } catch {
             await presenter.presentStartQuizLoading(false)
             await presenter.presentServiceError(QuizServiceError.wrap(error))

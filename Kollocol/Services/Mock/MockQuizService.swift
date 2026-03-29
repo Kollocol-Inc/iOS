@@ -237,7 +237,7 @@ actor MockQuizServiceImpl: QuizService {
 
     }
 
-    func createQuizInstance(_ request: CreateInstanceRequest) async throws {
-
+    func createQuizInstance(_ request: CreateInstanceRequest) async throws -> String? {
+        return "127287"
     }
 }

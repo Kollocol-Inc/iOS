@@ -12,12 +12,14 @@ enum StartQuizAssembly {
     static func build(
         router: StartQuizRouting,
         template: QuizTemplate,
-        quizService: QuizService
+        quizService: QuizService,
+        quizParticipationService: QuizParticipationService
     ) -> UIViewController {
         let presenter = StartQuizRouter(router: router)
         let interactor = StartQuizLogic(
             presenter: presenter,
             quizService: quizService,
+            quizParticipationService: quizParticipationService,
             template: template
         )
         let view = StartQuizViewController(
