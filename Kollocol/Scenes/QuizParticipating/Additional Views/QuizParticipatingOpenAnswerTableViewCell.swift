@@ -9,8 +9,8 @@ import UIKit
 
 final class QuizParticipatingOpenAnswerTableViewCell: UITableViewCell {
     // MARK: - UI Components
-    private let answerTextView: UITextView = {
-        let textView = UITextView()
+    private let answerTextView: StripedLoadingTextView = {
+        let textView = StripedLoadingTextView()
         textView.backgroundColor = .dividerPrimary
         textView.layer.cornerRadius = 18
         textView.font = .systemFont(ofSize: 17, weight: .medium)
@@ -39,18 +39,36 @@ final class QuizParticipatingOpenAnswerTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        answerTextView.stopAnimating()
+        onDidEndEditing = nil
+    }
+
     // MARK: - Methods
     var currentText: String {
         answerTextView.text
     }
 
-    func configure(text: String, isEditable: Bool) {
+    func configure(text: String, isEditable: Bool, isLoading: Bool) {
         isUpdatingUI = true
         answerTextView.text = text
-        answerTextView.isEditable = isEditable
-        answerTextView.isSelectable = isEditable
-        answerTextView.isScrollEnabled = true
-        answerTextView.alpha = isEditable ? 1 : 0.8
+
+        if isLoading {
+            answerTextView.isEditable = false
+            answerTextView.isSelectable = false
+            answerTextView.isScrollEnabled = true
+            answerTextView.alpha = 1
+            answerTextView.startAnimating()
+        } else {
+            answerTextView.stopAnimating()
+            answerTextView.isEditable = isEditable
+            answerTextView.isSelectable = isEditable
+            answerTextView.isScrollEnabled = true
+            answerTextView.isUserInteractionEnabled = isEditable
+            answerTextView.alpha = isEditable ? 1 : 0.8
+        }
+
         isUpdatingUI = false
     }
 
@@ -62,8 +80,8 @@ final class QuizParticipatingOpenAnswerTableViewCell: UITableViewCell {
 
         contentView.addSubview(answerTextView)
         answerTextView.pinTop(to: contentView.topAnchor, 0)
-        answerTextView.pinLeft(to: contentView.leadingAnchor, 16)
-        answerTextView.pinRight(to: contentView.trailingAnchor, 16)
+        answerTextView.pinLeft(to: contentView.leadingAnchor, 24)
+        answerTextView.pinRight(to: contentView.trailingAnchor, 24)
         answerTextView.pinBottom(to: contentView.bottomAnchor, 20)
         answerTextView.setHeight(120)
         answerTextView.delegate = self

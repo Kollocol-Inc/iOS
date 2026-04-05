@@ -93,6 +93,38 @@ final class QuizParticipatingViewController: UIViewController {
 
     private let waitingPlaceholderPillView = QuizParticipatingInfoPillView()
     private let waitingTimerPillView = QuizParticipatingInfoPillView()
+
+    private let asyncCompletionLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.isHidden = true
+
+        let text = "Квиз успешно пройден\nОжидайте получения оценки"
+        let attributedText = NSMutableAttributedString(
+            string: text,
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 18, weight: .bold),
+                .foregroundColor: UIColor.textPrimary
+            ]
+        )
+
+        if let lineBreakRange = text.range(of: "\n") {
+            let secondLineStartIndex = text.distance(from: text.startIndex, to: lineBreakRange.upperBound)
+            let secondLineLength = text.count - secondLineStartIndex
+            attributedText.addAttributes(
+                [
+                    .font: UIFont.systemFont(ofSize: 16, weight: .semibold),
+                    .foregroundColor: UIColor.textSecondary
+                ],
+                range: NSRange(location: secondLineStartIndex, length: secondLineLength)
+            )
+        }
+
+        label.attributedText = attributedText
+        return label
+    }()
+
     private let navigationTitleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 20, weight: .bold)
@@ -112,6 +144,7 @@ final class QuizParticipatingViewController: UIViewController {
         selectedOptionIndexes: [],
         phase: .participantAnswering,
         isCreator: false,
+        isAsyncQuiz: false,
         participantRows: [],
         optionAnswerCounts: [:],
         waitingAnsweredCount: 0,
@@ -201,12 +234,14 @@ final class QuizParticipatingViewController: UIViewController {
         updateBottomButtonState()
 
         let shouldShowWaitingOverlay = state.phase == .participantSubmittedWaitingOthers
+            && state.isAsyncQuiz == false
         waitingOverlayView.isHidden = shouldShowWaitingOverlay == false
         updateWaitingOverlayParticipantsPill()
         updateWaitingOverlayTimerPill()
 
         rebuildRows()
         tableView.reloadData()
+        updateAsyncCompletionLabelVisibility()
     }
 
     @MainActor
@@ -263,6 +298,10 @@ final class QuizParticipatingViewController: UIViewController {
         waitingHorizontalStackView.addArrangedSubview(waitingTimerPillView)
         waitingTimerPillView.setWidth(86)
         waitingTimerPillView.setHeight(42)
+
+        tableView.addSubview(asyncCompletionLabel)
+        asyncCompletionLabel.pinCenter(to: tableView)
+        asyncCompletionLabel.pinHorizontal(to: tableView, 24, mode: .grOE)
     }
 
     private func configureTableView() {
@@ -371,6 +410,11 @@ final class QuizParticipatingViewController: UIViewController {
         var updatedRows: [QuizParticipatingModels.Row] = []
 
         if state.phase == .quizFinished {
+            if state.isAsyncQuiz && state.isCreator == false {
+                rows = []
+                return
+            }
+
             updatedRows.append(.header(title: "Таблица лидеров"))
             updatedRows.append(.topLeaders(state.topLeaders))
 
@@ -416,10 +460,12 @@ final class QuizParticipatingViewController: UIViewController {
             if questionPayload.question.type == .openEnded,
                state.isCreator == false,
                state.phase == .participantAnswering || state.phase == .participantSubmittedWaitingOthers {
+                let isAnswerSubmissionPending = state.phase == .participantSubmittedWaitingOthers
                 updatedRows.append(
                     .openAnswerInput(
                         text: state.openAnswerText,
-                        isEditable: state.phase == .participantAnswering
+                        isEditable: state.phase == .participantAnswering && isAnswerSubmissionPending == false,
+                        isLoading: isAnswerSubmissionPending
                     )
                 )
             } else if questionPayload.question.type == .singleChoice || questionPayload.question.type == .multiChoice {
@@ -427,6 +473,7 @@ final class QuizParticipatingViewController: UIViewController {
                 ? .multipleChoice
                 : .singleChoice
                 let isAnswersCountVisible = state.isCreator || state.phase == .participantWaitingForCreator
+                let isAnswerSubmissionPending = state.phase == .participantSubmittedWaitingOthers
 
                 for (index, optionText) in questionPayload.question.options.enumerated() {
                     let optionViewData = QuizParticipatingModels.OptionViewData(
@@ -434,7 +481,10 @@ final class QuizParticipatingViewController: UIViewController {
                         text: optionText,
                         kind: kind,
                         isSelected: state.selectedOptionIndexes.contains(index),
-                        isEnabled: state.isCreator == false && state.phase == .participantAnswering,
+                        isEnabled: state.isCreator == false
+                            && state.phase == .participantAnswering
+                            && isAnswerSubmissionPending == false,
+                        isLoading: isAnswerSubmissionPending,
                         answersCount: state.optionAnswerCounts[index] ?? 0,
                         isAnswersCountVisible: isAnswersCountVisible
                     )
@@ -462,6 +512,10 @@ final class QuizParticipatingViewController: UIViewController {
         }
 
         rows = updatedRows
+    }
+
+    private func updateAsyncCompletionLabelVisibility() {
+        asyncCompletionLabel.isHidden = !(state.phase == .quizFinished && state.isAsyncQuiz && state.isCreator == false)
     }
 
     private func configureTimer(for questionPayload: QuizQuestionPayload?) {
@@ -740,7 +794,7 @@ extension QuizParticipatingViewController: UITableViewDataSource {
             cell.configure(text: text)
             return cell
 
-        case .openAnswerInput(let text, let isEditable):
+        case .openAnswerInput(let text, let isEditable, let isLoading):
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: QuizParticipatingOpenAnswerTableViewCell.reuseIdentifier,
                 for: indexPath
@@ -748,7 +802,7 @@ extension QuizParticipatingViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
 
-            cell.configure(text: text, isEditable: isEditable)
+            cell.configure(text: text, isEditable: isEditable, isLoading: isLoading)
             cell.onDidEndEditing = { [weak self] value in
                 guard let self else { return }
                 Task {
@@ -804,7 +858,7 @@ extension QuizParticipatingViewController: UITableViewDataSource {
             }
 
             cell.configure(with: participantRow)
-            cell.contentView.alpha = participantRow.isDimmed ? 0.6 : 1
+            cell.contentView.alpha = (participantRow.isDimmed || participantRow.isOffline) ? 0.6 : 1
             return cell
 
         case .finalParticipant(let participantRow):

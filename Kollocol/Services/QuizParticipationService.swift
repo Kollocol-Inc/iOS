@@ -32,6 +32,7 @@ protocol QuizParticipationService: Actor {
     func makeEventStream() -> AsyncStream<QuizParticipationEvent>
     func startQuiz() async throws
     func sendAnswer(questionId: String, answer: String, timeSpentMs: Int64?) async throws
+    func kickParticipant(email: String) async throws
     func sendCommand(type: String) async throws
     func sendCommand<Payload: Encodable>(type: String, payload: Payload?) async throws
 }
@@ -206,6 +207,11 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
         try await sendCommand(type: "answer", payload: payload)
     }
 
+    func kickParticipant(email: String) async throws {
+        let payload = KickPayload(email: email)
+        try await sendCommand(type: "kick", payload: payload)
+    }
+
     func sendCommand(type: String) async throws {
         try await sendCommand(type: type, payload: EmptyPayload())
     }
@@ -357,12 +363,19 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
 
     private func handleSocketFailure(_ error: QuizParticipationServiceError) async {
         logError("socket failure: \(error)")
+        let shouldPersistPendingError: Bool
         if case .connecting = connectionState {
             pendingConnectionError = error
+            shouldPersistPendingError = true
+        } else {
+            shouldPersistPendingError = false
         }
 
         broadcast(.failure(streamFailure(for: error)))
         await disconnect()
+        if shouldPersistPendingError {
+            pendingConnectionError = error
+        }
     }
 
     private func waitForConnectedPayload() async throws -> QuizConnectedPayload {
@@ -373,6 +386,30 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
             if let pendingConnectionError {
                 logError("connected payload wait failed due to pending error: \(pendingConnectionError)")
                 throw pendingConnectionError
+            }
+
+            if case .disconnected = connectionState {
+                logError("connected payload wait failed: connection switched to disconnected")
+                throw QuizParticipationServiceError.connectionClosed
+            }
+
+            if let webSocketTask {
+                if let taskError = webSocketTask.error {
+                    let wrappedError = QuizParticipationServiceError.wrap(taskError)
+                    logError(
+                        "connected payload wait failed due to websocket task error: " +
+                        "\(taskError), mapped=\(wrappedError)"
+                    )
+                    throw wrappedError
+                }
+
+                if webSocketTask.state == .completed {
+                    logError(
+                        "connected payload wait failed: websocket task completed before " +
+                        "connected payload arrived"
+                    )
+                    throw QuizParticipationServiceError.connectionClosed
+                }
             }
 
             if let lastConnectedPayload {
@@ -468,6 +505,7 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
 
         let type = (dictionary["type"] as? String) ?? "unknown"
         let payload = dictionary["payload"] as? [String: Any]
+        let payloadValue = dictionary["payload"]
 
         switch type {
         case "connected":
@@ -550,7 +588,12 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
             return .quizFinished(finishedPayload)
 
         case "error":
-            let message = (payload?["message"] as? String) ?? "Неизвестная ошибка"
+            let message = (payload?["reason"] as? String)
+            ?? (payload?["message"] as? String)
+            ?? (payloadValue as? String)
+            ?? (dictionary["reason"] as? String)
+            ?? (dictionary["message"] as? String)
+            ?? "Неизвестная ошибка"
             return .error(message: message)
 
         default:
@@ -616,21 +659,69 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
                 return
             }
 
+            let normalizedJoinedUser = participantWithOnlineFallback(
+                user,
+                fallbackIsOnline: true
+            )
             if let targetUserId,
                let existingIndex = participants.firstIndex(where: { participant in
                    participant.userId?.trimmingCharacters(in: .whitespacesAndNewlines) == targetUserId
                }) {
-                participants[existingIndex] = user
+                participants[existingIndex] = normalizedJoinedUser
                 logDebug("participant updated in cache at index \(existingIndex); total=\(participants.count)")
                 return
             }
 
-            participants.append(user)
+            participants.append(normalizedJoinedUser)
             logDebug("participant appended to cache; total=\(participants.count)")
 
         case .left:
             guard let targetUserId else {
                 logWarning("participants_update left ignored: missing target user id")
+                return
+            }
+
+            let isWaitingRoom = lastConnectedPayload?.quizStatus == .waiting
+            if isWaitingRoom {
+                participants.removeAll { participant in
+                    participant.userId?.trimmingCharacters(in: .whitespacesAndNewlines) == targetUserId
+                }
+                logDebug("participant removed from cache (waiting room); total=\(participants.count)")
+                return
+            }
+
+            if let user {
+                let normalizedLeftUser = participantWithOnlineFallback(
+                    user,
+                    fallbackIsOnline: false
+                )
+                if let existingIndex = participants.firstIndex(where: { participant in
+                    participant.userId?.trimmingCharacters(in: .whitespacesAndNewlines) == targetUserId
+                }) {
+                    participants[existingIndex] = normalizedLeftUser
+                    logDebug("participant marked offline in cache at index \(existingIndex); total=\(participants.count)")
+                    return
+                }
+
+                participants.append(normalizedLeftUser)
+                logDebug("offline participant appended to cache; total=\(participants.count)")
+                return
+            }
+
+            if let existingIndex = participants.firstIndex(where: { participant in
+                participant.userId?.trimmingCharacters(in: .whitespacesAndNewlines) == targetUserId
+            }) {
+                let existingParticipant = participants[existingIndex]
+                participants[existingIndex] = QuizParticipant(
+                    userId: existingParticipant.userId,
+                    firstName: existingParticipant.firstName,
+                    lastName: existingParticipant.lastName,
+                    email: existingParticipant.email,
+                    avatarURL: existingParticipant.avatarURL,
+                    isCreator: existingParticipant.isCreator,
+                    isOnline: false
+                )
+                logDebug("participant marked offline without user payload at index \(existingIndex); total=\(participants.count)")
                 return
             }
 
@@ -652,6 +743,7 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
         let email = rawParticipant["email"] as? String
         let avatarURL = rawParticipant["avatar_url"] as? String
         let isCreator = boolValue(from: rawParticipant["is_creator"]) ?? false
+        let isOnline = boolValue(from: rawParticipant["is_online"])
 
         let hasMeaningfulData = [userId, firstName, lastName, email, avatarURL]
             .contains { value in
@@ -659,7 +751,7 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
                 return value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
             }
 
-        guard hasMeaningfulData || rawParticipant["is_creator"] != nil else {
+        guard hasMeaningfulData || rawParticipant["is_creator"] != nil || rawParticipant["is_online"] != nil else {
             return nil
         }
 
@@ -669,25 +761,16 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
             lastName: lastName,
             email: email,
             avatarURL: avatarURL,
-            isCreator: isCreator
+            isCreator: isCreator,
+            isOnline: isOnline
         )
     }
 
     private func parseQuestionPayload(from payload: [String: Any]?) -> QuizQuestionPayload? {
         guard let payload,
-              let rawQuestion = payload["question"] as? [String: Any] else {
+              let question = parseQuestionData(from: payload["question"] as? [String: Any]) else {
             return nil
         }
-
-        let question = QuizQuestionData(
-            id: rawQuestion["id"] as? String,
-            text: rawQuestion["text"] as? String,
-            type: questionType(from: rawQuestion["type"]),
-            options: rawQuestion["options"] as? [String] ?? [],
-            orderIndex: intValue(from: rawQuestion["order_index"]),
-            maxScore: intValue(from: rawQuestion["max_score"]),
-            timeLimitSec: intValue(from: rawQuestion["time_limit_sec"])
-        )
 
         return QuizQuestionPayload(
             question: question,
@@ -740,12 +823,77 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
         let rawQuestionStats = payload["questions_stats"]
         let questionStats = parseQuestionStatsPayload(from: rawQuestionStats as? [String: Any])
         let answerOptionStats = parseAnswerOptionStats(from: rawQuestionStats)
+        let question = parseLeaderboardQuestionPayload(from: payload["question"])
 
         return QuizLeaderboardPayload(
             leaderboard: entries,
             questionStats: questionStats,
             answerOptionStats: answerOptionStats,
-            canContinue: boolValue(from: payload["can_continue"]) ?? false
+            canContinue: boolValue(from: payload["can_continue"]) ?? false,
+            question: question
+        )
+    }
+
+    private func parseLeaderboardQuestionPayload(from payload: Any?) -> QuizQuestionPayload? {
+        guard let payload else {
+            return nil
+        }
+
+        if let payloadAsQuestionPayload = payload as? [String: Any],
+           let parsedQuestionPayload = parseQuestionPayload(from: payloadAsQuestionPayload) {
+            return parsedQuestionPayload
+        }
+
+        if let payloadAsQuestionData = payload as? [String: Any],
+           let parsedQuestionData = parseQuestionData(from: payloadAsQuestionData) {
+            let questionIndex = max(0, parsedQuestionData.orderIndex ?? 0)
+            let totalQuestions = max(1, questionIndex + 1)
+            let timeLimitMs = parsedQuestionData.timeLimitSec.map { Int64($0) * 1_000 }
+            return QuizQuestionPayload(
+                question: parsedQuestionData,
+                questionIndex: questionIndex,
+                totalQuestions: totalQuestions,
+                timeLimitMs: timeLimitMs,
+                serverTime: nil
+            )
+        }
+
+        return nil
+    }
+
+    private func participantWithOnlineFallback(
+        _ participant: QuizParticipant,
+        fallbackIsOnline: Bool
+    ) -> QuizParticipant {
+        QuizParticipant(
+            userId: participant.userId,
+            firstName: participant.firstName,
+            lastName: participant.lastName,
+            email: participant.email,
+            avatarURL: participant.avatarURL,
+            isCreator: participant.isCreator,
+            isOnline: participant.isOnline ?? fallbackIsOnline
+        )
+    }
+
+    private func parseQuestionData(from rawQuestion: [String: Any]?) -> QuizQuestionData? {
+        guard let rawQuestion else {
+            return nil
+        }
+
+        let hasMeaningfulData = rawQuestion.isEmpty == false
+        guard hasMeaningfulData else {
+            return nil
+        }
+
+        return QuizQuestionData(
+            id: rawQuestion["id"] as? String,
+            text: rawQuestion["text"] as? String,
+            type: questionType(from: rawQuestion["type"]),
+            options: rawQuestion["options"] as? [String] ?? [],
+            orderIndex: intValue(from: rawQuestion["order_index"]),
+            maxScore: intValue(from: rawQuestion["max_score"]),
+            timeLimitSec: intValue(from: rawQuestion["time_limit_sec"])
         )
     }
 
@@ -875,6 +1023,14 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
 
     private func mapServerError(_ message: String) -> QuizParticipationServiceError {
         let normalizedMessage = message.lowercased()
+
+        if normalizedMessage.contains("already") && normalizedMessage.contains("finished") {
+            return .quizAlreadyFinished
+        }
+
+        if normalizedMessage.contains("already") && normalizedMessage.contains("started") {
+            return .quizAlreadyStarted
+        }
 
         if normalizedMessage.contains("invalid") && normalizedMessage.contains("code") {
             return .invalidCode
@@ -1041,7 +1197,7 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
         case .answerResult(let payload):
             return "answer_result(userId=\(payload.userId ?? "nil"), score=\(payload.score), totalScore=\(payload.totalScore), correct=\(payload.isCorrect))"
         case .leaderboard(let payload):
-            return "leaderboard(entries=\(payload.leaderboard.count), optionStats=\(payload.answerOptionStats.count), canContinue=\(payload.canContinue))"
+            return "leaderboard(entries=\(payload.leaderboard.count), optionStats=\(payload.answerOptionStats.count), canContinue=\(payload.canContinue), hasQuestion=\(payload.question != nil))"
         case .timeExpired(let payload):
             return "time_expired(questionIndex=\(payload.questionIndex))"
         case .waitingForCreator(let payload):
@@ -1088,6 +1244,10 @@ private extension QuizParticipationServiceImpl {
             case timeSpentMs = "time_spent_ms"
         }
     }
+
+    struct KickPayload: Encodable {
+        let email: String
+    }
 }
 
 // MARK: - QuizParticipationServiceError
@@ -1095,6 +1255,8 @@ enum QuizParticipationServiceError: Error, Sendable, Equatable {
     case unauthorized
     case invalidConfiguration
     case invalidCode
+    case quizAlreadyStarted
+    case quizAlreadyFinished
     case offline
     case notConnected
     case connectionClosed

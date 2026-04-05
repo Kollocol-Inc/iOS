@@ -11,7 +11,8 @@ protocol MainInteractor {
     func fetchUserProfile() async
     func fetchQuizzes() async
     func routeToProfileScreen() async
-    func joinQuiz(code: String) async
+    func joinQuiz(code: String, skipAsyncConfirmation: Bool) async
+    func handleQuizCardTap(_ quiz: QuizInstanceViewData) async
     func handleQuizTypeTap(_ quizType: QuizType) async
 }
 
@@ -22,5 +23,7 @@ protocol MainPresenter {
     func presentProfileScreen() async
     func presentJoinQuizSuccess(accessCode: String) async
     func presentJoinQuizError(_ error: QuizParticipationServiceError) async
+    func presentJoinQuizConfirmation(accessCode: String, quizTitle: String) async
+    func presentAsyncQuizStartConfirmation(accessCode: String, quizTitle: String?) async
     func presentQuizTypeInfo(_ quizType: QuizType) async
 }

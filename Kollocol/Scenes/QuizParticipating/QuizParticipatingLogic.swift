@@ -22,8 +22,11 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
     private let quizParticipationService: QuizParticipationService
 
     private var eventsTask: Task<Void, Never>?
+    private var hasRequestedFlowClose = false
 
     private var isCreator = false
+    private var currentQuizStatus: QuizStatus?
+    private var currentQuizType: QuizType?
     private var phase: QuizParticipatingModels.Phase = .participantAnswering
     private var questionPayload: QuizQuestionPayload?
     private var openAnswerText = ""
@@ -42,6 +45,12 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
     private var quizTitle: String?
     private var quizFinishedPayload: QuizFinishedPayload?
 
+    private static let logDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
     // MARK: - Lifecycle
     init(
         presenter: QuizParticipatingPresenter,
@@ -56,6 +65,15 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         if let connectedPayload = await quizParticipationService.currentConnectedPayload() {
             isCreator = connectedPayload.isCreator
             currentUserID = extractCurrentUserID(from: connectedPayload.sessionId)
+            currentQuizStatus = connectedPayload.quizStatus
+            currentQuizType = connectedPayload.quizType
+            logQuizFlow(
+                "viewDidLoad snapshot: status=\(connectedPayload.quizStatus?.rawValue ?? "nil"), " +
+                "type=\(connectedPayload.quizType?.rawValue ?? "nil"), " +
+                "isCreator=\(connectedPayload.isCreator), currentUserID=\(currentUserID ?? "nil")"
+            )
+        } else {
+            logQuizFlow("viewDidLoad snapshot: connected payload is nil")
         }
 
         currentParticipants = await quizParticipationService.currentParticipants()
@@ -64,20 +82,41 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         answerOptionStats = initialLeaderboardPayload?.answerOptionStats ?? []
         canCreatorContinueCurrentQuestion = initialLeaderboardPayload?.canContinue ?? false
         quizTitle = await quizParticipationService.currentQuizTitle()
+        let initialQuestionPayload = await quizParticipationService.currentQuestionPayload()
+        logQuizFlow(
+            "viewDidLoad cache: participants=\(currentParticipants.count), " +
+            "leaderboardEntries=\(leaderboardEntries.count), " +
+            "canContinue=\(canCreatorContinueCurrentQuestion), " +
+            "hasQuestion=\(initialQuestionPayload != nil)"
+        )
         updateParticipantCacheFromLeaderboard(leaderboardEntries)
         updateAnswerProgressFromLeaderboard(leaderboardEntries)
         updateAnswerProgressFromParticipants()
 
-        if let questionPayload = await quizParticipationService.currentQuestionPayload() {
+        if let questionPayload = initialQuestionPayload {
             applyNewQuestion(questionPayload)
             if isCreator {
                 updateAnsweredParticipantsFromLeaderboard(leaderboardEntries)
                 updateCreatorPhaseFromContinueAvailability()
-            } else if leaderboardEntries.isEmpty == false {
+            } else if shouldUseParticipantWaitingForCreatorPhase,
+                      leaderboardEntries.isEmpty == false {
                 phase = .participantWaitingForCreator
             }
-        } else if isCreator {
-            phase = .creatorWaitingParticipants
+            logQuizFlow(
+                "viewDidLoad applied question: index=\(questionPayload.questionIndex), " +
+                "type=\(questionPayload.question.type?.rawValue ?? "nil"), phase=\(phase.logDescription)"
+            )
+        } else if applyQuestionFallbackFromLeaderboardIfNeeded(initialLeaderboardPayload) {
+            if isCreator {
+                updateAnsweredParticipantsFromLeaderboard(leaderboardEntries)
+                updateCreatorPhaseFromContinueAvailability()
+            } else if shouldUseParticipantWaitingForCreatorPhase,
+                      leaderboardEntries.isEmpty == false {
+                phase = .participantWaitingForCreator
+            }
+            logQuizFlow("viewDidLoad restored question from leaderboard fallback. phase=\(phase.logDescription)")
+        } else {
+            applyMissingQuestionPhase()
         }
 
         if let normalizedQuizTitle = normalizedQuizTitle(quizTitle) {
@@ -100,6 +139,7 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
     func handleLeaveTap() async {
         eventsTask?.cancel()
         eventsTask = nil
+        hasRequestedFlowClose = true
 
         await quizParticipationService.disconnect()
         await presenter.presentCloseFlow()
@@ -180,6 +220,8 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
     private func synchronizeStateAfterSubscription() async {
         if let connectedPayload = await quizParticipationService.currentConnectedPayload() {
             currentUserID = extractCurrentUserID(from: connectedPayload.sessionId)
+            currentQuizStatus = connectedPayload.quizStatus
+            currentQuizType = connectedPayload.quizType
         }
 
         currentParticipants = await quizParticipationService.currentParticipants()
@@ -195,11 +237,32 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         if let latestQuestionPayload = await quizParticipationService.currentQuestionPayload() {
             if questionIdentity(for: questionPayload) != questionIdentity(for: latestQuestionPayload) {
                 applyNewQuestion(latestQuestionPayload)
-            } else if isCreator == false, leaderboardEntries.isEmpty == false {
+            } else if shouldUseParticipantWaitingForCreatorPhase,
+                      leaderboardEntries.isEmpty == false {
                 phase = .participantWaitingForCreator
             }
-        } else if isCreator {
-            phase = .creatorWaitingParticipants
+            logQuizFlow(
+                "sync snapshot with question: index=\(latestQuestionPayload.questionIndex), " +
+                "phase=\(phase.logDescription), canContinue=\(canCreatorContinueCurrentQuestion)"
+            )
+        } else if applyQuestionFallbackFromLeaderboardIfNeeded(latestLeaderboardPayload) {
+            if isCreator {
+                updateAnsweredParticipantsFromLeaderboard(leaderboardEntries)
+                updateCreatorPhaseFromContinueAvailability()
+            } else if shouldUseParticipantWaitingForCreatorPhase,
+                      leaderboardEntries.isEmpty == false {
+                phase = .participantWaitingForCreator
+            }
+            logQuizFlow(
+                "sync snapshot restored question from leaderboard fallback. " +
+                "phase=\(phase.logDescription), canContinue=\(canCreatorContinueCurrentQuestion)"
+            )
+        } else {
+            applyMissingQuestionPhase()
+            logQuizFlow(
+                "sync snapshot without question: status=\(currentQuizStatus?.rawValue ?? "nil"), " +
+                "phase=\(phase.logDescription), canContinue=\(canCreatorContinueCurrentQuestion)"
+            )
         }
 
         if isCreator {
@@ -245,7 +308,9 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
     private func handle(_ event: QuizParticipationEvent) async {
         switch event {
         case .connectionChanged(let state):
-            if case .disconnected = state {
+            if case .disconnected = state,
+               hasRequestedFlowClose == false {
+                hasRequestedFlowClose = true
                 await presenter.presentCloseFlow()
             }
 
@@ -266,8 +331,15 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             case .connected(let payload):
                 isCreator = payload.isCreator
                 currentUserID = extractCurrentUserID(from: payload.sessionId)
+                currentQuizType = payload.quizType
 
             case .error(let message):
+                if await handleSessionReplacedIfNeeded(message) {
+                    return
+                }
+                if await handleKickedFromQuizIfNeeded(message) {
+                    return
+                }
                 lastServerErrorAt = Date()
                 await presenter.presentServerError(message: message)
 
@@ -291,11 +363,17 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         case .connected(let payload):
             isCreator = payload.isCreator
             currentUserID = extractCurrentUserID(from: payload.sessionId)
+            currentQuizStatus = payload.quizStatus
+            currentQuizType = payload.quizType
+            logQuizFlow(
+                "connected message: status=\(payload.quizStatus?.rawValue ?? "nil"), " +
+                "type=\(payload.quizType?.rawValue ?? "nil"), " +
+                "isCreator=\(payload.isCreator), phase=\(phase.logDescription)"
+            )
 
         case .participantsUpdate:
             currentParticipants = await quizParticipationService.currentParticipants()
             updateAnswerProgressFromParticipants()
-            normalizeParticipantCache()
 
             if isCreator {
                 await presentCurrentState()
@@ -307,7 +385,6 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             currentParticipants = payload.participants
             quizTitle = payload.quizTitle
             updateAnswerProgressFromParticipants()
-            normalizeParticipantCache()
 
             if isCreator {
                 await presentCurrentState()
@@ -320,12 +397,22 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             }
 
         case .question(let payload):
+            logQuizFlow(
+                "question message: index=\(payload.questionIndex), total=\(payload.totalQuestions), " +
+                "type=\(payload.question.type?.rawValue ?? "nil"), timeLimitMs=\(payload.timeLimitMs ?? 0), " +
+                "serverTime=\(payload.serverTime ?? 0)"
+            )
             applyNewQuestion(payload)
             await presentCurrentState()
 
         case .leaderboard(let payload):
+            logQuizFlow(
+                "leaderboard message: entries=\(payload.leaderboard.count), " +
+                "canContinue=\(payload.canContinue), optionStats=\(payload.answerOptionStats.count)"
+            )
             leaderboardEntries = payload.leaderboard
             answerOptionStats = payload.answerOptionStats
+            let restoredQuestionFromLeaderboard = applyQuestionFallbackFromLeaderboardIfNeeded(payload)
             updateParticipantCacheFromLeaderboard(payload.leaderboard)
             updateAnswerProgressFromLeaderboard(payload.leaderboard)
             updateAnswerProgressFromParticipants()
@@ -337,17 +424,31 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             if isCreator {
                 canCreatorContinueCurrentQuestion = payload.canContinue
                 updateCreatorPhaseFromContinueAvailability()
+                logQuizFlow("leaderboard applied for creator. phase=\(phase.logDescription)")
                 await presentCurrentState()
             } else {
-                phase = .participantWaitingForCreator
+                if shouldUseParticipantWaitingForCreatorPhase {
+                    phase = .participantWaitingForCreator
+                }
                 clearAnswerSelection()
+                logQuizFlow("leaderboard applied for participant. phase=\(phase.logDescription)")
                 await presentCurrentState()
+            }
+
+            if restoredQuestionFromLeaderboard {
+                logQuizFlow("question restored from leaderboard payload during active stream")
             }
 
         case .answerProgress(let payload):
             let participantsTotalFromPayload = max(0, payload.totalParticipants)
             let participantsTotalFromList = nonCreatorParticipants().count
-            totalParticipantsCount = max(participantsTotalFromPayload, participantsTotalFromList)
+            if participantsTotalFromList > 0 {
+                totalParticipantsCount = participantsTotalFromList
+            } else if isCreator {
+                totalParticipantsCount = 0
+            } else {
+                totalParticipantsCount = participantsTotalFromPayload
+            }
             participantsAnsweredCount = min(
                 max(0, payload.participantsAnswered),
                 totalParticipantsCount
@@ -372,10 +473,13 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         case .waitingForCreator:
             if isCreator {
                 if phase == .creatorWaitingParticipants {
+                    logQuizFlow("waiting_for_creator message for creator. phase=\(phase.logDescription)")
                     await presentCurrentState()
                 }
             } else {
-                if phase == .participantWaitingForCreator {
+                if shouldUseParticipantWaitingForCreatorPhase {
+                    phase = .participantWaitingForCreator
+                    logQuizFlow("waiting_for_creator message for participant. phase=\(phase.logDescription)")
                     await presentCurrentState()
                 }
             }
@@ -397,6 +501,12 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             await presentCurrentState()
 
         case .error(let message):
+            if await handleSessionReplacedIfNeeded(message) {
+                break
+            }
+            if await handleKickedFromQuizIfNeeded(message) {
+                break
+            }
             lastServerErrorAt = Date()
             await presenter.presentServerError(message: message)
 
@@ -406,7 +516,13 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
                 if isCreator {
                     updateAnsweredParticipantsFromLeaderboard(leaderboardEntries)
                 }
+                logQuizFlow(
+                    "quizStarted message applied question from cache. " +
+                    "index=\(latestQuestionPayload.questionIndex), phase=\(phase.logDescription)"
+                )
                 await presentCurrentState()
+            } else {
+                logQuizFlow("quizStarted message received, but question is still nil in cache")
             }
 
         case .unknown:
@@ -429,9 +545,54 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         questionDisplayedAt = Date()
     }
 
+    private func applyMissingQuestionPhase() {
+        if currentQuizStatus == .active {
+            if isCreator {
+                phase = .creatorWaitingParticipants
+            } else if shouldUseParticipantWaitingForCreatorPhase {
+                phase = .participantWaitingForCreator
+            } else {
+                phase = .participantAnswering
+            }
+            logQuizFlow(
+                "applyMissingQuestionPhase: status=active -> phase=\(phase.logDescription), " +
+                "isCreator=\(isCreator)"
+            )
+            return
+        }
+
+        phase = isCreator ? .creatorWaitingParticipants : .participantAnswering
+        logQuizFlow(
+            "applyMissingQuestionPhase: status=\(currentQuizStatus?.rawValue ?? "nil") -> " +
+            "phase=\(phase.logDescription), isCreator=\(isCreator)"
+        )
+    }
+
+    private func applyQuestionFallbackFromLeaderboardIfNeeded(_ payload: QuizLeaderboardPayload?) -> Bool {
+        guard questionPayload == nil,
+              let question = payload?.question else {
+            return false
+        }
+
+        questionPayload = question
+        return true
+    }
+
     private func clearAnswerSelection() {
         openAnswerText = ""
         selectedOptionIndexes.removeAll()
+    }
+
+    private var isAsyncParticipant: Bool {
+        currentQuizType == .async && isCreator == false
+    }
+
+    private var shouldUseParticipantWaitingForCreatorPhase: Bool {
+        isAsyncParticipant == false && isCreator == false
+    }
+
+    private var shouldShowAsyncCompletionState: Bool {
+        phase == .quizFinished && isAsyncParticipant
     }
 
     private func presentCurrentState() async {
@@ -447,6 +608,7 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             selectedOptionIndexes: selectedOptionIndexes.sorted(),
             phase: phase,
             isCreator: isCreator,
+            isAsyncQuiz: currentQuizType == .async,
             participantRows: participantRows,
             optionAnswerCounts: makeOptionAnswerCounts(),
             waitingAnsweredCount: waitingProgress.answeredCount,
@@ -471,6 +633,7 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             .init(
                 participant: row.participant,
                 isDimmed: false,
+                isOffline: row.isOffline,
                 place: row.place,
                 score: row.score
             )
@@ -483,6 +646,10 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         finalParticipants: [QuizParticipatingModels.FinalParticipantRowViewData]
     ) {
         guard phase == .quizFinished else {
+            return ([], nil, [])
+        }
+
+        if shouldShowAsyncCompletionState {
             return ([], nil, [])
         }
 
@@ -596,7 +763,7 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
     }
 
     private func waitingProgressViewData() -> (answeredCount: Int, totalCount: Int) {
-        let participantsFromList = nonCreatorParticipants().count
+        let participantsFromList = activeParticipantsForProgressCount()
         let fallbackTotal = isCreator ? participantsFromList : max(1, participantsFromList)
         let normalizedTotal = max(totalParticipantsCount, fallbackTotal)
         let normalizedAnswered = min(max(0, participantsAnsweredCount), normalizedTotal)
@@ -604,13 +771,13 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
     }
 
     private func updateAnswerProgressFromParticipants() {
-        let participantsFromList = nonCreatorParticipants().count
-        if participantsFromList > 0 {
+        let participantsFromList = activeParticipantsForProgressCount()
+        if totalParticipantsCount <= 0 {
             totalParticipantsCount = participantsFromList
-        } else if isCreator {
-            totalParticipantsCount = 0
-        } else {
-            totalParticipantsCount = max(totalParticipantsCount, 1)
+        }
+
+        if totalParticipantsCount <= 0, isCreator == false {
+            totalParticipantsCount = 1
         }
 
         participantsAnsweredCount = min(
@@ -621,6 +788,11 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
 
     private func updateAnswerProgressFromLeaderboard(_ entries: [QuizLeaderboardEntryPayload]) {
         let participantEntries = entries.filter { $0.user.isCreator == false }
+        if participantEntries.isEmpty, isCreator {
+            totalParticipantsCount = 0
+            participantsAnsweredCount = 0
+            return
+        }
         guard participantEntries.isEmpty == false else {
             return
         }
@@ -634,6 +806,7 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             return .init(
                 participant: row.participant,
                 isDimmed: row.isAnswered == false,
+                isOffline: row.isOffline,
                 place: row.place,
                 score: row.score
             )
@@ -650,11 +823,13 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             let key = participantKey(for: participant)
             let score = key.flatMap { participantScoresByID[$0] } ?? 0
             let isAnswered = isParticipantAnswered(participant)
+            let isOffline = isParticipantOnline(participant) == false
 
             return .init(
                 participant: participant,
                 score: score,
                 isAnswered: isAnswered,
+                isOffline: isOffline,
                 place: 0
             )
         }
@@ -672,6 +847,7 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
                 participant: row.participant,
                 score: row.score,
                 isAnswered: row.isAnswered,
+                isOffline: row.isOffline,
                 place: index + 1
             )
         }
@@ -698,6 +874,10 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
 
     private func nonCreatorParticipants() -> [QuizParticipant] {
         currentParticipants.filter { $0.isCreator == false }
+    }
+
+    private func isParticipantOnline(_ participant: QuizParticipant) -> Bool {
+        participant.isOnline ?? true
     }
 
     private func isParticipantAnswered(_ participant: QuizParticipant) -> Bool {
@@ -763,12 +943,6 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         : .creatorWaitingParticipants
     }
 
-    private func normalizeParticipantCache() {
-        let existingKeys = Set(nonCreatorParticipants().compactMap(participantKey(for:)))
-        participantScoresByID = participantScoresByID.filter { existingKeys.contains($0.key) }
-        answeredParticipantIDs = answeredParticipantIDs.intersection(existingKeys)
-    }
-
     private func updateParticipantCacheFromLeaderboard(_ entries: [QuizLeaderboardEntryPayload]) {
         var answeredKeys: Set<String> = []
 
@@ -784,7 +958,10 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         }
 
         answeredParticipantIDs = answeredKeys
-        normalizeParticipantCache()
+    }
+
+    private func activeParticipantsForProgressCount() -> Int {
+        nonCreatorParticipants().filter { $0.isOnline != false }.count
     }
 
     private func bottomButtonTitle() -> String {
@@ -808,8 +985,9 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         switch phase {
         case .participantWaitingForCreator:
             return Constants.participantWaitingButtonTitle
+        case .participantSubmittedWaitingOthers:
+            return Constants.participantWaitingButtonTitle
         case .participantAnswering,
-                .participantSubmittedWaitingOthers,
                 .creatorWaitingParticipants,
                 .creatorReadyToContinue,
                 .quizFinished:
@@ -818,6 +996,11 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
     }
 
     private func isTimerVisible() -> Bool {
+        if phase == .participantSubmittedWaitingOthers,
+           isAsyncParticipant {
+            return false
+        }
+
         switch phase {
         case .participantWaitingForCreator,
                 .creatorReadyToContinue,
@@ -907,6 +1090,57 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
 
         return true
     }
+
+    private func handleKickedFromQuizIfNeeded(_ message: String) async -> Bool {
+        guard isKickedError(message) else {
+            return false
+        }
+
+        lastServerErrorAt = Date()
+        hasRequestedFlowClose = true
+        let cachedQuizTitle = await quizParticipationService.currentQuizTitle()
+        let resolvedQuizTitle = quizTitle ?? cachedQuizTitle
+        eventsTask?.cancel()
+        eventsTask = nil
+        await quizParticipationService.disconnect()
+        await presenter.presentKickedFromQuiz(quizTitle: resolvedQuizTitle)
+        return true
+    }
+
+    private func handleSessionReplacedIfNeeded(_ message: String) async -> Bool {
+        guard isSessionReplacedError(message) else {
+            return false
+        }
+
+        lastServerErrorAt = Date()
+        hasRequestedFlowClose = true
+        eventsTask?.cancel()
+        eventsTask = nil
+        await quizParticipationService.disconnect()
+        await presenter.presentSessionReplaced()
+        return true
+    }
+
+    private func isKickedError(_ message: String) -> Bool {
+        let normalizedMessage = message
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        return normalizedMessage == "you have been kicked"
+    }
+
+    private func isSessionReplacedError(_ message: String) -> Bool {
+        let normalizedMessage = message
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        return normalizedMessage == "session replaced by another device"
+    }
+
+    private func logQuizFlow(_ message: String) {
+        #if DEBUG
+        let timestamp = Self.logDateFormatter.string(from: Date())
+        print("[QuizFlow][QuizParticipatingLogic][\(timestamp)] \(message)")
+        #endif
+    }
 }
 
 // MARK: - Models
@@ -915,6 +1149,7 @@ private extension QuizParticipatingLogic {
         let participant: QuizParticipant
         let score: Int
         let isAnswered: Bool
+        let isOffline: Bool
         let place: Int
     }
 
@@ -923,6 +1158,26 @@ private extension QuizParticipatingLogic {
         let rawRank: Int
         let displayRank: Int
         let score: Int
+    }
+}
+
+// MARK: - Private Methods
+private extension QuizParticipatingModels.Phase {
+    var logDescription: String {
+        switch self {
+        case .participantAnswering:
+            return "participantAnswering"
+        case .participantSubmittedWaitingOthers:
+            return "participantSubmittedWaitingOthers"
+        case .participantWaitingForCreator:
+            return "participantWaitingForCreator"
+        case .creatorWaitingParticipants:
+            return "creatorWaitingParticipants"
+        case .creatorReadyToContinue:
+            return "creatorReadyToContinue"
+        case .quizFinished:
+            return "quizFinished"
+        }
     }
 }
 

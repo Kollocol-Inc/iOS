@@ -115,6 +115,10 @@ extension QuizParticipationServiceError: UserFacingError {
         switch self {
         case .invalidCode:
             return "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
+        case .quizAlreadyStarted:
+            return "Квиз уже начался, подключение невозможно"
+        case .quizAlreadyFinished:
+            return "Квиз уже завершен, подключение невозможно"
         case .offline:
             return "Нет интернета"
         case .unauthorized:
@@ -129,6 +133,25 @@ extension QuizParticipationServiceError: UserFacingError {
             return "Ошибка конфигурации websocket. Обратитесь к разработчику"
         case .encodingFailed:
             return "Не удалось отправить данные на сервер"
+        case .unknown:
+            return "Что-то пошло не так"
+        }
+    }
+}
+
+extension MLServiceError: UserFacingError {
+    var userMessage: String {
+        switch self {
+        case .badRequest:
+            return "Запрос сформирован неверно. Попробуйте изменить формулировку"
+        case .tooManyRequests:
+            return "Слишком много попыток. Попробуйте еще раз через пару минут"
+        case .offline:
+            return "Нет интернета"
+        case .server:
+            return "Ошибка на стороне сервера. Идем будить девопса..."
+        case .unauthorized:
+            return "Ошибка авторизации. Выполните вход снова"
         case .unknown:
             return "Что-то пошло не так"
         }

@@ -45,6 +45,7 @@ final class CardsTableViewCell: UITableViewCell {
     // MARK: - Properties
     var onQuizTypeTap: ((QuizType) -> Void)?
     var onQuizStartTap: ((QuizInstanceViewData) -> Void)?
+    var onQuizTap: ((QuizInstanceViewData) -> Void)?
 
     private var items: [QuizInstanceViewData] = []
     private var isTemplate = false
@@ -80,6 +81,7 @@ final class CardsTableViewCell: UITableViewCell {
 
         onQuizTypeTap = nil
         onQuizStartTap = nil
+        onQuizTap = nil
         items = []
         isTemplate = false
 
@@ -200,6 +202,14 @@ extension CardsTableViewCell: UICollectionViewDataSource {
 
 // MARK: - UICollectionViewDelegate
 extension CardsTableViewCell: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard items.indices.contains(indexPath.item) else {
+            return
+        }
+
+        onQuizTap?(items[indexPath.item])
+    }
+
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         updateCurrentPage()
     }

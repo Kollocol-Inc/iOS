@@ -35,8 +35,19 @@ final class MyQuizzesRouter: MyQuizzesPresenter, ServiceErrorHandling {
         await presentServiceError(error, useCase: .generic)
     }
 
+    func presentTemplateGenerationError(_ error: MLServiceError) async {
+        await presentServiceError(error, useCase: .generic)
+    }
+
     func presentCreateTemplateScreen() async {
         await router.routeToCreateTemplateScreen()
+    }
+
+    func presentCreateTemplateScreen(from generatedTemplate: GeneratedTemplate) async {
+        await router.routeToCreateTemplateScreen(
+            prefilledTitle: generatedTemplate.title,
+            questions: generatedTemplate.questions
+        )
     }
 
     func presentStartQuizScreen(template: QuizTemplate) async {
@@ -47,10 +58,46 @@ final class MyQuizzesRouter: MyQuizzesPresenter, ServiceErrorHandling {
         await router.routeToEditTemplateScreen(template: template)
     }
 
+    func presentJoinQuizSuccess(accessCode: String) async {
+        await router.routeToQuizWaitingRoomFromMyQuizzes(accessCode: accessCode)
+    }
+
+    func presentJoinQuizError(_ error: QuizParticipationServiceError) async {
+        if error == .quizAlreadyFinished {
+            await router.showQuizConnectionUnavailableBottomSheet(
+                description: "Квиз уже завершен, подключение невозможно"
+            )
+            return
+        }
+
+        let title = error == .invalidCode ? "Неверный код" : "Ошибка"
+        await presentServiceError(error, useCase: .joinQuiz, title: title)
+    }
+
+    func presentJoinQuizConfirmation(accessCode: String, quizTitle: String) async {
+        await router.showQuizJoinConfirmationBottomSheet(quizTitle: quizTitle) { [weak self] in
+            self?.view?.confirmJoinQuiz(accessCode: accessCode)
+        }
+    }
+
     func presentQuizTypeInfo(_ quizType: QuizType) async {
         await router.showQuizTypeInfoBottomSheet(
             title: quizType.displayName,
             description: quizType.infoDescription
         )
+    }
+
+    func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String? {
+        switch useCase {
+        case .joinQuiz:
+            if let quizParticipationError = error as? QuizParticipationServiceError,
+               quizParticipationError == .invalidCode {
+                return "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
+            }
+            return nil
+
+        default:
+            return nil
+        }
     }
 }

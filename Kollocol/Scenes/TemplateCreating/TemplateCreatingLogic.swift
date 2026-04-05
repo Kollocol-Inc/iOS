@@ -11,14 +11,17 @@ actor TemplateCreatingLogic: TemplateCreatingInteractor {
     // MARK: - Constants
     private let presenter: TemplateCreatingPresenter
     private let quizService: QuizService
+    private let mlService: MLService
 
     // MARK: - Lifecycle
     init(
         presenter: TemplateCreatingPresenter,
-        quizService: QuizService
+        quizService: QuizService,
+        mlService: MLService
     ) {
         self.presenter = presenter
         self.quizService = quizService
+        self.mlService = mlService
     }
 
     // MARK: - Methods
@@ -60,6 +63,21 @@ actor TemplateCreatingLogic: TemplateCreatingInteractor {
         } catch {
             await presenter.presentCreateTemplateLoading(false)
             await presenter.presentServiceError(QuizServiceError.wrap(error))
+        }
+    }
+
+    func paraphraseQuestionText(_ text: String) async throws -> String {
+        let normalizedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalizedText.isEmpty == false else {
+            return normalizedText
+        }
+
+        do {
+            let response = try await mlService.paraphrase(.init(text: normalizedText))
+            let paraphrasedText = response.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return paraphrasedText.isEmpty ? normalizedText : paraphrasedText
+        } catch {
+            throw MLServiceError.wrap(error)
         }
     }
 

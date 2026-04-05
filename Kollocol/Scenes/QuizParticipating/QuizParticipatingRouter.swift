@@ -37,6 +37,14 @@ final class QuizParticipatingRouter: QuizParticipatingPresenter, ServiceErrorHan
         await router.showError(title: "Ошибка", message: message)
     }
 
+    func presentKickedFromQuiz(quizTitle: String?) async {
+        await router.showKickedFromQuizSheetAndClose(quizTitle: quizTitle)
+    }
+
+    func presentSessionReplaced() async {
+        await router.showSessionReplacedSheetAndClose()
+    }
+
     func presentLeaveConfirmation() async {
         await router.showQuizLeaveConfirmation { [weak self] in
             self?.view?.confirmLeaveAfterAlert()
@@ -52,4 +60,6 @@ final class QuizParticipatingRouter: QuizParticipatingPresenter, ServiceErrorHan
 protocol QuizParticipatingRouting: ErrorMessageDisplaying {
     func closeQuizParticipatingFlow()
     func showQuizLeaveConfirmation(onConfirm: @escaping @MainActor () -> Void)
+    func showKickedFromQuizSheetAndClose(quizTitle: String?)
+    func showSessionReplacedSheetAndClose()
 }

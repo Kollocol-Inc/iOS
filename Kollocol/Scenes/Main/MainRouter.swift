@@ -49,9 +49,40 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
     }
 
     func presentJoinQuizError(_ error: QuizParticipationServiceError) async {
-        let title = error == .invalidCode ? "Неверный код" : "Ошибка"
-        await presentServiceError(error, useCase: .joinQuiz, title: title)
+        switch error {
+        case .quizAlreadyStarted:
+            await router.showQuizConnectionUnavailableBottomSheet(
+                description: "Квиз уже начался, подключение невозможно"
+            )
+            await view?.resetCodeFields()
+            return
+
+        case .quizAlreadyFinished:
+            await router.showQuizConnectionUnavailableBottomSheet(
+                description: "Квиз уже завершен, подключение невозможно"
+            )
+            await view?.resetCodeFields()
+            return
+
+        default:
+            break
+        }
+
+        await router.showQuizJoinConnectionErrorBottomSheet()
         await view?.resetCodeFields()
+    }
+
+    func presentJoinQuizConfirmation(accessCode: String, quizTitle: String) async {
+        await router.showQuizJoinConfirmationBottomSheet(quizTitle: quizTitle) { [weak self] in
+            self?.view?.confirmJoinQuiz(accessCode: accessCode, skipAsyncConfirmation: true)
+        }
+    }
+
+    func presentAsyncQuizStartConfirmation(accessCode: String, quizTitle: String?) async {
+        await view?.resetCodeFields()
+        await router.showAsyncQuizStartConfirmationBottomSheet(quizTitle: quizTitle) { [weak self] in
+            self?.view?.confirmJoinQuiz(accessCode: accessCode, skipAsyncConfirmation: true)
+        }
     }
 
     func presentQuizTypeInfo(_ quizType: QuizType) async {

@@ -77,97 +77,15 @@ extension QuestionDTO {
             )
         }
         type = resolvedType
-        correctAnswer = try QuestionDTO.decodeCorrectAnswer(from: container, questionType: resolvedType)
+        correctAnswer = try container.decodeQuestionCorrectAnswerIfPresent(
+            forKey: .correctAnswer,
+            questionType: resolvedType
+        )
 
         id = try container.decodeIfPresent(String.self, forKey: .id)
         maxScore = try container.decodeIfPresent(Int.self, forKey: .maxScore)
         options = try container.decodeIfPresent([String].self, forKey: .options)
         text = try container.decodeIfPresent(String.self, forKey: .text)
         timeLimitSec = try container.decodeIfPresent(Int.self, forKey: .timeLimitSec)
-    }
-}
-
-private extension QuestionDTO {
-    private static func decodeCorrectAnswer(
-        from container: KeyedDecodingContainer<CodingKeys>,
-        questionType: QuestionType
-    ) throws -> QuestionCorrectAnswer? {
-        guard container.contains(.correctAnswer) else { return nil }
-        if try container.decodeNil(forKey: .correctAnswer) {
-            return nil
-        }
-
-        switch questionType {
-        case .singleChoice:
-            if let value = try container.decodeIfPresent(Int.self, forKey: .correctAnswer) {
-                return .singleChoice(value)
-            }
-            throw correctAnswerMismatchError(
-                expected: "Int (index for single_choice)",
-                actual: actualJSONTypeDescription(from: container),
-                codingPath: container.codingPath + [CodingKeys.correctAnswer]
-            )
-
-        case .multiChoice:
-            if let value = try container.decodeIfPresent([Int].self, forKey: .correctAnswer) {
-                return .multipleChoice(value)
-            }
-            throw correctAnswerMismatchError(
-                expected: "[Int] (indexes for multiple_choice)",
-                actual: actualJSONTypeDescription(from: container),
-                codingPath: container.codingPath + [CodingKeys.correctAnswer]
-            )
-
-        case .openEnded:
-            if let value = try container.decodeIfPresent(String.self, forKey: .correctAnswer) {
-                return .openText(value)
-            }
-            throw correctAnswerMismatchError(
-                expected: "String (text for open)",
-                actual: actualJSONTypeDescription(from: container),
-                codingPath: container.codingPath + [CodingKeys.correctAnswer]
-            )
-        }
-    }
-
-    private static func correctAnswerMismatchError(
-        expected: String,
-        actual: String,
-        codingPath: [CodingKey]
-    ) -> DecodingError {
-        DecodingError.typeMismatch(
-            QuestionCorrectAnswer.self,
-            DecodingError.Context(
-                codingPath: codingPath,
-                debugDescription: "Invalid value for `correct_answer`. Expected \(expected), but got \(actual)."
-            )
-        )
-    }
-
-    private static func actualJSONTypeDescription(
-        from container: KeyedDecodingContainer<CodingKeys>
-    ) -> String {
-        if (try? container.decodeNil(forKey: .correctAnswer)) == true {
-            return "null"
-        }
-        if (try? container.decode(Int.self, forKey: .correctAnswer)) != nil {
-            return "Int"
-        }
-        if (try? container.decode([Int].self, forKey: .correctAnswer)) != nil {
-            return "[Int]"
-        }
-        if (try? container.decode(String.self, forKey: .correctAnswer)) != nil {
-            return "String"
-        }
-        if (try? container.decode([String].self, forKey: .correctAnswer)) != nil {
-            return "[String]"
-        }
-        if (try? container.decode(Double.self, forKey: .correctAnswer)) != nil {
-            return "Double"
-        }
-        if (try? container.decode(Bool.self, forKey: .correctAnswer)) != nil {
-            return "Bool"
-        }
-        return "unknown JSON type"
     }
 }

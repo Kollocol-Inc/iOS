@@ -50,6 +50,12 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        markControl.stopAnimating()
+        onTap = nil
+    }
+
     // MARK: - Methods
     func configure(with option: QuizParticipatingModels.OptionViewData) {
         optionLabel.text = option.text
@@ -68,6 +74,12 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
                 isSelected: option.isSelected
             )
         )
+
+        if option.isLoading {
+            markControl.startAnimating()
+        } else {
+            markControl.stopAnimating()
+        }
 
         tapButton.isEnabled = option.isEnabled
         contentView.alpha = 1

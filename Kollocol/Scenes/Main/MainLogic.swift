@@ -62,16 +62,84 @@ final class MainLogic: MainInteractor {
         await presenter.presentProfileScreen()
     }
 
-    func joinQuiz(code: String) async {
+    func joinQuiz(code: String, skipAsyncConfirmation: Bool) async {
         do {
             try await quizParticipationService.connect(accessCode: code)
+
+            let connectedPayload = await quizParticipationService.currentConnectedPayload()
+            let shouldPresentAsyncStartConfirmation = skipAsyncConfirmation == false
+                && connectedPayload?.quizType == .async
+                && connectedPayload?.isCreator == false
+
+            if shouldPresentAsyncStartConfirmation {
+                let quizTitle = await quizParticipationService.currentQuizTitle()
+                await quizParticipationService.disconnect()
+                await presenter.presentAsyncQuizStartConfirmation(
+                    accessCode: code,
+                    quizTitle: quizTitle
+                )
+                return
+            }
+
             await presenter.presentJoinQuizSuccess(accessCode: code)
         } catch {
             await presenter.presentJoinQuizError(QuizParticipationServiceError.wrap(error))
         }
     }
 
+    func handleQuizCardTap(_ quiz: QuizInstanceViewData) async {
+        let accessCode = quiz.accessCode?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard accessCode.isEmpty == false else {
+            return
+        }
+
+        let normalizedTitle = normalizedString(quiz.title)
+        let isHostingQuiz = isHostingQuiz(quiz)
+        let shouldShowAsyncStartConfirmation = quiz.quizType == .async && isHostingQuiz == false
+
+        if shouldShowAsyncStartConfirmation {
+            await presenter.presentAsyncQuizStartConfirmation(
+                accessCode: accessCode,
+                quizTitle: normalizedTitle.isEmpty ? nil : normalizedTitle
+            )
+            return
+        }
+
+        await presenter.presentJoinQuizConfirmation(
+            accessCode: accessCode,
+            quizTitle: normalizedTitle
+        )
+    }
+
     func handleQuizTypeTap(_ quizType: QuizType) async {
         await presenter.presentQuizTypeInfo(quizType)
+    }
+
+    // MARK: - Private Methods
+    private func isHostingQuiz(_ quiz: QuizInstanceViewData) -> Bool {
+        let targetQuizID = normalizedString(quiz.id)
+        let targetAccessCode = normalizedString(quiz.accessCode)
+
+        return hostingInstances.contains { instance in
+            let instanceQuizID = normalizedString(instance.id)
+            if targetQuizID.isEmpty == false,
+               instanceQuizID.isEmpty == false,
+               targetQuizID == instanceQuizID {
+                return true
+            }
+
+            let instanceAccessCode = normalizedString(instance.accessCode)
+            if targetAccessCode.isEmpty == false,
+               instanceAccessCode.isEmpty == false,
+               targetAccessCode == instanceAccessCode {
+                return true
+            }
+
+            return false
+        }
+    }
+
+    private func normalizedString(_ value: String?) -> String {
+        value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
 }

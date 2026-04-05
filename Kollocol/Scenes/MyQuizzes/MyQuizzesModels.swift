@@ -8,6 +8,12 @@
 import UIKit
 
 enum MyQuizzesModels {
+    enum MyQuizzesSection: Equatable {
+        case active
+        case pendingReview
+        case reviewed
+    }
+
     enum Mode {
         case myQuizzes
         case templates
@@ -15,7 +21,7 @@ enum MyQuizzesModels {
 
     enum Row {
         case header(title: String)
-        case cards(items: [QuizInstanceViewData])
+        case cards(items: [QuizInstanceViewData], section: MyQuizzesSection)
         case empty(text: String)
         case divider
     }

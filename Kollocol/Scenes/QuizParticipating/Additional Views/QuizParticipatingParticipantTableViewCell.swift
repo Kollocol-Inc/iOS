@@ -9,6 +9,18 @@ import UIKit
 
 final class QuizParticipatingParticipantTableViewCell: UITableViewCell {
     // MARK: - UI Components
+    private let offlineStatusImageView: UIImageView = {
+        let imageConfiguration = UIImage.SymbolConfiguration(pointSize: 17, weight: .regular)
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage(
+            systemName: "antenna.radiowaves.left.and.right.slash",
+            withConfiguration: imageConfiguration
+        )?.withTintColor(.backgroundRedSecondary, renderingMode: .alwaysOriginal)
+        imageView.isHidden = true
+        return imageView
+    }()
+
     private let avatarImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -93,6 +105,7 @@ final class QuizParticipatingParticipantTableViewCell: UITableViewCell {
             score: viewData.score,
             place: viewData.place
         )
+        applyOnlineState(isOffline: viewData.isOffline)
     }
 
     // MARK: - Private Methods
@@ -104,9 +117,15 @@ final class QuizParticipatingParticipantTableViewCell: UITableViewCell {
         textStackView.addArrangedSubview(nameLabel)
         textStackView.addArrangedSubview(emailLabel)
 
+        contentView.addSubview(offlineStatusImageView)
         contentView.addSubview(avatarImageView)
         contentView.addSubview(textStackView)
         contentView.addSubview(scoreLabel)
+
+        offlineStatusImageView.pinRight(to: avatarImageView.leadingAnchor, 4)
+        offlineStatusImageView.pinCenterY(to: avatarImageView)
+        offlineStatusImageView.setWidth(17)
+        offlineStatusImageView.setHeight(17)
 
         avatarImageView.pinLeft(to: contentView.leadingAnchor, 28)
         avatarImageView.pinTop(to: contentView.topAnchor, 0)
@@ -124,11 +143,22 @@ final class QuizParticipatingParticipantTableViewCell: UITableViewCell {
         textStackView.pinRight(to: scoreLabel.leadingAnchor, 12)
     }
 
+    private func applyOnlineState(isOffline: Bool) {
+        offlineStatusImageView.isHidden = isOffline == false
+    }
+
     private func makeScoreAttributedText(score: Int, place: Int) -> NSAttributedString {
         let textAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 17, weight: .medium),
             .foregroundColor: UIColor.accentPrimary
         ]
+
+        guard score > 0 else {
+            return NSAttributedString(
+                string: "\(score)",
+                attributes: textAttributes
+            )
+        }
 
         guard let medalColor = medalColor(for: place) else {
             return NSAttributedString(

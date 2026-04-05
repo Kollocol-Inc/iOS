@@ -45,8 +45,8 @@ final class QuizParticipatingQuestionTextTableViewCell: UITableViewCell {
 
         contentView.addSubview(questionLabel)
         questionLabel.pinTop(to: contentView.topAnchor, 0)
-        questionLabel.pinLeft(to: contentView.leadingAnchor, 16)
-        questionLabel.pinRight(to: contentView.trailingAnchor, 16)
+        questionLabel.pinLeft(to: contentView.leadingAnchor, 24)
+        questionLabel.pinRight(to: contentView.trailingAnchor, 24)
         questionLabel.pinBottom(to: contentView.bottomAnchor, 20)
     }
 }

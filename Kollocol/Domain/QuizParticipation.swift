@@ -35,6 +35,7 @@ struct QuizParticipant: Sendable, Equatable {
     let email: String?
     let avatarURL: String?
     let isCreator: Bool
+    let isOnline: Bool?
 }
 
 enum QuizParticipantsUpdateAction: String, Sendable {
@@ -99,6 +100,7 @@ struct QuizLeaderboardPayload: Sendable, Equatable {
     let questionStats: QuizQuestionStatsPayload?
     let answerOptionStats: [QuizAnswerOptionStatsPayload]
     let canContinue: Bool
+    let question: QuizQuestionPayload?
 }
 
 struct QuizAnswerProgressPayload: Sendable, Equatable {

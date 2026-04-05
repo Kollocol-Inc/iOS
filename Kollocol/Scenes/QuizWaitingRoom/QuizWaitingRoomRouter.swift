@@ -53,6 +53,20 @@ final class QuizWaitingRoomRouter: QuizWaitingRoomPresenter, ServiceErrorHandlin
         await router.showError(title: "Ошибка", message: message)
     }
 
+    func presentKickParticipantConfirmation(participantName: String, participantEmail: String) async {
+        await router.showKickParticipantConfirmation(participantName: participantName) { [weak self] in
+            self?.view?.confirmKickAfterSheet(email: participantEmail)
+        }
+    }
+
+    func presentKickedFromQuiz(quizTitle: String?) async {
+        await router.showKickedFromQuizSheetAndClose(quizTitle: quizTitle)
+    }
+
+    func presentSessionReplaced() async {
+        await router.showSessionReplacedSheetAndClose()
+    }
+
     func presentLeaveConfirmation() async {
         await router.showQuizLeaveConfirmation { [weak self] in
             self?.view?.confirmLeaveAfterAlert()

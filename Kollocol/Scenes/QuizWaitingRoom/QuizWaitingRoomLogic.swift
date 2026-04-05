@@ -16,9 +16,17 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
     private var participantsCount = 1
     private var isCreator = false
     private var currentUserID: String?
+    private var quizStatus: QuizStatus?
     private var quizTitle: String?
     private var participants: [QuizParticipant] = []
     private var lastServerErrorAt: Date?
+    private var hasRoutedToParticipating = false
+
+    private static let logDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
 
     // MARK: - Lifecycle
     init(
@@ -34,10 +42,28 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
         if let connectedPayload = await quizParticipationService.currentConnectedPayload() {
             isCreator = connectedPayload.isCreator
             currentUserID = extractCurrentUserID(from: connectedPayload.sessionId)
+            quizStatus = connectedPayload.quizStatus
+            logQuizFlow(
+                "viewDidLoad snapshot: status=\(connectedPayload.quizStatus?.rawValue ?? "nil"), " +
+                "isCreator=\(connectedPayload.isCreator), currentUserID=\(currentUserID ?? "nil")"
+            )
+        } else {
+            logQuizFlow("viewDidLoad snapshot: connected payload is nil")
         }
+
+        if shouldRouteToQuizParticipating() {
+            logQuizFlow("viewDidLoad decided to route directly to participating")
+            await routeToQuizParticipatingIfNeeded()
+            return
+        }
+
         quizTitle = await quizParticipationService.currentQuizTitle()
-        participantsCount = await quizParticipationService.currentParticipantsCount()
-        participants = await quizParticipationService.currentParticipants()
+        participants = sortParticipants(await quizParticipationService.currentParticipants())
+        participantsCount = max(1, participants.count)
+        logQuizFlow(
+            "waiting room state prepared: participantsCount=\(participantsCount), " +
+            "participantsCached=\(participants.count), quizTitle=\(quizTitle ?? "nil")"
+        )
 
         await presenter.presentIsCreator(isCreator)
         await presenter.presentCurrentUserID(currentUserID)
@@ -68,6 +94,37 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
 
         do {
             try await quizParticipationService.startQuiz()
+        } catch {
+            await presenter.presentServiceError(QuizParticipationServiceError.wrap(error))
+        }
+    }
+
+    func handleKickParticipantTap(_ participant: QuizParticipant) async {
+        guard isCreator,
+              quizStatus == .waiting,
+              participant.isCreator == false else {
+            return
+        }
+
+        guard let participantEmail = normalizedParticipantEmail(participant) else {
+            await presenter.presentServerError(message: "Не удалось выгнать участника")
+            return
+        }
+
+        await presenter.presentKickParticipantConfirmation(
+            participantName: participantDisplayName(participant),
+            participantEmail: participantEmail
+        )
+    }
+
+    func handleKickParticipantConfirmed(email: String) async {
+        guard isCreator,
+              quizStatus == .waiting else {
+            return
+        }
+
+        do {
+            try await quizParticipationService.kickParticipant(email: email)
         } catch {
             await presenter.presentServiceError(QuizParticipationServiceError.wrap(error))
         }
@@ -108,18 +165,26 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
         case .connected(let payload):
             isCreator = payload.isCreator
             currentUserID = extractCurrentUserID(from: payload.sessionId)
+            quizStatus = payload.quizStatus
+            logQuizFlow(
+                "connected message: status=\(payload.quizStatus?.rawValue ?? "nil"), " +
+                "isCreator=\(payload.isCreator), shouldRoute=\(shouldRouteToQuizParticipating())"
+            )
             await presenter.presentIsCreator(isCreator)
             await presenter.presentCurrentUserID(currentUserID)
+            if shouldRouteToQuizParticipating() {
+                await routeToQuizParticipatingIfNeeded()
+            }
 
-        case .participantsUpdate(let payload):
-            participantsCount = max(1, payload.count)
+        case .participantsUpdate:
+            participants = sortParticipants(await quizParticipationService.currentParticipants())
+            participantsCount = max(1, participants.count)
             await presenter.presentParticipantsCount(participantsCount)
-            participants = await quizParticipationService.currentParticipants()
             await presenter.presentParticipants(participants)
 
         case .participantsList(let payload):
-            participants = payload.participants
-            participantsCount = max(1, payload.participants.count)
+            participants = sortParticipants(payload.participants)
+            participantsCount = max(1, participants.count)
             quizTitle = payload.quizTitle
             await presenter.presentParticipantsCount(participantsCount)
             await presenter.presentParticipants(participants)
@@ -129,12 +194,23 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
 
         case .error(let message):
             lastServerErrorAt = Date()
+            if await handleSessionReplacedIfNeeded(message) {
+                return
+            }
+            if isKickedError(message) {
+                let cachedQuizTitle = await quizParticipationService.currentQuizTitle()
+                let resolvedQuizTitle = quizTitle ?? cachedQuizTitle
+                eventsTask?.cancel()
+                eventsTask = nil
+                await quizParticipationService.disconnect()
+                await presenter.presentKickedFromQuiz(quizTitle: resolvedQuizTitle)
+                return
+            }
             await presenter.presentServerError(message: message)
 
         case .quizStarted:
-            eventsTask?.cancel()
-            eventsTask = nil
-            await presenter.presentRouteToQuizParticipating()
+            logQuizFlow("quizStarted message received in waiting room")
+            await routeToQuizParticipatingIfNeeded()
 
         case .question,
                 .answerProgress,
@@ -148,9 +224,106 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
         }
     }
 
+    private func shouldRouteToQuizParticipating() -> Bool {
+        quizStatus == .active
+    }
+
+    private func routeToQuizParticipatingIfNeeded() async {
+        guard hasRoutedToParticipating == false else {
+            logQuizFlow("routeToQuizParticipating ignored: already routed")
+            return
+        }
+
+        hasRoutedToParticipating = true
+        logQuizFlow(
+            "routing to participating. currentStatus=\(quizStatus?.rawValue ?? "nil"), " +
+            "isCreator=\(isCreator), participantsCount=\(participantsCount)"
+        )
+        eventsTask?.cancel()
+        eventsTask = nil
+        await presenter.presentRouteToQuizParticipating()
+    }
+
     private func normalizedQuizTitle(_ title: String?) -> String? {
         let normalizedTitle = title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return normalizedTitle.isEmpty ? nil : normalizedTitle
+    }
+
+    private func normalizedParticipantEmail(_ participant: QuizParticipant) -> String? {
+        let email = participant.email?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return email.isEmpty ? nil : email
+    }
+
+    private func participantDisplayName(_ participant: QuizParticipant) -> String {
+        let fullName = [participant.firstName, participant.lastName]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { $0.isEmpty == false }
+            .joined(separator: " ")
+
+        if fullName.isEmpty == false {
+            return fullName
+        }
+
+        if let email = normalizedParticipantEmail(participant) {
+            return email
+        }
+
+        return "участника"
+    }
+
+    private func isKickedError(_ message: String) -> Bool {
+        let normalizedMessage = message
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        return normalizedMessage == "you have been kicked"
+    }
+
+    private func handleSessionReplacedIfNeeded(_ message: String) async -> Bool {
+        guard isSessionReplacedError(message) else {
+            return false
+        }
+
+        eventsTask?.cancel()
+        eventsTask = nil
+        await quizParticipationService.disconnect()
+        await presenter.presentSessionReplaced()
+        return true
+    }
+
+    private func isSessionReplacedError(_ message: String) -> Bool {
+        let normalizedMessage = message
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        return normalizedMessage == "session replaced by another device"
+    }
+
+    private func sortParticipants(_ participants: [QuizParticipant]) -> [QuizParticipant] {
+        participants.sorted { left, right in
+            if left.isCreator != right.isCreator {
+                return left.isCreator
+            }
+
+            return participantSortKey(left) < participantSortKey(right)
+        }
+    }
+
+    private func participantSortKey(_ participant: QuizParticipant) -> String {
+        let fullName = [participant.firstName, participant.lastName]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { $0.isEmpty == false }
+            .joined(separator: " ")
+            .lowercased()
+
+        if fullName.isEmpty == false {
+            return fullName
+        }
+
+        let email = participant.email?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
+        if email.isEmpty == false {
+            return email
+        }
+
+        return participant.userId?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
     }
 
     private func extractCurrentUserID(from sessionID: String?) -> String? {
@@ -179,6 +352,13 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
         }
 
         return true
+    }
+
+    private func logQuizFlow(_ message: String) {
+        #if DEBUG
+        let timestamp = Self.logDateFormatter.string(from: Date())
+        print("[QuizFlow][QuizWaitingRoomLogic][\(timestamp)] \(message)")
+        #endif
     }
 }
 

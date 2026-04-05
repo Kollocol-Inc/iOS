@@ -57,6 +57,12 @@ final class MainCoordinator {
     private var profileNavController: UINavigationController?
     private var quizWaitingRoomCoordinator: QuizWaitingRoomCoordinator?
 
+    private static let logDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
     // MARK: - Lifecycle
     init(
         navigationController: UINavigationController,
@@ -105,7 +111,12 @@ final class MainCoordinator {
         )
         groupsNavController = groupsNav
 
-        let myQuizzesVC = MyQuizzesAssembly.build(router: self, quizService: services.quizService)
+        let myQuizzesVC = MyQuizzesAssembly.build(
+            router: self,
+            quizService: services.quizService,
+            mlService: services.mlService,
+            quizParticipationService: services.quizParticipationService
+        )
         let myQuizzesNav = makeTabNavigationController(
             root: myQuizzesVC,
             tab: .myQuizzes
@@ -168,12 +179,20 @@ final class MainCoordinator {
 
     private func startQuizWaitingRoom(
         on navigationController: UINavigationController,
-        accessCode: String
+        accessCode: String,
+        startDestination: QuizWaitingRoomCoordinator.StartDestination = .waitingRoom
     ) {
+        logQuizFlow(
+            "startQuizWaitingRoom requested. accessCode=\(accessCode), " +
+            "destination=\(startDestinationDescription(startDestination)), " +
+            "navigation=\(String(describing: type(of: navigationController)))"
+        )
+
         let coordinator = QuizWaitingRoomCoordinator(
             navigationController: navigationController,
             quizParticipationService: services.quizParticipationService,
             initialData: .init(accessCode: accessCode),
+            startDestination: startDestination,
             onFinish: { [weak self] in
                 self?.quizWaitingRoomCoordinator = nil
             }
@@ -181,6 +200,25 @@ final class MainCoordinator {
 
         quizWaitingRoomCoordinator = coordinator
         coordinator.start()
+        logQuizFlow(
+            "quiz waiting room coordinator started. destination=\(startDestinationDescription(startDestination))"
+        )
+    }
+
+    private func logQuizFlow(_ message: String) {
+        #if DEBUG
+        let timestamp = Self.logDateFormatter.string(from: Date())
+        print("[QuizFlow][MainCoordinator][\(timestamp)] \(message)")
+        #endif
+    }
+
+    private func startDestinationDescription(_ destination: QuizWaitingRoomCoordinator.StartDestination) -> String {
+        switch destination {
+        case .waitingRoom:
+            return "waitingRoom"
+        case .participating:
+            return "participating"
+        }
     }
 }
 
@@ -204,9 +242,28 @@ extension MainCoordinator: MainRouting {
         tabBarController.selectedIndex = 3
     }
 
-    func routeToQuizWaitingRoom(accessCode: String) {
+    func routeToQuizWaitingRoom(accessCode: String) async {
         guard let mainNavController else { return }
-        startQuizWaitingRoom(on: mainNavController, accessCode: accessCode)
+        logQuizFlow("routeToQuizWaitingRoom called from Main. accessCode=\(accessCode)")
+
+        let connectedPayload = await services.quizParticipationService.currentConnectedPayload()
+        let shouldRouteToParticipating = connectedPayload?.quizStatus == .active
+            || (connectedPayload?.quizType == .async && connectedPayload?.isCreator == false)
+        let startDestination: QuizWaitingRoomCoordinator.StartDestination = shouldRouteToParticipating
+            ? .participating
+            : .waitingRoom
+
+        logQuizFlow(
+            "entry decision: status=\(connectedPayload?.quizStatus?.rawValue ?? "nil"), " +
+            "isCreator=\(connectedPayload?.isCreator.description ?? "nil"), " +
+            "destination=\(startDestinationDescription(startDestination))"
+        )
+
+        startQuizWaitingRoom(
+            on: mainNavController,
+            accessCode: accessCode,
+            startDestination: startDestination
+        )
     }
 
     func showError(title: String, message: String) {
@@ -215,6 +272,36 @@ extension MainCoordinator: MainRouting {
 
     func showQuizTypeInfoBottomSheet(title: String, description: String) {
         showInfoBottomSheet(title: title, description: description)
+    }
+
+    func showQuizJoinConfirmationBottomSheet(
+        quizTitle: String,
+        onConfirm: @escaping @MainActor () -> Void
+    ) {
+        showQuizJoinConfirmationSheet(quizTitle: quizTitle, onConfirm: onConfirm)
+    }
+
+    func showAsyncQuizStartConfirmationBottomSheet(
+        quizTitle: String?,
+        onConfirm: @escaping @MainActor () -> Void
+    ) {
+        showAsyncQuizStartConfirmationSheet(quizTitle: quizTitle, onConfirm: onConfirm)
+    }
+
+    func showQuizConnectionUnavailableBottomSheet(description: String) {
+        showInfoBottomSheet(
+            title: "С прискорбием сообщаем...",
+            description: description,
+            buttonTitle: "ОК"
+        )
+    }
+
+    func showQuizJoinConnectionErrorBottomSheet() {
+        showInfoBottomSheet(
+            title: "Ошибка подключения",
+            description: "Не удалось подключиться к квизу. Убедитесь, что у вас стабильное интернет-соединение и код введен верно",
+            buttonTitle: "ОК"
+        )
     }
 }
 
@@ -230,7 +317,25 @@ extension MainCoordinator: MyQuizzesRouting {
 
         let viewController = TemplateCreatingAssembly.build(
             router: self,
-            quizService: services.quizService
+            quizService: services.quizService,
+            mlService: services.mlService
+        )
+        viewController.hidesBottomBarWhenPushed = true
+        myQuizzesNavController.pushViewController(viewController, animated: true)
+    }
+
+    func routeToCreateTemplateScreen(
+        prefilledTitle: String?,
+        questions: [Question]
+    ) {
+        guard let myQuizzesNavController else { return }
+
+        let viewController = TemplateCreatingAssembly.build(
+            router: self,
+            quizService: services.quizService,
+            mlService: services.mlService,
+            prefilledTitle: prefilledTitle,
+            questions: questions
         )
         viewController.hidesBottomBarWhenPushed = true
         myQuizzesNavController.pushViewController(viewController, animated: true)
@@ -242,6 +347,7 @@ extension MainCoordinator: MyQuizzesRouting {
         let viewController = TemplateCreatingAssembly.build(
             router: self,
             quizService: services.quizService,
+            mlService: services.mlService,
             template: template
         )
         viewController.hidesBottomBarWhenPushed = true
@@ -260,6 +366,31 @@ extension MainCoordinator: MyQuizzesRouting {
         viewController.hidesBottomBarWhenPushed = true
         myQuizzesNavController.pushViewController(viewController, animated: true)
     }
+
+    func routeToQuizWaitingRoomFromMyQuizzes(accessCode: String) async {
+        guard let myQuizzesNavController else { return }
+        logQuizFlow("routeToQuizWaitingRoom called from MyQuizzes. accessCode=\(accessCode)")
+
+        let connectedPayload = await services.quizParticipationService.currentConnectedPayload()
+        let shouldRouteToParticipating = connectedPayload?.quizStatus == .active
+            || (connectedPayload?.quizType == .async && connectedPayload?.isCreator == false)
+        let startDestination: QuizWaitingRoomCoordinator.StartDestination = shouldRouteToParticipating
+            ? .participating
+            : .waitingRoom
+
+        logQuizFlow(
+            "entry decision: status=\(connectedPayload?.quizStatus?.rawValue ?? "nil"), " +
+            "isCreator=\(connectedPayload?.isCreator.description ?? "nil"), " +
+            "destination=\(startDestinationDescription(startDestination))"
+        )
+
+        startQuizWaitingRoom(
+            on: myQuizzesNavController,
+            accessCode: accessCode,
+            startDestination: startDestination
+        )
+    }
+
 }
 
 // MARK: - ProfileRouting
@@ -295,17 +426,32 @@ extension MainCoordinator: StartQuizRouting {
 
     func routeToQuizWaitingRoomFromStartQuiz(accessCode: String) {
         guard let myQuizzesNavController else { return }
+        logQuizFlow("routeToQuizWaitingRoomFromStartQuiz called. accessCode=\(accessCode), destination=waitingRoom")
 
         myQuizzesNavController.popViewController(animated: false)
-        startQuizWaitingRoom(on: myQuizzesNavController, accessCode: accessCode)
+        startQuizWaitingRoom(
+            on: myQuizzesNavController,
+            accessCode: accessCode,
+            startDestination: .waitingRoom
+        )
     }
 }
 
 @MainActor
 protocol MainRouting: ErrorMessageDisplaying {
     func routeToProfileScreen()
-    func routeToQuizWaitingRoom(accessCode: String)
+    func routeToQuizWaitingRoom(accessCode: String) async
     func showQuizTypeInfoBottomSheet(title: String, description: String)
+    func showQuizConnectionUnavailableBottomSheet(description: String)
+    func showQuizJoinConnectionErrorBottomSheet()
+    func showAsyncQuizStartConfirmationBottomSheet(
+        quizTitle: String?,
+        onConfirm: @escaping @MainActor () -> Void
+    )
+    func showQuizJoinConfirmationBottomSheet(
+        quizTitle: String,
+        onConfirm: @escaping @MainActor () -> Void
+    )
 }
 
 @MainActor
@@ -316,9 +462,16 @@ protocol GroupsRouting: AnyObject {
 @MainActor
 protocol MyQuizzesRouting: ErrorMessageDisplaying {
     func routeToCreateTemplateScreen()
+    func routeToCreateTemplateScreen(prefilledTitle: String?, questions: [Question])
     func routeToEditTemplateScreen(template: QuizTemplate)
     func routeToStartQuizScreen(template: QuizTemplate)
+    func routeToQuizWaitingRoomFromMyQuizzes(accessCode: String) async
     func showQuizTypeInfoBottomSheet(title: String, description: String)
+    func showQuizConnectionUnavailableBottomSheet(description: String)
+    func showQuizJoinConfirmationBottomSheet(
+        quizTitle: String,
+        onConfirm: @escaping @MainActor () -> Void
+    )
 }
 
 @MainActor

@@ -109,13 +109,10 @@ class StripedLoadingTextField: UITextField {
     }
 
     func stopAnimating() {
-        guard isAnimating else { return }
-        isAnimating = false
-
         replicator.removeAnimation(forKey: animationKey)
         overlayView.isHidden = true
 
         isUserInteractionEnabled = previousUserInteractionEnabled
+        isAnimating = false
     }
 }
-

@@ -11,15 +11,24 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
     // MARK: - Constants
     private let presenter: MyQuizzesPresenter
     private let quizService: QuizService
+    private let mlService: MLService
+    private let quizParticipationService: QuizParticipationService
 
     // MARK: - Properties
     private var allTemplates: [QuizTemplate] = []
     private var templateSearchQuery = ""
 
     // MARK: - Lifecycle
-    init(presenter: MyQuizzesPresenter, quizService: QuizService) {
+    init(
+        presenter: MyQuizzesPresenter,
+        quizService: QuizService,
+        mlService: MLService,
+        quizParticipationService: QuizParticipationService
+    ) {
         self.presenter = presenter
         self.quizService = quizService
+        self.mlService = mlService
+        self.quizParticipationService = quizParticipationService
     }
 
     // MARK: - Methods
@@ -42,8 +51,51 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
         }
     }
 
+    func joinQuiz(code: String) async {
+        do {
+            try await quizParticipationService.connect(accessCode: code)
+            await presenter.presentJoinQuizSuccess(accessCode: code)
+        } catch {
+            await presenter.presentJoinQuizError(QuizParticipationServiceError.wrap(error))
+        }
+    }
+
+    func generateTemplate(prompt: String) async throws -> GeneratedTemplate {
+        let normalizedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalizedPrompt.isEmpty == false else {
+            throw MLServiceError.badRequest
+        }
+
+        do {
+            return try await mlService.generateTemplate(.init(text: normalizedPrompt))
+        } catch {
+            throw MLServiceError.wrap(error)
+        }
+    }
+
+    func handleTemplateGenerationError(_ error: MLServiceError) async {
+        await presenter.presentTemplateGenerationError(error)
+    }
+
+    func handleQuizCardTap(_ quiz: QuizInstanceViewData) async {
+        let accessCode = quiz.accessCode?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard accessCode.isEmpty == false else {
+            return
+        }
+
+        let normalizedTitle = quiz.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        await presenter.presentJoinQuizConfirmation(
+            accessCode: accessCode,
+            quizTitle: normalizedTitle
+        )
+    }
+
     func routeToCreateTemplateScreen() async {
         await presenter.presentCreateTemplateScreen()
+    }
+
+    func routeToCreateTemplateScreen(from generatedTemplate: GeneratedTemplate) async {
+        await presenter.presentCreateTemplateScreen(from: generatedTemplate)
     }
 
     func routeToStartQuizScreen(templateId: String?) async {

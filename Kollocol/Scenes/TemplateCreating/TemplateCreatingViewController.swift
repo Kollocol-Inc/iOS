@@ -108,11 +108,12 @@ final class TemplateCreatingViewController: UIViewController {
     init(
         interactor: TemplateCreatingInteractor,
         template: QuizTemplate? = nil,
+        prefilledTitle: String? = nil,
         questions: [Question]? = nil
     ) {
         let templateQuestions = template?.questions ?? []
         let initialQuestions = templateQuestions.isEmpty ? (questions ?? []) : templateQuestions
-        let initialTitle = template?.title
+        let initialTitle = template?.title ?? prefilledTitle
         let initialQuizType = template?.quizType ?? .async
         let initialRandomOrder = template?.settings?.randomOrder ?? false
 
@@ -515,6 +516,12 @@ final class TemplateCreatingViewController: UIViewController {
             self.rebuildRows()
             self.tableView.reloadData()
         }
+        viewController.onParaphraseQuestionText = { [weak self] questionText in
+            guard let self else {
+                throw MLServiceError.unknown
+            }
+            return try await self.interactor.paraphraseQuestionText(questionText)
+        }
 
         presentQuestionBottomSheet(viewController)
     }
@@ -535,6 +542,12 @@ final class TemplateCreatingViewController: UIViewController {
                 sourceIndex: sourceIndex,
                 previousRows: oldRows
             )
+        }
+        viewController.onParaphraseQuestionText = { [weak self] questionText in
+            guard let self else {
+                throw MLServiceError.unknown
+            }
+            return try await self.interactor.paraphraseQuestionText(questionText)
         }
 
         presentQuestionBottomSheet(viewController)

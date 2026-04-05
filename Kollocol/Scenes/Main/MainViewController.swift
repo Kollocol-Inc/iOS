@@ -115,12 +115,16 @@ final class MainViewController: UIViewController {
         Task {
             await interactor.fetchUserProfile()
         }
-        
+
+        initialState()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
         Task {
             await interactor.fetchQuizzes()
         }
-
-        initialState()
     }
 
     // MARK: - Methods
@@ -151,6 +155,16 @@ final class MainViewController: UIViewController {
         codeInputView.resetFields()
         joinButtonView.setLoading(false)
         joinButtonView.setEnabled(false)
+    }
+
+    @MainActor
+    func confirmJoinQuiz(accessCode: String, skipAsyncConfirmation: Bool) {
+        Task {
+            await interactor.joinQuiz(
+                code: accessCode,
+                skipAsyncConfirmation: skipAsyncConfirmation
+            )
+        }
     }
 
     // MARK: - Private Methods
@@ -209,7 +223,7 @@ final class MainViewController: UIViewController {
             self.joinButtonView.setLoading(true)
 
             Task {
-                await self.interactor.joinQuiz(code: code)
+                await self.interactor.joinQuiz(code: code, skipAsyncConfirmation: false)
             }
         }
     }
@@ -352,6 +366,11 @@ extension MainViewController: UITableViewDataSource {
             cell.onQuizTypeTap = { [weak self] quizType in
                 Task { [weak self] in
                     await self?.interactor.handleQuizTypeTap(quizType)
+                }
+            }
+            cell.onQuizTap = { [weak self] quiz in
+                Task { [weak self] in
+                    await self?.interactor.handleQuizCardTap(quiz)
                 }
             }
 

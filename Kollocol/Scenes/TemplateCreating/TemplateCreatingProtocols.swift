@@ -11,6 +11,7 @@ protocol TemplateCreatingInteractor: Actor {
     func createTemplate(formData: TemplateCreatingModels.FormData) async
     func updateTemplate(by templateId: String, formData: TemplateCreatingModels.FormData) async
     func deleteTemplate(by templateId: String) async
+    func paraphraseQuestionText(_ text: String) async throws -> String
     func handleQuizTypeInfoTap(_ quizType: QuizType) async
 }
 

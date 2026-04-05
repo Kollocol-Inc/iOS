@@ -56,6 +56,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         case typePicker
         case header(String)
         case questionInput
+        case paraphraseControls
         case parameters
         case divider
         case optionsHeader
@@ -83,6 +84,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
     // MARK: - Properties
     var onSaveQuestion: ((Question) -> Void)?
+    var onParaphraseQuestionText: ((String) async throws -> String)?
 
     private var rows: [Row] = []
     private var mode: QuestionMode = .single
@@ -99,6 +101,10 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private weak var activeTimePopoverController: AddQuestionTimePopoverViewController?
     private var lastMeasuredSheetHeight: CGFloat = 0
     private var keyboardBottomInset: CGFloat = 0
+    private var paraphraseTask: Task<Void, Never>?
+    private var isQuestionTextParaphrasing = false
+    private var questionTextVariants: [String] = []
+    private var currentQuestionTextVariantIndex: Int?
 
     // MARK: - Lifecycle
     init(question: Question? = nil) {
@@ -190,6 +196,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+        paraphraseTask?.cancel()
     }
 
     // MARK: - Private Methods
@@ -208,6 +215,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         tableView.register(AddQuestionTypePickerTableViewCell.self, forCellReuseIdentifier: AddQuestionTypePickerTableViewCell.reuseIdentifier)
         tableView.register(HeaderTableViewCell.self, forCellReuseIdentifier: HeaderTableViewCell.reuseIdentifier)
         tableView.register(TextInputTableViewCell.self, forCellReuseIdentifier: TextInputTableViewCell.reuseIdentifier)
+        tableView.register(AddQuestionParaphraseControlsTableViewCell.self, forCellReuseIdentifier: AddQuestionParaphraseControlsTableViewCell.reuseIdentifier)
         tableView.register(AddQuestionParametersTableViewCell.self, forCellReuseIdentifier: AddQuestionParametersTableViewCell.reuseIdentifier)
         tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
         tableView.register(AddQuestionHeaderWithButtonTableViewCell.self, forCellReuseIdentifier: AddQuestionHeaderWithButtonTableViewCell.reuseIdentifier)
@@ -284,6 +292,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
             .typePicker,
             .header("Вопрос"),
             .questionInput,
+            .paraphraseControls,
             .header("Параметры"),
             .parameters,
             .divider
@@ -512,6 +521,11 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     }
 
     private func handleSaveTap() {
+        if isQuestionTextParaphrasing {
+            presentParaphrasingInProgressAlert()
+            return
+        }
+
         if isEditingQuestion, currentStateSnapshot == initialStateSnapshot {
             dismiss(animated: true)
             return
@@ -530,36 +544,38 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     }
 
     private func handleCloseTap() {
-        guard hasUnsavedChanges else {
+        if isQuestionTextParaphrasing {
+            presentParaphrasingInProgressAlert()
+            return
+        }
+
+        if let dismissValidationMessage {
+            showAlert(
+                title: UIConstants.errorTitle,
+                message: dismissValidationMessage
+            )
+            return
+        }
+
+        guard shouldShowUnsavedChangesAlert else {
             dismiss(animated: true)
             return
         }
 
-        showConfirmationAlert(
-            title: "Внимание",
-            message: "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно",
-            cancelTitle: "Отмена",
-            confirmTitle: "Выйти",
-            confirmStyle: .destructive
-        ) { [weak self] in
-            self?.dismiss(animated: true)
-        }
+        presentUnsavedChangesAlert()
     }
 
-    private var hasUnsavedChanges: Bool {
-        if isEditingQuestion {
-            return currentStateSnapshot != initialStateSnapshot
-        }
+    private var shouldShowUnsavedChangesAlert: Bool {
+        isEditingQuestion && (
+            currentStateSnapshot != initialStateSnapshot
+                || questionTextVariants.count > 1
+        )
+    }
 
-        if questionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
-            return true
-        }
-
-        if options.isEmpty == false {
-            return true
-        }
-
-        return false
+    private var shouldConfirmDismiss: Bool {
+        isQuestionTextParaphrasing
+            || dismissValidationMessage != nil
+            || shouldShowUnsavedChangesAlert
     }
 
     private var currentStateSnapshot: StateSnapshot {
@@ -576,7 +592,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private var validationErrorMessage: String? {
         let isQuestionFilled = questionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
         guard isQuestionFilled else {
-            return "Укажите название квиза"
+            return "Укажите текст вопроса"
         }
 
         switch mode {
@@ -657,6 +673,215 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         return nil
     }
 
+    private var hasParaphraseHistory: Bool {
+        questionTextVariants.count > 1 && currentQuestionTextVariantIndex != nil
+    }
+
+    private var canMoveQuestionTextBackward: Bool {
+        guard let currentQuestionTextVariantIndex else { return false }
+        return currentQuestionTextVariantIndex > 0
+    }
+
+    private var canMoveQuestionTextForward: Bool {
+        guard let currentQuestionTextVariantIndex else { return false }
+        return currentQuestionTextVariantIndex < questionTextVariants.count - 1
+    }
+
+    private func handleQuestionTextChanged(_ text: String) {
+        questionText = text
+
+        if
+            let currentQuestionTextVariantIndex,
+            questionTextVariants.indices.contains(currentQuestionTextVariantIndex)
+        {
+            questionTextVariants[currentQuestionTextVariantIndex] = text
+            reloadParaphraseControlsRow()
+        }
+
+        updateSaveButtonState()
+    }
+
+    private func handleQuestionParaphraseTap() {
+        guard isQuestionTextParaphrasing == false else { return }
+
+        let normalizedQuestionText = questionText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalizedQuestionText.isEmpty == false else { return }
+        guard let onParaphraseQuestionText else { return }
+
+        showConfirmationAlert(
+            title: "Подтверждение",
+            message: "Вы уверены, что хотите перефразировать текст вопроса?",
+            cancelTitle: "Отмена",
+            confirmTitle: "Перефразировать",
+            confirmStyle: .default
+        ) { [weak self] in
+            self?.startParaphrasingQuestionText(
+                normalizedQuestionText,
+                using: onParaphraseQuestionText
+            )
+        }
+    }
+
+    private func startParaphrasingQuestionText(
+        _ normalizedQuestionText: String,
+        using onParaphraseQuestionText: @escaping (String) async throws -> String
+    ) {
+        let previousQuestionText = questionText
+
+        if
+            let currentQuestionTextVariantIndex,
+            questionTextVariants.indices.contains(currentQuestionTextVariantIndex)
+        {
+            questionTextVariants[currentQuestionTextVariantIndex] = previousQuestionText
+        }
+
+        isQuestionTextParaphrasing = true
+        reloadQuestionInputAndParaphraseRows()
+
+        paraphraseTask?.cancel()
+        paraphraseTask = Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                let paraphrasedQuestionText = try await onParaphraseQuestionText(normalizedQuestionText)
+                guard Task.isCancelled == false else { return }
+
+                await MainActor.run {
+                    if self.currentQuestionTextVariantIndex == nil || self.questionTextVariants.isEmpty {
+                        self.questionTextVariants = [previousQuestionText, paraphrasedQuestionText]
+                        self.currentQuestionTextVariantIndex = 1
+                    } else {
+                        self.questionTextVariants.append(paraphrasedQuestionText)
+                        self.currentQuestionTextVariantIndex = self.questionTextVariants.count - 1
+                    }
+
+                    self.questionText = paraphrasedQuestionText
+                    self.isQuestionTextParaphrasing = false
+                    self.reloadQuestionInputAndParaphraseRows()
+                    self.updateSaveButtonState()
+                }
+            } catch is CancellationError {
+                await MainActor.run {
+                    self.isQuestionTextParaphrasing = false
+                    self.reloadQuestionInputAndParaphraseRows()
+                }
+            } catch {
+                guard Task.isCancelled == false else { return }
+
+                await MainActor.run {
+                    self.isQuestionTextParaphrasing = false
+                    self.reloadQuestionInputAndParaphraseRows()
+                    self.showAlert(
+                        title: UIConstants.errorTitle,
+                        message: (error as? any UserFacingError)?.userMessage ?? "Что-то пошло не так"
+                    )
+                }
+            }
+
+            await MainActor.run {
+                self.paraphraseTask = nil
+            }
+        }
+    }
+
+    private func handleQuestionTextBackwardTap() {
+        guard isQuestionTextParaphrasing == false else { return }
+        guard canMoveQuestionTextBackward else { return }
+        guard let currentQuestionTextVariantIndex else { return }
+
+        let nextIndex = currentQuestionTextVariantIndex - 1
+        guard questionTextVariants.indices.contains(nextIndex) else { return }
+
+        self.currentQuestionTextVariantIndex = nextIndex
+        questionText = questionTextVariants[nextIndex]
+        reloadQuestionInputAndParaphraseRows()
+        updateSaveButtonState()
+    }
+
+    private func handleQuestionTextForwardTap() {
+        guard isQuestionTextParaphrasing == false else { return }
+        guard canMoveQuestionTextForward else { return }
+        guard let currentQuestionTextVariantIndex else { return }
+
+        let nextIndex = currentQuestionTextVariantIndex + 1
+        guard questionTextVariants.indices.contains(nextIndex) else { return }
+
+        self.currentQuestionTextVariantIndex = nextIndex
+        questionText = questionTextVariants[nextIndex]
+        reloadQuestionInputAndParaphraseRows()
+        updateSaveButtonState()
+    }
+
+    private func reloadQuestionInputAndParaphraseRows() {
+        reloadQuestionInputRow()
+        reloadParaphraseControlsRow()
+    }
+
+    private func reloadQuestionInputRow() {
+        guard let rowIndex = rows.firstIndex(where: {
+            if case .questionInput = $0 { return true }
+            return false
+        }) else {
+            return
+        }
+
+        tableView.reloadRows(at: [IndexPath(row: rowIndex, section: 0)], with: .none)
+    }
+
+    private func reloadParaphraseControlsRow() {
+        guard let rowIndex = rows.firstIndex(where: {
+            if case .paraphraseControls = $0 { return true }
+            return false
+        }) else {
+            return
+        }
+
+        tableView.reloadRows(at: [IndexPath(row: rowIndex, section: 0)], with: .none)
+    }
+
+    private var dismissValidationMessage: String? {
+        let normalizedQuestionText = questionText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalizedQuestionText.isEmpty == false else {
+            return "Укажите текст вопроса"
+        }
+
+        if mode == .single || mode == .multi {
+            let hasEmptyOption = options.contains {
+                $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+            if hasEmptyOption {
+                return "Заполните все добавленные варианты ответа"
+            }
+        }
+
+        return nil
+    }
+
+    private func presentParaphrasingInProgressAlert() {
+        showConfirmationAlert(
+            title: "Внимание",
+            message: "Вы уверены, что хотите выйти? Генерация текста вопроса в процессе",
+            cancelTitle: "Отмена",
+            confirmTitle: "Выйти",
+            confirmStyle: .destructive
+        ) { [weak self] in
+            self?.paraphraseTask?.cancel()
+            self?.dismiss(animated: true)
+        }
+    }
+
+    private func presentUnsavedChangesAlert() {
+        showConfirmationAlert(
+            title: "Внимание",
+            message: "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно",
+            cancelTitle: "Отмена",
+            confirmTitle: "Выйти",
+            confirmStyle: .destructive
+        ) { [weak self] in
+            self?.dismiss(animated: true)
+        }
+    }
+
     @objc
     private func keyboardWillChangeFrame(_ notification: Notification) {
         guard let change = KeyboardChange(notification) else { return }
@@ -681,7 +906,7 @@ extension AddQuestionBottomSheetViewController: AlertPresenting {
 // MARK: - UIAdaptivePresentationControllerDelegate
 extension AddQuestionBottomSheetViewController: UIAdaptivePresentationControllerDelegate {
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
-        hasUnsavedChanges == false
+        shouldConfirmDismiss == false
     }
 
     func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
@@ -736,11 +961,40 @@ extension AddQuestionBottomSheetViewController: UITableViewDataSource {
             cell.configure(
                 title: questionText,
                 placeholder: "Введите вопрос",
-                isLoading: false
+                isLoading: isQuestionTextParaphrasing
             )
             cell.onTextChanged = { [weak self] text in
-                self?.questionText = text
-                self?.updateSaveButtonState()
+                self?.handleQuestionTextChanged(text)
+            }
+            return cell
+
+        case .paraphraseControls:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: AddQuestionParaphraseControlsTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? AddQuestionParaphraseControlsTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(
+                mode: hasParaphraseHistory
+                    ? .history
+                    : .initial,
+                canMoveBackward: canMoveQuestionTextBackward,
+                canMoveForward: canMoveQuestionTextForward,
+                isLoading: isQuestionTextParaphrasing
+            )
+            cell.onInitialParaphraseTap = { [weak self] in
+                self?.handleQuestionParaphraseTap()
+            }
+            cell.onHistoryBackwardTap = { [weak self] in
+                self?.handleQuestionTextBackwardTap()
+            }
+            cell.onHistoryForwardTap = { [weak self] in
+                self?.handleQuestionTextForwardTap()
+            }
+            cell.onHistoryParaphraseTap = { [weak self] in
+                self?.handleQuestionParaphraseTap()
             }
             return cell
 
@@ -849,6 +1103,8 @@ extension AddQuestionBottomSheetViewController: UITableViewDelegate {
             return 46
         case .questionInput:
             return UITableView.automaticDimension
+        case .paraphraseControls:
+            return 50
         case .parameters:
             return UITableView.automaticDimension
         case .divider:
@@ -908,7 +1164,7 @@ private extension AddQuestionBottomSheetViewController {
     }
 
     var dynamicRowsStartIndex: Int {
-        6
+        7
     }
 
     func animateOptionSwitchChange(at optionIndex: Int, isOn: Bool) {
@@ -989,6 +1245,210 @@ private final class AddQuestionTypePickerTableViewCell: UITableViewCell {
     @objc
     private func handleValueChanged() {
         onModeChanged?(segmentedControl.selectedSegmentIndex)
+    }
+}
+
+private final class AddQuestionParaphraseControlsTableViewCell: UITableViewCell {
+    // MARK: - Typealias
+    enum Mode {
+        case initial
+        case history
+    }
+
+    // MARK: - UI Components
+    private let initialParaphraseButton = UIButton(type: .system)
+    private let historyBackwardButton = UIButton(type: .system)
+    private let historyForwardButton = UIButton(type: .system)
+    private let historyParaphraseButton = UIButton(type: .system)
+
+    private let historyButtonsStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.alignment = .fill
+        stackView.distribution = .fillEqually
+        stackView.spacing = 12
+        return stackView
+    }()
+
+    // MARK: - Constants
+    static let reuseIdentifier = "AddQuestionParaphraseControlsTableViewCell"
+
+    // MARK: - Properties
+    var onInitialParaphraseTap: (() -> Void)?
+    var onHistoryBackwardTap: (() -> Void)?
+    var onHistoryForwardTap: (() -> Void)?
+    var onHistoryParaphraseTap: (() -> Void)?
+
+    // MARK: - Lifecycle
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        configureUI()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        onInitialParaphraseTap = nil
+        onHistoryBackwardTap = nil
+        onHistoryForwardTap = nil
+        onHistoryParaphraseTap = nil
+    }
+
+    // MARK: - Methods
+    func configure(
+        mode: Mode,
+        canMoveBackward: Bool,
+        canMoveForward: Bool,
+        isLoading: Bool
+    ) {
+        switch mode {
+        case .initial:
+            initialParaphraseButton.isHidden = false
+            historyButtonsStackView.isHidden = true
+            applyState(
+                button: initialParaphraseButton,
+                isEnabled: isLoading == false
+            )
+        case .history:
+            initialParaphraseButton.isHidden = true
+            historyButtonsStackView.isHidden = false
+            applyState(
+                button: historyBackwardButton,
+                isEnabled: isLoading == false && canMoveBackward
+            )
+            applyState(
+                button: historyForwardButton,
+                isEnabled: isLoading == false && canMoveForward
+            )
+            applyState(
+                button: historyParaphraseButton,
+                isEnabled: isLoading == false
+            )
+        }
+    }
+
+    // MARK: - Private Methods
+    private func configureUI() {
+        selectionStyle = .none
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
+
+        configureButtons()
+        configureConstraints()
+        configureActions()
+    }
+
+    private func configureButtons() {
+        styleActionButton(initialParaphraseButton)
+        styleActionButton(historyBackwardButton)
+        styleActionButton(historyForwardButton)
+        styleActionButton(historyParaphraseButton)
+
+        setupButton(
+            initialParaphraseButton,
+            symbolName: "wand.and.sparkles.inverse",
+            title: "Перефразировать"
+        )
+        setupButton(
+            historyBackwardButton,
+            symbolName: "arrow.uturn.left",
+            title: nil
+        )
+        setupButton(
+            historyForwardButton,
+            symbolName: "arrow.uturn.forward",
+            title: nil
+        )
+        setupButton(
+            historyParaphraseButton,
+            symbolName: "wand.and.sparkles.inverse",
+            title: "ИИ"
+        )
+    }
+
+    private func configureConstraints() {
+        contentView.addSubview(initialParaphraseButton)
+        initialParaphraseButton.pinTop(to: contentView.topAnchor, 8)
+        initialParaphraseButton.pinBottom(to: contentView.bottomAnchor)
+        initialParaphraseButton.pinLeft(to: contentView.safeAreaLayoutGuide.leadingAnchor, 24)
+        initialParaphraseButton.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
+
+        contentView.addSubview(historyButtonsStackView)
+        historyButtonsStackView.pinTop(to: contentView.topAnchor, 8)
+        historyButtonsStackView.pinBottom(to: contentView.bottomAnchor)
+        historyButtonsStackView.pinLeft(to: contentView.safeAreaLayoutGuide.leadingAnchor, 24)
+        historyButtonsStackView.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
+
+        historyButtonsStackView.addArrangedSubview(historyBackwardButton)
+        historyButtonsStackView.addArrangedSubview(historyForwardButton)
+        historyButtonsStackView.addArrangedSubview(historyParaphraseButton)
+    }
+
+    private func configureActions() {
+        initialParaphraseButton.addTarget(self, action: #selector(handleInitialParaphraseTap), for: .touchUpInside)
+        historyBackwardButton.addTarget(self, action: #selector(handleHistoryBackwardTap), for: .touchUpInside)
+        historyForwardButton.addTarget(self, action: #selector(handleHistoryForwardTap), for: .touchUpInside)
+        historyParaphraseButton.addTarget(self, action: #selector(handleHistoryParaphraseTap), for: .touchUpInside)
+    }
+
+    private func styleActionButton(_ button: UIButton) {
+        button.backgroundColor = .clear
+        button.layer.cornerRadius = 14
+        button.layer.borderWidth = 1.5
+        button.layer.borderColor = UIColor.textSecondary.cgColor
+        button.clipsToBounds = true
+        button.setHeight(42)
+    }
+
+    private func setupButton(
+        _ button: UIButton,
+        symbolName: String,
+        title: String?
+    ) {
+        var configuration = UIButton.Configuration.plain()
+        configuration.image = UIImage(systemName: symbolName)?
+            .withTintColor(.textSecondary, renderingMode: .alwaysOriginal)
+        configuration.imagePadding = title == nil ? 0 : 6
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
+
+        if let title {
+            var attributedTitle = AttributedString(title)
+            attributedTitle.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+            attributedTitle.foregroundColor = .textSecondary
+            configuration.attributedTitle = attributedTitle
+        }
+
+        button.configuration = configuration
+    }
+
+    private func applyState(button: UIButton, isEnabled: Bool) {
+        button.isEnabled = isEnabled
+        button.alpha = isEnabled ? 1 : 0.45
+    }
+
+    // MARK: - Actions
+    @objc
+    private func handleInitialParaphraseTap() {
+        onInitialParaphraseTap?()
+    }
+
+    @objc
+    private func handleHistoryBackwardTap() {
+        onHistoryBackwardTap?()
+    }
+
+    @objc
+    private func handleHistoryForwardTap() {
+        onHistoryForwardTap?()
+    }
+
+    @objc
+    private func handleHistoryParaphraseTap() {
+        onHistoryParaphraseTap?()
     }
 }
 

@@ -173,6 +173,7 @@ final class MyQuizzesViewController: UIViewController {
     private var templateItems: [QuizInstanceViewData] = []
     private var templatesEmptyStateText: String?
     private var shouldRefreshTemplatesOnAppear = false
+    private var templateGenerationTask: Task<Void, Never>?
 
     // MARK: - Lifecycle
     init(interactor: MyQuizzesInteractor) {
@@ -189,14 +190,6 @@ final class MyQuizzesViewController: UIViewController {
         super.viewDidLoad()
         enableKeyboardDismissOnBackgroundTap()
         configureUI()
-
-        Task {
-            await interactor.fetchHostingQuizzes()
-        }
-
-        Task {
-            await interactor.fetchTemplates()
-        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -205,15 +198,22 @@ final class MyQuizzesViewController: UIViewController {
 
         if shouldRefreshTemplatesOnAppear {
             shouldRefreshTemplatesOnAppear = false
-            Task {
-                await interactor.fetchTemplates()
-            }
+        }
+
+        Task {
+            async let hostingTask: Void = interactor.fetchHostingQuizzes()
+            async let templatesTask: Void = interactor.fetchTemplates()
+            _ = await (hostingTask, templatesTask)
         }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+
+    deinit {
+        templateGenerationTask?.cancel()
     }
 
     // MARK: - Methods
@@ -235,6 +235,13 @@ final class MyQuizzesViewController: UIViewController {
     @MainActor
     func scheduleTemplatesRefreshOnAppear() {
         shouldRefreshTemplatesOnAppear = true
+    }
+
+    @MainActor
+    func confirmJoinQuiz(accessCode: String) {
+        Task {
+            await interactor.joinQuiz(code: accessCode)
+        }
     }
 
     // MARK: - Private Methods
@@ -335,7 +342,8 @@ final class MyQuizzesViewController: UIViewController {
         let createWithAIAction = UIAction(
             title: "При помощи ИИ",
             image: UIImage(systemName: "wand.and.sparkles")
-        ) { _ in
+        ) { [weak self] _ in
+            self?.handleCreateTemplateWithAITapped()
         }
 
         createTemplateButton.menu = UIMenu(
@@ -357,17 +365,17 @@ final class MyQuizzesViewController: UIViewController {
             .header(title: "Провожу"),
             activeItems.isEmpty
             ? .empty(text: "Нет квизов, которые вы проводите")
-            : .cards(items: activeItems),
+            : .cards(items: activeItems, section: .active),
             .divider,
             .header(title: "Ожидают оценивания"),
             pendingReviewItems.isEmpty
             ? .empty(text: "Нет квизов, ожидающих оценки")
-            : .cards(items: pendingReviewItems),
+            : .cards(items: pendingReviewItems, section: .pendingReview),
             .divider,
             .header(title: "Оценены"),
             reviewedItems.isEmpty
             ? .empty(text: "Нет квизов, которые вы оценили")
-            : .cards(items: reviewedItems)
+            : .cards(items: reviewedItems, section: .reviewed)
         ]
     }
 
@@ -413,6 +421,50 @@ final class MyQuizzesViewController: UIViewController {
         }
     }
 
+    private func startTemplateGeneration(
+        prompt: String,
+        in inputViewController: InputBottomSheetViewController
+    ) {
+        templateGenerationTask?.cancel()
+        inputViewController.startGenerating()
+
+        templateGenerationTask = Task { [weak self, weak inputViewController] in
+            guard let self else { return }
+
+            do {
+                let generatedTemplate = try await interactor.generateTemplate(prompt: prompt)
+                guard Task.isCancelled == false else { return }
+
+                await MainActor.run {
+                    guard let inputViewController else { return }
+
+                    inputViewController.dismiss(animated: true) { [weak self] in
+                        guard let self else { return }
+
+                        Task { [weak self] in
+                            await self?.interactor.routeToCreateTemplateScreen(from: generatedTemplate)
+                        }
+                    }
+                }
+            } catch is CancellationError {
+                return
+            } catch {
+                guard Task.isCancelled == false else { return }
+
+                await MainActor.run {
+                    inputViewController?.stopGenerating()
+                }
+
+                let serviceError = error as? MLServiceError ?? .unknown
+                await interactor.handleTemplateGenerationError(serviceError)
+            }
+
+            await MainActor.run {
+                self.templateGenerationTask = nil
+            }
+        }
+    }
+
     // MARK: - Actions
     @objc
     private func handlePickerValueChanged() {
@@ -431,6 +483,60 @@ final class MyQuizzesViewController: UIViewController {
         Task {
             await interactor.routeToCreateTemplateScreen()
         }
+    }
+
+    private func handleCreateTemplateWithAITapped() {
+        let inputViewController = InputBottomSheetViewController(
+            content: InputBottomSheetContent(
+                title: "Создание шаблона",
+                placeholder: "Опишите, какой шаблон вы хотите создать",
+                buttonTitle: "Сгенерировать"
+            )
+        )
+
+        inputViewController.onGenerate = { [weak self, weak inputViewController] prompt in
+            guard let self, let inputViewController else { return }
+            self.startTemplateGeneration(prompt: prompt, in: inputViewController)
+        }
+
+        inputViewController.onExitWhileGenerating = { [weak self] in
+            self?.templateGenerationTask?.cancel()
+            self?.templateGenerationTask = nil
+        }
+
+        inputViewController.modalPresentationStyle = .pageSheet
+        inputViewController.loadViewIfNeeded()
+
+        if let sheet = inputViewController.sheetPresentationController {
+            if #available(iOS 16.0, *) {
+                let fitDetent = UISheetPresentationController.Detent.custom(
+                    identifier: .init("input.bottom.sheet.fit")
+                ) { [weak inputViewController] context in
+                    guard let inputViewController else {
+                        return context.maximumDetentValue * 0.5
+                    }
+
+                    let preferredHeight = inputViewController.preferredContentSize.height
+                    if preferredHeight > 0 {
+                        return min(preferredHeight, context.maximumDetentValue)
+                    }
+
+                    return inputViewController.preferredSheetHeight(
+                        maximumDetentValue: context.maximumDetentValue
+                    )
+                }
+
+                sheet.detents = [fitDetent]
+            } else {
+                sheet.detents = [.medium()]
+            }
+
+            sheet.prefersGrabberVisible = true
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.preferredCornerRadius = 24
+        }
+
+        present(inputViewController, animated: true)
     }
 
     @objc
@@ -509,7 +615,7 @@ extension MyQuizzesViewController: UITableViewDataSource {
             cell.configure(title: title)
             return cell
 
-        case .cards(let items):
+        case .cards(let items, let section):
             guard let cell = tableView.dequeueReusableCell(withIdentifier: CardsTableViewCell.reuseIdentifier, for: indexPath) as? CardsTableViewCell else {
                 return UITableViewCell()
             }
@@ -525,6 +631,11 @@ extension MyQuizzesViewController: UITableViewDataSource {
                     await self?.interactor.routeToStartQuizScreen(templateId: item.id)
                 }
             }
+            cell.onQuizTap = section == .active ? { [weak self] item in
+                Task { [weak self] in
+                    await self?.interactor.handleQuizCardTap(item)
+                }
+            } : nil
             return cell
 
         case .empty(let text):

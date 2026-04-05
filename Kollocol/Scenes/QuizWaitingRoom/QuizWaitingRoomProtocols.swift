@@ -12,6 +12,8 @@ protocol QuizWaitingRoomInteractor: Actor {
     func handleLeaveAttempt() async
     func handleLeaveTap() async
     func handleStartQuizTap() async
+    func handleKickParticipantTap(_ participant: QuizParticipant) async
+    func handleKickParticipantConfirmed(email: String) async
 }
 
 protocol QuizWaitingRoomPresenter {
@@ -23,6 +25,9 @@ protocol QuizWaitingRoomPresenter {
     func presentRouteToQuizParticipating() async
     func presentServiceError(_ error: QuizParticipationServiceError) async
     func presentServerError(message: String) async
+    func presentKickParticipantConfirmation(participantName: String, participantEmail: String) async
+    func presentKickedFromQuiz(quizTitle: String?) async
+    func presentSessionReplaced() async
     func presentLeaveConfirmation() async
     func presentCloseFlow() async
 }

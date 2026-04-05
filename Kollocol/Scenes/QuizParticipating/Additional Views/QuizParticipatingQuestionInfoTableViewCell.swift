@@ -73,8 +73,8 @@ final class QuizParticipatingQuestionInfoTableViewCell: UITableViewCell {
 
         contentView.addSubview(horizontalStackView)
         horizontalStackView.pinTop(to: contentView.topAnchor, 14)
-        horizontalStackView.pinLeft(to: contentView.leadingAnchor, 16)
-        horizontalStackView.pinRight(to: contentView.trailingAnchor, 16)
+        horizontalStackView.pinLeft(to: contentView.leadingAnchor, 24)
+        horizontalStackView.pinRight(to: contentView.trailingAnchor, 24)
         horizontalStackView.pinBottom(to: contentView.bottomAnchor, 10)
 
         horizontalStackView.addArrangedSubview(questionIndexPillView)

@@ -20,6 +20,7 @@ enum QuizParticipatingModels {
     struct ParticipantRowViewData {
         let participant: QuizParticipant
         let isDimmed: Bool
+        let isOffline: Bool
         let place: Int
         let score: Int
     }
@@ -30,6 +31,7 @@ enum QuizParticipatingModels {
         let kind: AnswerOptionMarkControl.Kind
         let isSelected: Bool
         let isEnabled: Bool
+        let isLoading: Bool
         let answersCount: Int
         let isAnswersCountVisible: Bool
     }
@@ -65,6 +67,7 @@ enum QuizParticipatingModels {
         let selectedOptionIndexes: [Int]
         let phase: Phase
         let isCreator: Bool
+        let isAsyncQuiz: Bool
         let participantRows: [ParticipantRowViewData]
         let optionAnswerCounts: [Int: Int]
         let waitingAnsweredCount: Int
@@ -83,7 +86,7 @@ enum QuizParticipatingModels {
         case personalResult(PersonalResultViewData)
         case questionInfo(QuestionInfoViewData)
         case questionText(String)
-        case openAnswerInput(text: String, isEditable: Bool)
+        case openAnswerInput(text: String, isEditable: Bool, isLoading: Bool)
         case answerOption(OptionViewData)
         case divider
         case participantsHeader(title: String, count: Int)

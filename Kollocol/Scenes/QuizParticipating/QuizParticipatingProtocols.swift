@@ -21,6 +21,8 @@ protocol QuizParticipatingPresenter {
     func presentState(_ state: QuizParticipatingModels.ViewState) async
     func presentServiceError(_ error: QuizParticipationServiceError) async
     func presentServerError(message: String) async
+    func presentKickedFromQuiz(quizTitle: String?) async
+    func presentSessionReplaced() async
     func presentLeaveConfirmation() async
     func presentCloseFlow() async
 }

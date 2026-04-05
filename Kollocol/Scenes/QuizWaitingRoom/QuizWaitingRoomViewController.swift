@@ -187,7 +187,7 @@ final class QuizWaitingRoomViewController: UIViewController {
     @MainActor
     func displayParticipants(_ participants: [QuizParticipant]) {
         self.participants = participants
-        participantsCount = max(participantsCount, participants.count)
+        participantsCount = max(1, participants.count)
         updateStartQuizButtonState()
         rebuildRows()
         tableView.reloadData()
@@ -210,6 +210,13 @@ final class QuizWaitingRoomViewController: UIViewController {
     func confirmLeaveAfterAlert() {
         Task {
             await interactor.handleLeaveTap()
+        }
+    }
+
+    @MainActor
+    func confirmKickAfterSheet(email: String) {
+        Task {
+            await interactor.handleKickParticipantConfirmed(email: email)
         }
     }
 
@@ -298,19 +305,13 @@ final class QuizWaitingRoomViewController: UIViewController {
     }
 
     private func rebuildRows() {
+        let headerCount = max(1, participantsCount)
         var updatedRows: [QuizWaitingRoomModels.Row] = [
-            .participantsHeader(count: participantsCount)
+            .participantsHeader(count: headerCount)
         ]
 
         for participant in participants {
             updatedRows.append(.participant(participant))
-        }
-
-        if participants.count < participantsCount {
-            let placeholderRowsCount = participantsCount - participants.count
-            for _ in 0..<placeholderRowsCount {
-                updatedRows.append(.participant(nil))
-            }
         }
 
         rows = updatedRows
@@ -411,7 +412,25 @@ extension QuizWaitingRoomViewController: UITableViewDataSource {
             }
 
             let isCurrentUser = participant.map(isCurrentUserParticipant(_:)) ?? false
-            cell.configure(participant: participant, isCurrentUser: isCurrentUser)
+            let isOffline = participant?.isOnline == false
+            let canKickParticipant = isCreator &&
+            isCurrentUser == false &&
+            (participant?.isCreator == false)
+            cell.configure(
+                participant: participant,
+                isCurrentUser: isCurrentUser,
+                isOffline: isOffline,
+                canKickParticipant: canKickParticipant
+            ) { [weak self] in
+                guard let self,
+                      let participant else {
+                    return
+                }
+
+                Task {
+                    await self.interactor.handleKickParticipantTap(participant)
+                }
+            }
             return cell
         }
     }
