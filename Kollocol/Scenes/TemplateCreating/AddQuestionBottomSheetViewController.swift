@@ -549,15 +549,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
             return
         }
 
-        if let dismissValidationMessage {
-            showAlert(
-                title: UIConstants.errorTitle,
-                message: dismissValidationMessage
-            )
-            return
-        }
-
-        guard shouldShowUnsavedChangesAlert else {
+        guard shouldShowDiscardChangesAlert else {
             dismiss(animated: true)
             return
         }
@@ -565,17 +557,48 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         presentUnsavedChangesAlert()
     }
 
-    private var shouldShowUnsavedChangesAlert: Bool {
-        isEditingQuestion && (
-            currentStateSnapshot != initialStateSnapshot
-                || questionTextVariants.count > 1
-        )
-    }
-
     private var shouldConfirmDismiss: Bool {
         isQuestionTextParaphrasing
-            || dismissValidationMessage != nil
-            || shouldShowUnsavedChangesAlert
+            || shouldShowDiscardChangesAlert
+    }
+
+    private var shouldShowDiscardChangesAlert: Bool {
+        if isEditingQuestion {
+            return currentStateSnapshot != initialStateSnapshot
+                || questionTextVariants.count > 1
+        }
+
+        return hasDraftDataForNewQuestion
+    }
+
+    private var hasDraftDataForNewQuestion: Bool {
+        let normalizedQuestionText = questionText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if normalizedQuestionText.isEmpty == false {
+            return true
+        }
+
+        if options.isEmpty == false {
+            return true
+        }
+
+        let normalizedOpenAnswerText = openAnswerText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if normalizedOpenAnswerText.isEmpty == false {
+            return true
+        }
+
+        if questionTextVariants.count > 1 {
+            return true
+        }
+
+        if mode != initialStateSnapshot.mode {
+            return true
+        }
+
+        if score != initialStateSnapshot.score || timeLimitSec != initialStateSnapshot.timeLimitSec {
+            return true
+        }
+
+        return false
     }
 
     private var currentStateSnapshot: StateSnapshot {
@@ -837,24 +860,6 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         }
 
         tableView.reloadRows(at: [IndexPath(row: rowIndex, section: 0)], with: .none)
-    }
-
-    private var dismissValidationMessage: String? {
-        let normalizedQuestionText = questionText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard normalizedQuestionText.isEmpty == false else {
-            return "Укажите текст вопроса"
-        }
-
-        if mode == .single || mode == .multi {
-            let hasEmptyOption = options.contains {
-                $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            }
-            if hasEmptyOption {
-                return "Заполните все добавленные варианты ответа"
-            }
-        }
-
-        return nil
     }
 
     private func presentParaphrasingInProgressAlert() {
