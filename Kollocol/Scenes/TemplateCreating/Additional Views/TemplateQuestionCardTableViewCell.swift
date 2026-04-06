@@ -6,9 +6,15 @@
 //
 
 import UIKit
+import ShimmerView
 
 final class TemplateQuestionCardTableViewCell: UITableViewCell {
     // MARK: - Typealias
+    enum State {
+        case standard
+        case shimmer
+    }
+
     private final class OptionItemView: UIView {
         // MARK: - UI Components
         private let markControl = AnswerOptionMarkControl()
@@ -120,6 +126,97 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         }
     }
 
+    private final class OptionSkeletonView: UIView {
+        // MARK: - UI Components
+        private let markShimmerView = ShimmerView()
+        private let textShimmerView = ShimmerView()
+
+        // MARK: - Constants
+        private enum UIConstants {
+            static let markSize: CGFloat = 14
+            static let textHeight: CGFloat = 12
+            static let textLeadingInset: CGFloat = 8
+            static let markCornerRadius: CGFloat = 7
+            static let textCornerRadius: CGFloat = 6
+        }
+
+        // MARK: - Properties
+        private let textWidth: CGFloat
+
+        var shimmerViews: [ShimmerView] {
+            [markShimmerView, textShimmerView]
+        }
+
+        // MARK: - Lifecycle
+        init(textWidth: CGFloat) {
+            self.textWidth = textWidth
+            super.init(frame: .zero)
+            configureUI()
+        }
+
+        @available(*, unavailable)
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        // MARK: - Private Methods
+        private func configureUI() {
+            addSubview(markShimmerView)
+            markShimmerView.pinLeft(to: leadingAnchor)
+            markShimmerView.pinCenterY(to: centerYAnchor)
+            markShimmerView.setWidth(UIConstants.markSize)
+            markShimmerView.setHeight(UIConstants.markSize)
+            markShimmerView.layer.cornerRadius = UIConstants.markCornerRadius
+            markShimmerView.layer.masksToBounds = true
+
+            addSubview(textShimmerView)
+            textShimmerView.pinLeft(to: markShimmerView.trailingAnchor, UIConstants.textLeadingInset)
+            textShimmerView.pinRight(to: trailingAnchor, 0, .lsOE)
+            textShimmerView.pinCenterY(to: centerYAnchor)
+            textShimmerView.setWidth(textWidth)
+            textShimmerView.setHeight(UIConstants.textHeight)
+            textShimmerView.layer.cornerRadius = UIConstants.textCornerRadius
+            textShimmerView.layer.masksToBounds = true
+        }
+    }
+
+    private final class OptionsRowSkeletonView: UIView {
+        // MARK: - UI Components
+        private let leftOptionView = OptionSkeletonView(textWidth: 76)
+        private let rightOptionView = OptionSkeletonView(textWidth: 76)
+
+        // MARK: - Properties
+        var shimmerViews: [ShimmerView] {
+            leftOptionView.shimmerViews + rightOptionView.shimmerViews
+        }
+
+        // MARK: - Lifecycle
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            configureUI()
+        }
+
+        @available(*, unavailable)
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        // MARK: - Private Methods
+        private func configureUI() {
+            addSubview(leftOptionView)
+            leftOptionView.pinTop(to: topAnchor)
+            leftOptionView.pinBottom(to: bottomAnchor)
+            leftOptionView.pinLeft(to: leadingAnchor, 12)
+            leftOptionView.pinRight(to: centerXAnchor, 8, .lsOE)
+
+            addSubview(rightOptionView)
+            rightOptionView.pinTop(to: topAnchor)
+            rightOptionView.pinBottom(to: bottomAnchor)
+            rightOptionView.pinLeft(to: centerXAnchor)
+            rightOptionView.pinRight(to: trailingAnchor, 12)
+        }
+    }
+
     // MARK: - UI Components
     private let cardView: UIView = {
         let view = UIView()
@@ -129,6 +226,18 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         view.layer.shadowOffset = CGSize(width: 0, height: 1.5)
         view.layer.shadowRadius = 9
         view.layer.shadowOpacity = 0.1
+        return view
+    }()
+
+    private let shimmerCardView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .backgroundSecondary
+        view.layer.cornerRadius = 18
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOffset = CGSize(width: 0, height: 1.5)
+        view.layer.shadowRadius = 9
+        view.layer.shadowOpacity = 0.1
+        view.isHidden = true
         return view
     }()
 
@@ -231,6 +340,22 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         return stackView
     }()
 
+    private let metadataShimmerView = ShimmerView()
+    private let deleteButtonShimmerView = ShimmerView()
+    private let questionShimmerView = ShimmerView()
+
+    private let shimmerOptionsStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.alignment = .fill
+        stackView.spacing = 18
+        stackView.isHidden = true
+        return stackView
+    }()
+
+    private let firstOptionsRowSkeletonView = OptionsRowSkeletonView()
+    private let secondOptionsRowSkeletonView = OptionsRowSkeletonView()
+
     // MARK: - Constants
     static let reuseIdentifier = "TemplateQuestionCardTableViewCell"
 
@@ -238,7 +363,6 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         static let cardCornerRadius: CGFloat = 18
         static let cardHorizontalInset: CGFloat = 24
         static let cardVerticalInset: CGFloat = 10
-        static let cardBottomInsetForLastQuestion: CGFloat = 18
 
         static let topInset: CGFloat = 8
         static let topHorizontalInset: CGFloat = 12
@@ -248,13 +372,47 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         static let bottomInset: CGFloat = 12
         static let aiBadgeInset: CGFloat = 12
         static let aiBadgeReservedBottomInset: CGFloat = 26
+
+        static let shimmerCardHeight: CGFloat = 148
+        static let shimmerTopInset: CGFloat = 12
+        static let shimmerMetadataHeight: CGFloat = 12
+        static let shimmerMetadataWidthRatio: CGFloat = 0.5
+        static let shimmerMetadataCornerRadius: CGFloat = 6
+        static let shimmerDeleteButtonSize: CGFloat = 14
+        static let shimmerDeleteButtonCornerRadius: CGFloat = 4
+        static let shimmerQuestionHeight: CGFloat = 12
+        static let shimmerQuestionWidthRatio: CGFloat = 0.33
+        static let shimmerQuestionCornerRadius: CGFloat = 6
+        static let shimmerOptionsTopInset: CGFloat = 12
+        static let shimmerOptionsRowHeight: CGFloat = 14
     }
 
     // MARK: - Properties
+    private let shimmerStyle = ShimmerViewStyle(
+        baseColor: .dividerPrimary,
+        highlightColor: .backgroundSecondary,
+        duration: 1.2,
+        interval: 0.4,
+        effectSpan: .points(120),
+        effectAngle: 0 * CGFloat.pi
+    )
+
+    private lazy var shimmerViews: [ShimmerView] = {
+        [
+            metadataShimmerView,
+            deleteButtonShimmerView,
+            questionShimmerView
+        ] + firstOptionsRowSkeletonView.shimmerViews + secondOptionsRowSkeletonView.shimmerViews
+    }()
+
     private var openAnswerBottomConstraint: NSLayoutConstraint?
     private var optionsBottomConstraint: NSLayoutConstraint?
     private var questionBottomConstraint: NSLayoutConstraint?
     private var cardBottomConstraint: NSLayoutConstraint?
+    private var shimmerCardTopConstraint: NSLayoutConstraint?
+    private var shimmerCardBottomConstraint: NSLayoutConstraint?
+    private var shimmerCardHeightConstraint: NSLayoutConstraint?
+    private var currentState: State = .standard
 
     var onDeleteTap: (() -> Void)?
 
@@ -272,12 +430,23 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         onDeleteTap = nil
+        currentState = .standard
         questionLabel.text = nil
         metadataLabel.text = nil
         openAnswerLabel.text = nil
         openAnswerContainerView.isHidden = true
         optionsStackView.isHidden = true
         aiBadgeStackView.isHidden = true
+        cardView.isHidden = false
+        shimmerCardView.isHidden = true
+        metadataShimmerView.isHidden = true
+        deleteButtonShimmerView.isHidden = true
+        questionShimmerView.isHidden = true
+        shimmerOptionsStackView.isHidden = true
+        stopShimmerAnimating()
+        shimmerCardTopConstraint?.isActive = false
+        shimmerCardBottomConstraint?.isActive = false
+        shimmerCardHeightConstraint?.isActive = false
         openAnswerBottomConstraint?.isActive = false
         optionsBottomConstraint?.isActive = false
         questionBottomConstraint?.isActive = false
@@ -289,21 +458,17 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     }
 
     // MARK: - Methods
-    func configure(
+    func configureStandard(
         index: Int,
         question: Question,
-        isLastQuestion: Bool,
         isAIGenerated: Bool
     ) {
+        applyState(.standard)
         metadataLabel.text = makeMetadataText(index: index, question: question)
         questionLabel.text = question.text
         aiBadgeStackView.isHidden = !isAIGenerated
         updateContentBottomInset(isAIGenerated: isAIGenerated)
-        cardBottomConstraint?.constant = -(
-            isLastQuestion
-            ? UIConstants.cardBottomInsetForLastQuestion
-            : UIConstants.cardVerticalInset
-        )
+        cardBottomConstraint?.constant = -UIConstants.cardVerticalInset
 
         switch question.type {
         case .openEnded:
@@ -317,11 +482,17 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         }
     }
 
+    func configureShimmer() {
+        applyState(.shimmer)
+        cardBottomConstraint?.constant = -UIConstants.cardVerticalInset
+    }
+
     // MARK: - Private Methods
     private func configureUI() {
         configureBackground()
         configureStacks()
         configureConstraints()
+        configureShimmerShape()
         configureActions()
     }
 
@@ -331,6 +502,8 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         contentView.backgroundColor = .clear
         cardView.clipsToBounds = false
         cardView.layer.masksToBounds = false
+        shimmerCardView.clipsToBounds = false
+        shimmerCardView.layer.masksToBounds = false
     }
 
     private func configureStacks() {
@@ -392,6 +565,49 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
 
         questionBottomConstraint = questionLabel.pinBottom(to: cardView.bottomAnchor, UIConstants.bottomInset)
         questionBottomConstraint?.isActive = false
+
+        contentView.addSubview(shimmerCardView)
+        shimmerCardTopConstraint = shimmerCardView.pinTop(to: contentView.topAnchor, UIConstants.cardVerticalInset)
+        shimmerCardBottomConstraint = shimmerCardView.pinBottom(to: contentView.bottomAnchor, UIConstants.cardVerticalInset)
+        shimmerCardView.pinLeft(to: contentView.safeAreaLayoutGuide.leadingAnchor, UIConstants.cardHorizontalInset)
+        shimmerCardView.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, UIConstants.cardHorizontalInset)
+        shimmerCardHeightConstraint = shimmerCardView.setHeight(UIConstants.shimmerCardHeight)
+        shimmerCardTopConstraint?.isActive = false
+        shimmerCardBottomConstraint?.isActive = false
+        shimmerCardHeightConstraint?.isActive = false
+
+        shimmerCardView.addSubview(metadataShimmerView)
+        metadataShimmerView.pinTop(to: shimmerCardView.topAnchor, UIConstants.shimmerTopInset)
+        metadataShimmerView.pinLeft(to: shimmerCardView.leadingAnchor, UIConstants.topHorizontalInset)
+        metadataShimmerView.setHeight(UIConstants.shimmerMetadataHeight)
+        metadataShimmerView.pinWidth(to: shimmerCardView.widthAnchor, UIConstants.shimmerMetadataWidthRatio)
+        metadataShimmerView.isHidden = true
+
+        shimmerCardView.addSubview(deleteButtonShimmerView)
+        deleteButtonShimmerView.pinRight(to: shimmerCardView.trailingAnchor, UIConstants.topHorizontalInset)
+        deleteButtonShimmerView.pinCenterY(to: metadataShimmerView.centerYAnchor)
+        deleteButtonShimmerView.setWidth(UIConstants.shimmerDeleteButtonSize)
+        deleteButtonShimmerView.setHeight(UIConstants.shimmerDeleteButtonSize)
+        deleteButtonShimmerView.isHidden = true
+
+        shimmerCardView.addSubview(questionShimmerView)
+        questionShimmerView.pinTop(to: metadataShimmerView.bottomAnchor, UIConstants.questionTopInset)
+        questionShimmerView.pinLeft(to: shimmerCardView.leadingAnchor, UIConstants.topHorizontalInset)
+        questionShimmerView.setHeight(UIConstants.shimmerQuestionHeight)
+        questionShimmerView.pinWidth(to: shimmerCardView.widthAnchor, UIConstants.shimmerQuestionWidthRatio)
+        questionShimmerView.isHidden = true
+
+        shimmerCardView.addSubview(shimmerOptionsStackView)
+        shimmerOptionsStackView.pinTop(to: questionShimmerView.bottomAnchor, UIConstants.shimmerOptionsTopInset)
+        shimmerOptionsStackView.pinLeft(to: shimmerCardView.leadingAnchor)
+        shimmerOptionsStackView.pinRight(to: shimmerCardView.trailingAnchor)
+        shimmerOptionsStackView.pinBottom(to: shimmerCardView.bottomAnchor, UIConstants.bottomInset)
+
+        shimmerOptionsStackView.addArrangedSubview(firstOptionsRowSkeletonView)
+        firstOptionsRowSkeletonView.setHeight(UIConstants.shimmerOptionsRowHeight)
+
+        shimmerOptionsStackView.addArrangedSubview(secondOptionsRowSkeletonView)
+        secondOptionsRowSkeletonView.setHeight(UIConstants.shimmerOptionsRowHeight)
     }
 
     private func updateContentBottomInset(isAIGenerated: Bool) {
@@ -402,6 +618,58 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         openAnswerBottomConstraint?.constant = -bottomInset
         optionsBottomConstraint?.constant = -bottomInset
         questionBottomConstraint?.constant = -bottomInset
+    }
+
+    private func configureShimmerShape() {
+        metadataShimmerView.layer.cornerRadius = UIConstants.shimmerMetadataCornerRadius
+        metadataShimmerView.layer.masksToBounds = true
+
+        deleteButtonShimmerView.layer.cornerRadius = UIConstants.shimmerDeleteButtonCornerRadius
+        deleteButtonShimmerView.layer.masksToBounds = true
+
+        questionShimmerView.layer.cornerRadius = UIConstants.shimmerQuestionCornerRadius
+        questionShimmerView.layer.masksToBounds = true
+    }
+
+    private func applyState(_ state: State) {
+        guard currentState != state else {
+            if state == .shimmer {
+                startShimmerAnimating()
+            }
+            return
+        }
+
+        currentState = state
+        let isShimmer = state == .shimmer
+
+        cardView.isHidden = isShimmer
+        shimmerCardView.isHidden = !isShimmer
+        deleteButton.isUserInteractionEnabled = isShimmer == false
+        shimmerCardTopConstraint?.isActive = isShimmer
+        shimmerCardBottomConstraint?.isActive = isShimmer
+        shimmerCardHeightConstraint?.isActive = isShimmer
+
+        metadataShimmerView.isHidden = !isShimmer
+        deleteButtonShimmerView.isHidden = !isShimmer
+        questionShimmerView.isHidden = !isShimmer
+        shimmerOptionsStackView.isHidden = !isShimmer
+
+        if isShimmer {
+            startShimmerAnimating()
+        } else {
+            stopShimmerAnimating()
+        }
+    }
+
+    private func startShimmerAnimating() {
+        shimmerViews.forEach {
+            $0.apply(style: shimmerStyle)
+            $0.startAnimating()
+        }
+    }
+
+    private func stopShimmerAnimating() {
+        shimmerViews.forEach { $0.stopAnimating() }
     }
 
     private func makeMetadataText(index: Int, question: Question) -> String {

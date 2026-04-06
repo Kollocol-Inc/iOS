@@ -243,10 +243,6 @@ final class TemplateCreatingViewController: UIViewController {
         tableView.register(TemplateQuestionsInfoTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsInfoTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionsSearchTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsSearchTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionCardTableViewCell.self, forCellReuseIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier)
-        tableView.register(
-            TemplateQuestionCardShimmerTableViewCell.self,
-            forCellReuseIdentifier: TemplateQuestionCardShimmerTableViewCell.reuseIdentifier
-        )
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -803,11 +799,12 @@ final class TemplateCreatingViewController: UIViewController {
         let requestTitle: String? = normalizedTitle.isEmpty ? nil : normalizedTitle
         let requestQuestions = questions
 
+        let previousRows = rows
         aiShimmerInsertionIndex = questions.count
         aiShimmerRowsCount = AIQuestionsGenerationConstants.shimmerRowsCount
-        setAIButtonEnabled(false)
+        setAIButtonEnabled(false, shouldReloadRow: false)
         rebuildRows()
-        tableView.reloadData()
+        applyAIQuestionsGenerationStartRowsUpdate(previousRows: previousRows)
 
         aiQuestionsGenerationTask?.cancel()
         aiQuestionsGenerationTask = Task { [weak self] in
@@ -838,7 +835,10 @@ final class TemplateCreatingViewController: UIViewController {
     }
 
     private func finishAIQuestionsGeneration(generatedQuestions: [Question]?) {
+        let previousRows = rows
         _ = synchronizedQuestionOrigins()
+        let visibleGeneratedQuestions = filteredGeneratedQuestions(generatedQuestions)
+        let visibleGeneratedCount = visibleGeneratedQuestions.count
 
         if let generatedQuestions, generatedQuestions.isEmpty == false {
             let insertionIndex = min(max(0, aiShimmerInsertionIndex ?? questions.count), questions.count)
@@ -852,12 +852,16 @@ final class TemplateCreatingViewController: UIViewController {
         aiQuestionsGenerationTask = nil
         aiShimmerInsertionIndex = nil
         aiShimmerRowsCount = 0
-        setAIButtonEnabled(true)
+        setAIButtonEnabled(true, shouldReloadRow: false)
         rebuildRows()
-        tableView.reloadData()
+        applyAIQuestionsGenerationFinishRowsUpdate(
+            previousRows: previousRows,
+            visibleGeneratedCount: visibleGeneratedCount
+        )
     }
 
     private func cancelAIQuestionsGeneration(removeShimmerRows: Bool) {
+        let previousRows = rows
         aiQuestionsGenerationTask?.cancel()
         aiQuestionsGenerationTask = nil
 
@@ -865,9 +869,12 @@ final class TemplateCreatingViewController: UIViewController {
 
         aiShimmerInsertionIndex = nil
         aiShimmerRowsCount = 0
-        setAIButtonEnabled(true)
+        setAIButtonEnabled(true, shouldReloadRow: false)
         rebuildRows()
-        tableView.reloadData()
+        applyAIQuestionsGenerationFinishRowsUpdate(
+            previousRows: previousRows,
+            visibleGeneratedCount: 0
+        )
     }
 
     private func presentAIQuestionsGenerationInProgressAlert(
@@ -884,8 +891,9 @@ final class TemplateCreatingViewController: UIViewController {
         }
     }
 
-    private func setAIButtonEnabled(_ isEnabled: Bool) {
+    private func setAIButtonEnabled(_ isEnabled: Bool, shouldReloadRow: Bool = true) {
         isAiButtonEnabled = isEnabled
+        guard shouldReloadRow else { return }
         reloadQuestionActionsRow()
     }
 
@@ -901,6 +909,153 @@ final class TemplateCreatingViewController: UIViewController {
             at: [IndexPath(row: rowIndex, section: 0)],
             with: .none
         )
+    }
+
+    private func applyAIQuestionsGenerationStartRowsUpdate(
+        previousRows: [TemplateCreatingModels.Row]
+    ) {
+        let previousHasSummary = previousRows.contains(where: { row in
+            if case .questionsSummary = row { return true }
+            return false
+        })
+        let currentHasSummary = rows.contains(where: { row in
+            if case .questionsSummary = row { return true }
+            return false
+        })
+
+        guard previousHasSummary, currentHasSummary else {
+            tableView.reloadData()
+            return
+        }
+
+        guard rows.count == previousRows.count + AIQuestionsGenerationConstants.shimmerRowsCount else {
+            tableView.reloadData()
+            return
+        }
+
+        let insertedIndexPaths = rows.enumerated().compactMap { index, row in
+            if case .questionShimmer = row {
+                return IndexPath(row: index, section: 0)
+            }
+            return nil
+        }
+
+        guard insertedIndexPaths.isEmpty == false else {
+            tableView.reloadData()
+            return
+        }
+
+        tableView.performBatchUpdates {
+            tableView.insertRows(at: insertedIndexPaths, with: .automatic)
+        } completion: { [weak self] _ in
+            self?.reloadQuestionActionsRow()
+        }
+    }
+
+    private func applyAIQuestionsGenerationFinishRowsUpdate(
+        previousRows: [TemplateCreatingModels.Row],
+        visibleGeneratedCount: Int
+    ) {
+        let previousHasSummary = previousRows.contains(where: { row in
+            if case .questionsSummary = row { return true }
+            return false
+        })
+        let currentHasSummary = rows.contains(where: { row in
+            if case .questionsSummary = row { return true }
+            return false
+        })
+
+        guard previousHasSummary, currentHasSummary else {
+            tableView.reloadData()
+            return
+        }
+
+        let previousShimmerRows = previousRows.enumerated().compactMap { index, row -> Int? in
+            if case .questionShimmer = row {
+                return index
+            }
+            return nil
+        }
+        guard
+            previousShimmerRows.isEmpty == false,
+            let firstShimmerRowIndex = previousShimmerRows.first
+        else {
+            tableView.reloadData()
+            return
+        }
+
+        let oldShimmerCount = previousShimmerRows.count
+        let expectedNewRowsCount = previousRows.count + visibleGeneratedCount - oldShimmerCount
+        guard rows.count == expectedNewRowsCount else {
+            tableView.reloadData()
+            return
+        }
+
+        let replaceCount = min(oldShimmerCount, visibleGeneratedCount)
+        let insertCount = max(0, visibleGeneratedCount - oldShimmerCount)
+        let deleteCount = max(0, oldShimmerCount - visibleGeneratedCount)
+
+        let rowsToReload = previousShimmerRows.prefix(replaceCount).map { index in
+            IndexPath(row: index, section: 0)
+        }
+        let rowsToDelete = previousShimmerRows
+            .dropFirst(replaceCount)
+            .prefix(deleteCount)
+            .map { index in
+                IndexPath(row: index, section: 0)
+            }
+        let rowsToInsert: [IndexPath] = {
+            guard insertCount > 0 else { return [] }
+            return (0..<insertCount).map { offset in
+                IndexPath(
+                    row: firstShimmerRowIndex + replaceCount + offset,
+                    section: 0
+                )
+            }
+        }()
+
+        tableView.performBatchUpdates {
+            if rowsToReload.isEmpty == false {
+                tableView.reloadRows(at: rowsToReload, with: .fade)
+            }
+            if rowsToDelete.isEmpty == false {
+                tableView.deleteRows(at: rowsToDelete, with: .fade)
+            }
+            if rowsToInsert.isEmpty == false {
+                tableView.insertRows(at: rowsToInsert, with: .automatic)
+            }
+        } completion: { [weak self] _ in
+            guard let self else { return }
+            self.reloadQuestionActionsRow()
+            self.reloadQuestionsSummaryRow()
+        }
+    }
+
+    private func reloadQuestionsSummaryRow() {
+        guard let rowIndex = rows.firstIndex(where: { row in
+            if case .questionsSummary = row { return true }
+            return false
+        }) else {
+            return
+        }
+
+        tableView.reloadRows(
+            at: [IndexPath(row: rowIndex, section: 0)],
+            with: .none
+        )
+    }
+
+    private func filteredGeneratedQuestions(_ generatedQuestions: [Question]?) -> [Question] {
+        guard let generatedQuestions else { return [] }
+
+        let trimmedSearchText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedSearchText.isEmpty == false else {
+            return generatedQuestions
+        }
+
+        return generatedQuestions.filter { question in
+            (question.text ?? "").localizedCaseInsensitiveContains(trimmedSearchText)
+        }
     }
 
     private func synchronizedQuestionOrigins() -> [QuestionOrigin] {
@@ -1177,17 +1332,9 @@ extension TemplateCreatingViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
 
-            let visibleQuestionsCount = rows.reduce(0) { partialResult, row in
-                if case .question = row {
-                    return partialResult + 1
-                }
-                return partialResult
-            }
-            let isLastQuestion = index == visibleQuestionsCount - 1
-            cell.configure(
+            cell.configureStandard(
                 index: index,
                 question: question,
-                isLastQuestion: isLastQuestion,
                 isAIGenerated: isAIGenerated
             )
             cell.onDeleteTap = { [weak self] in
@@ -1197,13 +1344,13 @@ extension TemplateCreatingViewController: UITableViewDataSource {
 
         case .questionShimmer:
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: TemplateQuestionCardShimmerTableViewCell.reuseIdentifier,
+                withIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier,
                 for: indexPath
-            ) as? TemplateQuestionCardShimmerTableViewCell else {
+            ) as? TemplateQuestionCardTableViewCell else {
                 return UITableViewCell()
             }
 
-            cell.startAnimating()
+            cell.configureShimmer()
             return cell
         }
     }

@@ -129,7 +129,7 @@ final class TemplateQuestionActionsTableViewCell: UITableViewCell {
 
     private func configureConstraints() {
         contentView.addSubview(actionsStackView)
-        actionsStackView.pinTop(to: contentView.topAnchor, 16)
+        actionsStackView.pinTop(to: contentView.topAnchor, 10)
         actionsStackView.pinBottom(to: contentView.bottomAnchor, 16)
         actionsStackView.pinLeft(to: contentView.safeAreaLayoutGuide.leadingAnchor, 24)
         actionsStackView.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
