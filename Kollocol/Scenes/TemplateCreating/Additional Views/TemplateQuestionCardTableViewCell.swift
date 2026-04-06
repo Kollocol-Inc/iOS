@@ -203,6 +203,34 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         return stackView
     }()
 
+    private let aiBadgeImageView: UIImageView = {
+        let configuration = UIImage.SymbolConfiguration(
+            font: .systemFont(ofSize: 8, weight: .regular)
+        )
+        let image = UIImage(systemName: "sparkles", withConfiguration: configuration)?
+            .withTintColor(.accentPrimary, renderingMode: .alwaysOriginal)
+        let imageView = UIImageView(image: image)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+
+    private let aiBadgeLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 8, weight: .regular)
+        label.textColor = .accentPrimary
+        label.text = "ИИ"
+        return label
+    }()
+
+    private let aiBadgeStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.spacing = 3
+        stackView.isHidden = true
+        return stackView
+    }()
+
     // MARK: - Constants
     static let reuseIdentifier = "TemplateQuestionCardTableViewCell"
 
@@ -218,6 +246,8 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         static let openAnswerTopInset: CGFloat = 12
         static let optionsTopInset: CGFloat = 12
         static let bottomInset: CGFloat = 12
+        static let aiBadgeInset: CGFloat = 12
+        static let aiBadgeReservedBottomInset: CGFloat = 26
     }
 
     // MARK: - Properties
@@ -247,6 +277,7 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         openAnswerLabel.text = nil
         openAnswerContainerView.isHidden = true
         optionsStackView.isHidden = true
+        aiBadgeStackView.isHidden = true
         openAnswerBottomConstraint?.isActive = false
         optionsBottomConstraint?.isActive = false
         questionBottomConstraint?.isActive = false
@@ -261,10 +292,13 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     func configure(
         index: Int,
         question: Question,
-        isLastQuestion: Bool
+        isLastQuestion: Bool,
+        isAIGenerated: Bool
     ) {
         metadataLabel.text = makeMetadataText(index: index, question: question)
         questionLabel.text = question.text
+        aiBadgeStackView.isHidden = !isAIGenerated
+        updateContentBottomInset(isAIGenerated: isAIGenerated)
         cardBottomConstraint?.constant = -(
             isLastQuestion
             ? UIConstants.cardBottomInsetForLastQuestion
@@ -304,6 +338,9 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
 
         topLineStackView.addArrangedSubview(metadataLabel)
         topLineStackView.addArrangedSubview(actionsStackView)
+
+        aiBadgeStackView.addArrangedSubview(aiBadgeImageView)
+        aiBadgeStackView.addArrangedSubview(aiBadgeLabel)
     }
 
     private func configureActions() {
@@ -343,6 +380,10 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         optionsStackView.pinLeft(to: cardView.leadingAnchor)
         optionsStackView.pinRight(to: cardView.trailingAnchor)
 
+        cardView.addSubview(aiBadgeStackView)
+        aiBadgeStackView.pinRight(to: cardView.trailingAnchor, UIConstants.aiBadgeInset)
+        aiBadgeStackView.pinBottom(to: cardView.bottomAnchor, UIConstants.aiBadgeInset)
+
         openAnswerBottomConstraint = openAnswerContainerView.pinBottom(to: cardView.bottomAnchor, UIConstants.bottomInset)
         openAnswerBottomConstraint?.isActive = false
 
@@ -351,6 +392,16 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
 
         questionBottomConstraint = questionLabel.pinBottom(to: cardView.bottomAnchor, UIConstants.bottomInset)
         questionBottomConstraint?.isActive = false
+    }
+
+    private func updateContentBottomInset(isAIGenerated: Bool) {
+        let bottomInset = isAIGenerated
+            ? UIConstants.aiBadgeReservedBottomInset
+            : UIConstants.bottomInset
+
+        openAnswerBottomConstraint?.constant = -bottomInset
+        optionsBottomConstraint?.constant = -bottomInset
+        questionBottomConstraint?.constant = -bottomInset
     }
 
     private func makeMetadataText(index: Int, question: Question) -> String {

@@ -66,8 +66,8 @@ final class TemplateQuestionCardShimmerTableViewCell: UITableViewCell, ShimmerSy
 
     private final class OptionsRowSkeletonView: UIView {
         // MARK: - UI Components
-        private let leftOptionView = OptionSkeletonView(textWidth: 54)
-        private let rightOptionView = OptionSkeletonView(textWidth: 54)
+        private let leftOptionView = OptionSkeletonView(textWidth: 76)
+        private let rightOptionView = OptionSkeletonView(textWidth: 76)
 
         // MARK: - Properties
         var shimmerViews: [ShimmerView] {
@@ -136,7 +136,7 @@ final class TemplateQuestionCardShimmerTableViewCell: UITableViewCell, ShimmerSy
         static let cardVerticalInset: CGFloat = 10
         static let cardHeight: CGFloat = 148
 
-        static let topInset: CGFloat = 8
+        static let topInset: CGFloat = 12
         static let topHorizontalInset: CGFloat = 12
         static let metadataHeight: CGFloat = 12
         static let metadataWidthRatio: CGFloat = 0.5

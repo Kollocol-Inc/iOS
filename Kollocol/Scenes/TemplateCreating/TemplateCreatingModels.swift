@@ -16,7 +16,8 @@ enum TemplateCreatingModels {
         case questionActions
         case questionsSummary
         case questionsSearch
-        case question(index: Int, sourceIndex: Int, question: Question)
+        case question(index: Int, sourceIndex: Int, question: Question, isAIGenerated: Bool)
+        case questionShimmer
     }
 
     struct FormData {

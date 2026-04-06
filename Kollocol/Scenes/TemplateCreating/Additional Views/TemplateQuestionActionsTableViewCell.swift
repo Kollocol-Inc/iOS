@@ -104,7 +104,8 @@ final class TemplateQuestionActionsTableViewCell: UITableViewCell {
     // MARK: - Methods
     func configure(isAiButtonEnabled: Bool) {
         self.isAiButtonEnabled = isAiButtonEnabled
-        completeWithAIButton.isHidden = !isAiButtonEnabled
+        completeWithAIButton.isEnabled = isAiButtonEnabled
+        completeWithAIButton.alpha = isAiButtonEnabled ? 1 : 0.6
     }
 
     // MARK: - Private Methods

@@ -81,6 +81,24 @@ actor TemplateCreatingLogic: TemplateCreatingInteractor {
         }
     }
 
+    func generateTemplateQuestions(
+        title: String?,
+        questions: [Question]
+    ) async throws -> [Question] {
+        let normalizedTitle = title?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let request = GenerateTemplateQuestionsMLRequest(
+            text: normalizedTitle?.isEmpty == false ? normalizedTitle : nil,
+            questions: questions.isEmpty ? nil : questions
+        )
+
+        do {
+            let response = try await mlService.generateTemplateQuestions(request)
+            return response.questions
+        } catch {
+            throw MLServiceError.wrap(error)
+        }
+    }
+
     func handleQuizTypeInfoTap(_ quizType: QuizType) async {
         await presenter.presentQuizTypeInfo(quizType)
     }

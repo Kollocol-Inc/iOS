@@ -45,6 +45,21 @@ final class TemplateCreatingViewController: UIViewController {
         static let deleteTemplateAlertMessage = "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
         static let editUnsavedChangesAlertMessage = "Вы уверены, что хотите вернуться назад? Все изменения будут утеряны безвозвратно"
         static let createUnsavedChangesAlertMessage = "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно"
+        static let aiGenerationInProgressAlertMessage = "Вы уверены, что хотите выйти? Генерация вопросов в процессе"
+    }
+
+    private enum AIQuestionsGenerationConstants {
+        static let shimmerRowsCount = 3
+    }
+
+    private enum QuestionOrigin {
+        case manual
+        case aiGenerated
+    }
+
+    private enum QuestionDisplayItem {
+        case question(sourceIndex: Int, question: Question, isAIGenerated: Bool)
+        case shimmer
     }
 
     private struct QuestionSnapshot: Equatable {
@@ -78,7 +93,11 @@ final class TemplateCreatingViewController: UIViewController {
 
     private var rows: [TemplateCreatingModels.Row] = []
     private var questions: [Question]
+    private var questionOrigins: [QuestionOrigin]
     private var isAiButtonEnabled = true
+    private var aiQuestionsGenerationTask: Task<Void, Never>?
+    private var aiShimmerInsertionIndex: Int?
+    private var aiShimmerRowsCount: Int = 0
 
     private var titleText: String?
     private var selectedQuizType: QuizType = .async
@@ -104,6 +123,10 @@ final class TemplateCreatingViewController: UIViewController {
         sourceTemplate?.id
     }
 
+    private var isAIQuestionsGenerationInProgress: Bool {
+        aiQuestionsGenerationTask != nil
+    }
+
     // MARK: - Lifecycle
     init(
         interactor: TemplateCreatingInteractor,
@@ -120,6 +143,7 @@ final class TemplateCreatingViewController: UIViewController {
         self.interactor = interactor
         self.sourceTemplate = template
         self.questions = initialQuestions
+        self.questionOrigins = Array(repeating: .manual, count: initialQuestions.count)
         self.titleText = initialTitle
         self.selectedQuizType = initialQuizType
         self.isRandomOrderEnabled = initialRandomOrder
@@ -155,6 +179,10 @@ final class TemplateCreatingViewController: UIViewController {
         super.viewWillDisappear(animated)
         restoreBackButtonAppearance()
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+    }
+
+    deinit {
+        aiQuestionsGenerationTask?.cancel()
     }
 
     // MARK: - Methods
@@ -215,6 +243,10 @@ final class TemplateCreatingViewController: UIViewController {
         tableView.register(TemplateQuestionsInfoTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsInfoTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionsSearchTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsSearchTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionCardTableViewCell.self, forCellReuseIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier)
+        tableView.register(
+            TemplateQuestionCardShimmerTableViewCell.self,
+            forCellReuseIdentifier: TemplateQuestionCardShimmerTableViewCell.reuseIdentifier
+        )
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -327,6 +359,19 @@ final class TemplateCreatingViewController: UIViewController {
     }
 
     private func handleCreateButtonTap() {
+        guard isAIQuestionsGenerationInProgress == false else {
+            presentAIQuestionsGenerationInProgressAlert { [weak self] in
+                guard let self else { return }
+                self.cancelAIQuestionsGeneration(removeShimmerRows: true)
+                self.performCreateButtonTap()
+            }
+            return
+        }
+
+        performCreateButtonTap()
+    }
+
+    private func performCreateButtonTap() {
         titleText = nameInputCell?.currentText ?? titleText
         let normalizedTitle = Self.normalizedTitle(titleText)
 
@@ -383,6 +428,15 @@ final class TemplateCreatingViewController: UIViewController {
     }
 
     private func handleBackTap() {
+        guard isAIQuestionsGenerationInProgress == false else {
+            presentAIQuestionsGenerationInProgressAlert { [weak self] in
+                guard let self else { return }
+                self.cancelAIQuestionsGeneration(removeShimmerRows: true)
+                self.navigationController?.popViewController(animated: true)
+            }
+            return
+        }
+
         guard hasUnsavedChanges else {
             navigationController?.popViewController(animated: true)
             return
@@ -444,7 +498,7 @@ final class TemplateCreatingViewController: UIViewController {
     }
 
     private func rebuildRows() {
-        let visibleQuestions = filteredQuestions()
+        let visibleItems = filteredQuestionDisplayItems()
 
         var newRows: [TemplateCreatingModels.Row] = [
             .header("Название"),
@@ -453,20 +507,29 @@ final class TemplateCreatingViewController: UIViewController {
             .settings
         ]
 
-        if questions.isEmpty == false {
+        if visibleItems.isEmpty == false {
             newRows.append(.divider)
             newRows.append(.questionsSummary)
             if isSearchVisible {
                 newRows.append(.questionsSearch)
             }
-            visibleQuestions.enumerated().forEach { visibleIndex, item in
-                newRows.append(
-                    .question(
-                        index: visibleIndex,
-                        sourceIndex: item.sourceIndex,
-                        question: item.question
+
+            var visibleQuestionIndex = 0
+            visibleItems.forEach { item in
+                switch item {
+                case .question(let sourceIndex, let question, let isAIGenerated):
+                    newRows.append(
+                        .question(
+                            index: visibleQuestionIndex,
+                            sourceIndex: sourceIndex,
+                            question: question,
+                            isAIGenerated: isAIGenerated
+                        )
                     )
-                )
+                    visibleQuestionIndex += 1
+                case .shimmer:
+                    newRows.append(.questionShimmer)
+                }
             }
         }
 
@@ -476,19 +539,64 @@ final class TemplateCreatingViewController: UIViewController {
         rows = newRows
     }
 
-    private func filteredQuestions() -> [(sourceIndex: Int, question: Question)] {
+    private func filteredQuestionDisplayItems() -> [QuestionDisplayItem] {
+        let allItems = questionDisplayItems()
         let trimmedText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedText.isEmpty == false else {
+            return allItems
+        }
+
+        return allItems.filter { item in
+            switch item {
+            case .question(_, let question, _):
+                return (question.text ?? "").localizedCaseInsensitiveContains(trimmedText)
+            case .shimmer:
+                return true
+            }
+        }
+    }
+
+    private func questionDisplayItems() -> [QuestionDisplayItem] {
+        let safeOrigins = synchronizedQuestionOrigins()
+        let insertionIndex = aiShimmerInsertionIndex ?? questions.count
+        let clampedInsertionIndex = min(max(0, insertionIndex), questions.count)
+        let hasShimmerRows = aiShimmerRowsCount > 0
+
+        if hasShimmerRows == false {
             return questions.enumerated().map { index, question in
-                (sourceIndex: index, question: question)
+                let isAIGenerated = safeOrigins[index] == .aiGenerated
+                return .question(
+                    sourceIndex: index,
+                    question: question,
+                    isAIGenerated: isAIGenerated
+                )
             }
         }
 
-        return questions.enumerated().compactMap { index, question in
-            let matchesQuery = (question.text ?? "").localizedCaseInsensitiveContains(trimmedText)
-            guard matchesQuery else { return nil }
-            return (sourceIndex: index, question: question)
+        let prefixItems = questions[..<clampedInsertionIndex].enumerated().map { offset, question in
+            let sourceIndex = offset
+            return QuestionDisplayItem.question(
+                sourceIndex: sourceIndex,
+                question: question,
+                isAIGenerated: safeOrigins[sourceIndex] == .aiGenerated
+            )
         }
+
+        let shimmerItems = Array(repeating: QuestionDisplayItem.shimmer, count: aiShimmerRowsCount)
+
+        let suffixItems: [QuestionDisplayItem] = {
+            guard clampedInsertionIndex < questions.count else { return [] }
+            return questions[clampedInsertionIndex...].enumerated().map { offset, question in
+                let sourceIndex = clampedInsertionIndex + offset
+                return QuestionDisplayItem.question(
+                    sourceIndex: sourceIndex,
+                    question: question,
+                    isAIGenerated: safeOrigins[sourceIndex] == .aiGenerated
+                )
+            }
+        }()
+
+        return prefixItems + shimmerItems + suffixItems
     }
 
     private func totalScore() -> Int {
@@ -513,6 +621,7 @@ final class TemplateCreatingViewController: UIViewController {
         viewController.onSaveQuestion = { [weak self] question in
             guard let self else { return }
             self.questions.append(question)
+            self.questionOrigins.append(.manual)
             self.rebuildRows()
             self.tableView.reloadData()
         }
@@ -566,7 +675,13 @@ final class TemplateCreatingViewController: UIViewController {
             guard let self else { return }
             guard self.questions.indices.contains(sourceIndex) else { return }
 
+            if let aiShimmerInsertionIndex = self.aiShimmerInsertionIndex, sourceIndex < aiShimmerInsertionIndex {
+                self.aiShimmerInsertionIndex = max(0, aiShimmerInsertionIndex - 1)
+            }
             self.questions.remove(at: sourceIndex)
+            if self.questionOrigins.indices.contains(sourceIndex) {
+                self.questionOrigins.remove(at: sourceIndex)
+            }
             self.rebuildRows()
             self.tableView.reloadData()
         }
@@ -610,13 +725,13 @@ final class TemplateCreatingViewController: UIViewController {
         previousRows: [TemplateCreatingModels.Row]
     ) {
         let previousQuestionRowIndex = previousRows.firstIndex(where: { row in
-            if case .question(_, let rowSourceIndex, _) = row {
+            if case .question(_, let rowSourceIndex, _, _) = row {
                 return rowSourceIndex == sourceIndex
             }
             return false
         })
         let updatedQuestionRowIndex = rows.firstIndex(where: { row in
-            if case .question(_, let rowSourceIndex, _) = row {
+            if case .question(_, let rowSourceIndex, _, _) = row {
                 return rowSourceIndex == sourceIndex
             }
             return false
@@ -657,6 +772,150 @@ final class TemplateCreatingViewController: UIViewController {
     }
 
     private func handleCompleteWithAITap() {
+        guard isAIQuestionsGenerationInProgress == false else { return }
+
+        let content = InfoBottomSheetContent(
+            title: "Подтверждение",
+            description: "Вы уверены, что хотите дополнить шаблон сгенерированными вопросами?",
+            buttonsConfiguration: .double(
+                left: InfoBottomSheetAction(
+                    identifier: .cancel,
+                    title: "Отмена",
+                    style: .textSecondary
+                ),
+                right: InfoBottomSheetAction(
+                    identifier: .confirm,
+                    title: "Подтвердить",
+                    style: .accentPrimary
+                )
+            )
+        )
+
+        showInfoBottomSheet(content) { [weak self] action in
+            guard action == .confirm else { return }
+            self?.startAIQuestionsGeneration()
+        }
+    }
+
+    private func startAIQuestionsGeneration() {
+        titleText = nameInputCell?.currentText ?? titleText
+        let normalizedTitle = Self.normalizedTitle(titleText)
+        let requestTitle: String? = normalizedTitle.isEmpty ? nil : normalizedTitle
+        let requestQuestions = questions
+
+        aiShimmerInsertionIndex = questions.count
+        aiShimmerRowsCount = AIQuestionsGenerationConstants.shimmerRowsCount
+        setAIButtonEnabled(false)
+        rebuildRows()
+        tableView.reloadData()
+
+        aiQuestionsGenerationTask?.cancel()
+        aiQuestionsGenerationTask = Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                let generatedQuestions = try await self.interactor.generateTemplateQuestions(
+                    title: requestTitle,
+                    questions: requestQuestions
+                )
+                guard Task.isCancelled == false else { return }
+
+                await MainActor.run {
+                    self.finishAIQuestionsGeneration(generatedQuestions: generatedQuestions)
+                }
+            } catch is CancellationError {
+                await MainActor.run {
+                    self.finishAIQuestionsGeneration(generatedQuestions: nil)
+                }
+            } catch {
+                guard Task.isCancelled == false else { return }
+
+                await MainActor.run {
+                    self.finishAIQuestionsGeneration(generatedQuestions: nil)
+                }
+            }
+        }
+    }
+
+    private func finishAIQuestionsGeneration(generatedQuestions: [Question]?) {
+        _ = synchronizedQuestionOrigins()
+
+        if let generatedQuestions, generatedQuestions.isEmpty == false {
+            let insertionIndex = min(max(0, aiShimmerInsertionIndex ?? questions.count), questions.count)
+            questions.insert(contentsOf: generatedQuestions, at: insertionIndex)
+            questionOrigins.insert(
+                contentsOf: Array(repeating: .aiGenerated, count: generatedQuestions.count),
+                at: insertionIndex
+            )
+        }
+
+        aiQuestionsGenerationTask = nil
+        aiShimmerInsertionIndex = nil
+        aiShimmerRowsCount = 0
+        setAIButtonEnabled(true)
+        rebuildRows()
+        tableView.reloadData()
+    }
+
+    private func cancelAIQuestionsGeneration(removeShimmerRows: Bool) {
+        aiQuestionsGenerationTask?.cancel()
+        aiQuestionsGenerationTask = nil
+
+        guard removeShimmerRows else { return }
+
+        aiShimmerInsertionIndex = nil
+        aiShimmerRowsCount = 0
+        setAIButtonEnabled(true)
+        rebuildRows()
+        tableView.reloadData()
+    }
+
+    private func presentAIQuestionsGenerationInProgressAlert(
+        onConfirm: @escaping () -> Void
+    ) {
+        showConfirmationAlert(
+            title: "Внимание",
+            message: UIConstants.aiGenerationInProgressAlertMessage,
+            cancelTitle: "Отмена",
+            confirmTitle: "Выйти",
+            confirmStyle: .destructive
+        ) {
+            onConfirm()
+        }
+    }
+
+    private func setAIButtonEnabled(_ isEnabled: Bool) {
+        isAiButtonEnabled = isEnabled
+        reloadQuestionActionsRow()
+    }
+
+    private func reloadQuestionActionsRow() {
+        guard let rowIndex = rows.firstIndex(where: { row in
+            if case .questionActions = row { return true }
+            return false
+        }) else {
+            return
+        }
+
+        tableView.reloadRows(
+            at: [IndexPath(row: rowIndex, section: 0)],
+            with: .none
+        )
+    }
+
+    private func synchronizedQuestionOrigins() -> [QuestionOrigin] {
+        if questionOrigins.count < questions.count {
+            questionOrigins.append(
+                contentsOf: Array(
+                    repeating: .manual,
+                    count: questions.count - questionOrigins.count
+                )
+            )
+        } else if questionOrigins.count > questions.count {
+            questionOrigins.removeLast(questionOrigins.count - questions.count)
+        }
+
+        return questionOrigins
     }
 
     private func toggleQuestionsSearch() {
@@ -765,6 +1024,13 @@ final class TemplateCreatingViewController: UIViewController {
 extension TemplateCreatingViewController: AlertPresenting {
     func presentAlert(_ alert: UIAlertController) {
         present(alert, animated: true)
+    }
+}
+
+// MARK: - InfoBottomSheetPresenting
+extension TemplateCreatingViewController: InfoBottomSheetPresenting {
+    var bottomSheetHostViewController: UIViewController? {
+        self
     }
 }
 
@@ -903,7 +1169,7 @@ extension TemplateCreatingViewController: UITableViewDataSource {
             shouldFocusSearchField = false
             return cell
 
-        case .question(let index, let sourceIndex, let question):
+        case .question(let index, let sourceIndex, let question, let isAIGenerated):
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier,
                 for: indexPath
@@ -911,16 +1177,33 @@ extension TemplateCreatingViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
 
-            let visibleQuestionsCount = filteredQuestions().count
+            let visibleQuestionsCount = rows.reduce(0) { partialResult, row in
+                if case .question = row {
+                    return partialResult + 1
+                }
+                return partialResult
+            }
             let isLastQuestion = index == visibleQuestionsCount - 1
             cell.configure(
                 index: index,
                 question: question,
-                isLastQuestion: isLastQuestion
+                isLastQuestion: isLastQuestion,
+                isAIGenerated: isAIGenerated
             )
             cell.onDeleteTap = { [weak self] in
                 self?.handleDeleteQuestionTap(sourceIndex: sourceIndex)
             }
+            return cell
+
+        case .questionShimmer:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: TemplateQuestionCardShimmerTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? TemplateQuestionCardShimmerTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.startAnimating()
             return cell
         }
     }
@@ -948,6 +1231,8 @@ extension TemplateCreatingViewController: UITableViewDelegate {
             return UITableView.automaticDimension
         case .question:
             return UITableView.automaticDimension
+        case .questionShimmer:
+            return UITableView.automaticDimension
         }
     }
 
@@ -963,6 +1248,8 @@ extension TemplateCreatingViewController: UITableViewDelegate {
             return 60
         case .question:
             return 140
+        case .questionShimmer:
+            return 168
         case .settings:
             return 104
         default:
@@ -974,7 +1261,7 @@ extension TemplateCreatingViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
 
         guard rows.indices.contains(indexPath.row) else { return }
-        guard case .question(_, let sourceIndex, _) = rows[indexPath.row] else { return }
+        guard case .question(_, let sourceIndex, _, _) = rows[indexPath.row] else { return }
 
         handleEditQuestionTap(sourceIndex: sourceIndex)
     }
