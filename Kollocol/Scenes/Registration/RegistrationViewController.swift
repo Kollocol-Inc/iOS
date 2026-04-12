@@ -118,6 +118,8 @@ final class RegistrationViewController: UIViewController {
     private let keyboardSpacing: Double = 12
     private let cancelRegistrationSheetTitle = "Внимание"
     private let cancelRegistrationSheetDescription = "При отмене регистрации вы будете направлены на начальный экран"
+    private let cameraAccessDeniedSheetTitle = "Внимание"
+    private let cameraAccessDeniedSheetDescription = "У приложения нет доступа к камере. Перейдите в настройки и выдайте соответствующие разрешения, после чего вернитесь обратно и попробуйте снова"
     
     // MARK: - Properties
     private var interactor: RegistrationInteractor
@@ -326,6 +328,9 @@ final class RegistrationViewController: UIViewController {
                 } else {
                     self?.avatarPayload = nil
                 }
+            },
+            onCameraAccessDenied: { [weak self] in
+                self?.presentCameraAccessDeniedSheet()
             }
         )
     }
@@ -354,6 +359,14 @@ final class RegistrationViewController: UIViewController {
                 await self?.interactor.cancelRegistration()
             }
         }
+    }
+
+    private func presentCameraAccessDeniedSheet() {
+        showInfoBottomSheet(
+            title: cameraAccessDeniedSheetTitle,
+            description: cameraAccessDeniedSheetDescription,
+            buttonTitle: "ОК"
+        )
     }
 
     // MARK: - Actions

@@ -7,6 +7,7 @@
 
 import UIKit
 import PhotosUI
+import AVFoundation
 
 @MainActor
 final class AvatarPickerController: NSObject {
@@ -27,6 +28,7 @@ final class AvatarPickerController: NSObject {
 
     private let onProcessingChanged: @MainActor (Bool) -> Void
     private let onAvatarChanged: @MainActor (AvatarPayload) -> Void
+    private let onCameraAccessDenied: @MainActor () -> Void
     private var isAvatarProcessing = false
 
     // MARK: - Lifecycle
@@ -36,13 +38,15 @@ final class AvatarPickerController: NSObject {
         interactor: any AvatarFlowInteracting,
         initialAvatar: UIImage? = nil,
         onProcessingChanged: @escaping @MainActor (Bool) -> Void,
-        onAvatarChanged: @escaping @MainActor (AvatarPayload) -> Void
+        onAvatarChanged: @escaping @MainActor (AvatarPayload) -> Void,
+        onCameraAccessDenied: @escaping @MainActor () -> Void = {}
     ) {
         self.avatarView = avatarView
         self.presentingViewController = presentingViewController
         self.interactor = interactor
         self.onProcessingChanged = onProcessingChanged
         self.onAvatarChanged = onAvatarChanged
+        self.onCameraAccessDenied = onCameraAccessDenied
         super.init()
 
         avatarView.setAvatar(initialAvatar)
@@ -109,7 +113,30 @@ final class AvatarPickerController: NSObject {
 
     private func presentCameraPicker() {
         guard UIImagePickerController.isSourceTypeAvailable(.camera) else { return }
+        let authorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
 
+        switch authorizationStatus {
+        case .authorized:
+            presentCameraPickerController()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] isGranted in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    if isGranted {
+                        self.presentCameraPickerController()
+                    } else {
+                        self.onCameraAccessDenied()
+                    }
+                }
+            }
+        case .restricted, .denied:
+            onCameraAccessDenied()
+        @unknown default:
+            onCameraAccessDenied()
+        }
+    }
+
+    private func presentCameraPickerController() {
         let picker = UIImagePickerController()
         picker.sourceType = .camera
         picker.cameraCaptureMode = .photo
