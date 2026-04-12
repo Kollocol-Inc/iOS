@@ -1194,14 +1194,14 @@ private final class AddQuestionTypePickerTableViewCell: UITableViewCell {
         control.clipsToBounds = true
         control.setTitleTextAttributes(
             [
-                .foregroundColor: UIColor.textSecondary,
+                .foregroundColor: UIColor.controlUnselected,
                 .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
             ],
             for: .normal
         )
         control.setTitleTextAttributes(
             [
-                .foregroundColor: UIColor.accentPrimary,
+                .foregroundColor: UIColor.controlSelected,
                 .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
             ],
             for: .selected
@@ -1404,7 +1404,7 @@ private final class AddQuestionParaphraseControlsTableViewCell: UITableViewCell 
         button.backgroundColor = .clear
         button.layer.cornerRadius = 14
         button.layer.borderWidth = 1.5
-        button.layer.borderColor = UIColor.textSecondary.cgColor
+        button.layer.borderColor = UIColor.buttonSecondary.cgColor
         button.clipsToBounds = true
         button.setHeight(42)
     }
@@ -1416,14 +1416,14 @@ private final class AddQuestionParaphraseControlsTableViewCell: UITableViewCell 
     ) {
         var configuration = UIButton.Configuration.plain()
         configuration.image = UIImage(systemName: symbolName)?
-            .withTintColor(.textSecondary, renderingMode: .alwaysOriginal)
+            .withTintColor(.buttonSecondary, renderingMode: .alwaysOriginal)
         configuration.imagePadding = title == nil ? 0 : 6
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
 
         if let title {
             var attributedTitle = AttributedString(title)
             attributedTitle.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-            attributedTitle.foregroundColor = .textSecondary
+            attributedTitle.foregroundColor = .buttonSecondary
             configuration.attributedTitle = attributedTitle
         }
 

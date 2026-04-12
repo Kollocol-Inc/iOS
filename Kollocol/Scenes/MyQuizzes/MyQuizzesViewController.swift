@@ -18,14 +18,14 @@ final class MyQuizzesViewController: UIViewController {
 
         control.setTitleTextAttributes(
             [
-                .foregroundColor: UIColor.textSecondary,
+                .foregroundColor: UIColor.controlUnselected,
                 .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
             ],
             for: .normal
         )
         control.setTitleTextAttributes(
             [
-                .foregroundColor: UIColor.accentPrimary,
+                .foregroundColor: UIColor.controlSelected,
                 .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
             ],
             for: .selected

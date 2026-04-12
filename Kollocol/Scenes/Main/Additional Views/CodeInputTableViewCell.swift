@@ -16,7 +16,7 @@ final class CodeInputTableViewCell: UITableViewCell {
         static let codeFieldCornerRadius: CGFloat = 14
         static let codeFieldFont = UIFont.systemFont(ofSize: 28, weight: .bold)
         static let codeFieldTextColor: UIColor = .textPrimary
-        static let codeFieldBgColor: UIColor = .accentPrimary.withAlphaComponent(0.3)
+        static let codeFieldBgColor: UIColor = .dividerPrimary
         static let activeBorderWidth: CGFloat = 1.5
         static let shakeDuration: TimeInterval = 0.45
     }

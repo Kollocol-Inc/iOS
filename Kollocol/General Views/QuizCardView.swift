@@ -235,7 +235,7 @@ final class QuizCardView: UIView {
 
     // MARK: - Private Methods
     private func configureUI() {
-        backgroundColor = .backgroundSecondary
+        backgroundColor = .backgroundCardPrimary
         layer.cornerRadius = UIConstants.cornerRadius
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowRadius = UIConstants.cardShadowRadius

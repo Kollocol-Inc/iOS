@@ -35,12 +35,12 @@ final class TemplateQuestionActionsTableViewCell: UITableViewCell {
         button.backgroundColor = .clear
         button.layer.cornerRadius = 18
         button.layer.borderWidth = 1.5
-        button.layer.borderColor = UIColor.textSecondary.cgColor
+        button.layer.borderColor = UIColor.buttonSecondary.cgColor
         button.setAttributedTitle(
             NSAttributedString(
                 string: "Дополнить с ИИ",
                 attributes: [
-                    .foregroundColor: UIColor.textSecondary,
+                    .foregroundColor: UIColor.buttonSecondary,
                     .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
                 ]
             ),
@@ -51,7 +51,7 @@ final class TemplateQuestionActionsTableViewCell: UITableViewCell {
             font: .systemFont(ofSize: 14, weight: .semibold)
         )
         let image = UIImage(systemName: "wand.and.sparkles", withConfiguration: symbolConfiguration)?
-            .withTintColor(.textSecondary, renderingMode: .alwaysOriginal)
+            .withTintColor(.buttonSecondary, renderingMode: .alwaysOriginal)
         button.setImage(image, for: .normal)
         button.configuration = {
             var config = UIButton.Configuration.plain()

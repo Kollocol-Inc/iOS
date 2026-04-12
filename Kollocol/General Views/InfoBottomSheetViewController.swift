@@ -15,7 +15,7 @@ enum InfoBottomSheetActionIdentifier: Equatable {
 
 enum InfoBottomSheetActionStyle {
     case accentPrimary
-    case textSecondary
+    case buttonSecondary
     case backgroundRedSecondary
 }
 
@@ -311,8 +311,8 @@ final class InfoBottomSheetViewController: UIViewController {
         switch style {
         case .accentPrimary:
             return .accentPrimary
-        case .textSecondary:
-            return .textSecondary
+        case .buttonSecondary:
+            return .buttonSecondary
         case .backgroundRedSecondary:
             return .backgroundRedSecondary
         }

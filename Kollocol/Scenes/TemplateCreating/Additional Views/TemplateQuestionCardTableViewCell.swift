@@ -220,7 +220,7 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     // MARK: - UI Components
     private let cardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .backgroundSecondary
+        view.backgroundColor = .backgroundCardPrimary
         view.layer.cornerRadius = 18
         view.layer.shadowColor = UIColor.black.cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: 1.5)
@@ -231,7 +231,7 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
 
     private let shimmerCardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .backgroundSecondary
+        view.backgroundColor = .backgroundCardPrimary
         view.layer.cornerRadius = 18
         view.layer.shadowColor = UIColor.black.cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: 1.5)
@@ -388,15 +388,6 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     }
 
     // MARK: - Properties
-    private let shimmerStyle = ShimmerViewStyle(
-        baseColor: .dividerPrimary,
-        highlightColor: .backgroundSecondary,
-        duration: 1.2,
-        interval: 0.4,
-        effectSpan: .points(120),
-        effectAngle: 0 * CGFloat.pi
-    )
-
     private lazy var shimmerViews: [ShimmerView] = {
         [
             metadataShimmerView,
@@ -455,6 +446,23 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
             optionsStackView.removeArrangedSubview(view)
             view.removeFromSuperview()
         }
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        guard window != nil else { return }
+        guard currentState == .shimmer else { return }
+        startShimmerAnimating()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard let previousTraitCollection else { return }
+        guard traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else { return }
+        guard currentState == .shimmer else { return }
+
+        let shimmerStyle = makeShimmerStyle(for: effectiveShimmerTraitCollection)
+        setShimmerStyle(shimmerStyle)
     }
 
     // MARK: - Methods
@@ -662,14 +670,38 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     }
 
     private func startShimmerAnimating() {
+        let shimmerStyle = makeShimmerStyle(for: effectiveShimmerTraitCollection)
+
+        setShimmerStyle(shimmerStyle)
         shimmerViews.forEach {
-            $0.apply(style: shimmerStyle)
             $0.startAnimating()
+        }
+    }
+
+    private func setShimmerStyle(_ shimmerStyle: ShimmerViewStyle) {
+        shimmerViews.forEach {
+            $0.style = shimmerStyle
+            $0.apply(style: shimmerStyle)
         }
     }
 
     private func stopShimmerAnimating() {
         shimmerViews.forEach { $0.stopAnimating() }
+    }
+
+    private var effectiveShimmerTraitCollection: UITraitCollection {
+        window?.traitCollection ?? traitCollection
+    }
+
+    private func makeShimmerStyle(for traitCollection: UITraitCollection) -> ShimmerViewStyle {
+        ShimmerViewStyle(
+            baseColor: UIColor.backgroundSecondary.resolvedColor(with: traitCollection),
+            highlightColor: UIColor.backgroundPrimary.resolvedColor(with: traitCollection),
+            duration: 1.2,
+            interval: 0.4,
+            effectSpan: .points(120),
+            effectAngle: 0 * CGFloat.pi
+        )
     }
 
     private func makeMetadataText(index: Int, question: Question) -> String {

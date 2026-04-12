@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import ShimmerView
 
 final class TemplateCreatingViewController: UIViewController {
     // MARK: - UI Components
@@ -46,6 +47,8 @@ final class TemplateCreatingViewController: UIViewController {
         static let editUnsavedChangesAlertMessage = "Вы уверены, что хотите вернуться назад? Все изменения будут утеряны безвозвратно"
         static let createUnsavedChangesAlertMessage = "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно"
         static let aiGenerationInProgressAlertMessage = "Вы уверены, что хотите выйти? Генерация вопросов в процессе"
+        static let aiCompletionValidationTitle = "С прискорбием сообщаем..."
+        static let aiCompletionValidationDescription = "Для дополнения с ИИ необходимо указать название квиза или добавить хотя бы один вопрос"
     }
 
     private enum AIQuestionsGenerationConstants {
@@ -106,6 +109,7 @@ final class TemplateCreatingViewController: UIViewController {
     private var isSearchVisible = false
     private var searchText = ""
     private var shouldFocusSearchField = false
+    private let shimmerEffectBeginTime = CACurrentMediaTime()
 
     private weak var nameInputCell: TextInputTableViewCell?
     private weak var settingsCell: TemplateSettingsTableViewCell?
@@ -769,6 +773,14 @@ final class TemplateCreatingViewController: UIViewController {
 
     private func handleCompleteWithAITap() {
         guard isAIQuestionsGenerationInProgress == false else { return }
+        guard canStartAIQuestionsGeneration() else {
+            showInfoBottomSheet(
+                title: UIConstants.aiCompletionValidationTitle,
+                description: UIConstants.aiCompletionValidationDescription,
+                buttonTitle: "ОК"
+            )
+            return
+        }
 
         let content = InfoBottomSheetContent(
             title: "Подтверждение",
@@ -777,7 +789,7 @@ final class TemplateCreatingViewController: UIViewController {
                 left: InfoBottomSheetAction(
                     identifier: .cancel,
                     title: "Отмена",
-                    style: .textSecondary
+                    style: .buttonSecondary
                 ),
                 right: InfoBottomSheetAction(
                     identifier: .confirm,
@@ -791,6 +803,13 @@ final class TemplateCreatingViewController: UIViewController {
             guard action == .confirm else { return }
             self?.startAIQuestionsGeneration()
         }
+    }
+
+    private func canStartAIQuestionsGeneration() -> Bool {
+        let currentTitle = Self.normalizedTitle(nameInputCell?.currentText ?? titleText)
+        let hasTitle = currentTitle.isEmpty == false
+        let hasAtLeastOneQuestion = questions.isEmpty == false
+        return hasTitle || hasAtLeastOneQuestion
     }
 
     private func startAIQuestionsGeneration() {
@@ -1186,6 +1205,28 @@ extension TemplateCreatingViewController: AlertPresenting {
 extension TemplateCreatingViewController: InfoBottomSheetPresenting {
     var bottomSheetHostViewController: UIViewController? {
         self
+    }
+}
+
+// MARK: - ShimmerSyncTarget
+extension TemplateCreatingViewController: ShimmerSyncTarget {
+    var style: ShimmerViewStyle {
+        ShimmerViewStyle(
+            baseColor: UIColor.backgroundSecondary.resolvedColor(with: tableView.traitCollection),
+            highlightColor: UIColor.backgroundPrimary.resolvedColor(with: tableView.traitCollection),
+            duration: 1.2,
+            interval: 0.4,
+            effectSpan: .points(120),
+            effectAngle: 0 * CGFloat.pi
+        )
+    }
+
+    var effectBeginTime: CFTimeInterval {
+        shimmerEffectBeginTime
+    }
+
+    var syncTargetView: UIView {
+        tableView
     }
 }
 

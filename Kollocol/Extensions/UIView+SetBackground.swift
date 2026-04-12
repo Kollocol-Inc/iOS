@@ -9,6 +9,6 @@ import UIKit
 
 extension UIView {
     func setPrimaryBackground() {
-        self.backgroundColor = UIColor(hex: "E9E7F4")
+        self.backgroundColor = .backgroundPrimary
     }
 }

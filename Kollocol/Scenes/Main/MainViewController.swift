@@ -6,9 +6,16 @@
 //
 
 import UIKit
-import SkeletonView
+import ShimmerView
 
 final class MainViewController: UIViewController {
+    // MARK: - Typealias
+    private final class ProfileShimmerSyncView: UIView, ShimmerSyncTarget {
+        // MARK: - Properties
+        var style: ShimmerViewStyle = .default
+        var effectBeginTime: CFTimeInterval = 0
+    }
+
     // MARK: - UI Components
     private let avatarImageView: UIImageView = {
         let imageView = UIImageView()
@@ -17,9 +24,11 @@ final class MainViewController: UIViewController {
         imageView.layer.borderWidth = 1.5
         imageView.layer.borderColor = UIColor.accentPrimary.cgColor
         imageView.clipsToBounds = true
-        imageView.isSkeletonable = true
+        imageView.backgroundColor = .backgroundSecondary
         return imageView
     }()
+
+    private let avatarShimmerView = ShimmerView()
 
     private let nameLabel: UILabel = {
         let label = UILabel()
@@ -29,18 +38,11 @@ final class MainViewController: UIViewController {
         return label
     }()
     
-    private let nameSkeletonView: UIView = {
-        let view = UIView()
-        view.layer.cornerRadius = 10
-        view.isSkeletonable = true
-        view.clipsToBounds = true
-        return view
-    }()
+    private let nameShimmerView = ShimmerView()
 
-    private let leftBarButtonCustomView: UIView = {
-        let view = UIView()
+    private let leftBarButtonCustomView: ProfileShimmerSyncView = {
+        let view = ProfileShimmerSyncView()
         view.backgroundColor = .clear
-        view.isSkeletonable = true
         view.isUserInteractionEnabled = true
         return view
     }()
@@ -94,6 +96,12 @@ final class MainViewController: UIViewController {
     private var quizParticipatingInstances: [QuizInstanceViewData] = []
     private var quizHostingInstances: [QuizInstanceViewData] = []
     private var rows: [MainModels.Row] = []
+    private var isProfileShimmerAnimating = false
+
+    private lazy var profileShimmerViews: [ShimmerView] = [
+        avatarShimmerView,
+        nameShimmerView
+    ]
 
     // MARK: - Lifecycle
     init(interactor: MainInteractor) {
@@ -127,12 +135,21 @@ final class MainViewController: UIViewController {
         }
     }
 
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard let previousTraitCollection else { return }
+        guard traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else { return }
+        guard isProfileShimmerAnimating else { return }
+
+        let shimmerStyle = makeProfileShimmerStyle(for: traitCollection)
+        leftBarButtonCustomView.style = shimmerStyle
+        profileShimmerViews.forEach { $0.apply(style: shimmerStyle) }
+    }
+
     // MARK: - Methods
     @MainActor
     func displayUserProfile(avatarUrl: String?, name: String) {
-        avatarImageView.hideSkeleton()
-        nameSkeletonView.hideSkeleton()
-        nameSkeletonView.isHidden = true
+        stopProfileLoadingShimmer()
         nameLabel.isHidden = false
         
         nameLabel.text = name
@@ -296,21 +313,25 @@ final class MainViewController: UIViewController {
     private func configureLeftBarButton() {
         leftBarButtonCustomView.addSubview(avatarImageView)
         leftBarButtonCustomView.addSubview(nameLabel)
-        leftBarButtonCustomView.addSubview(nameSkeletonView)
+        leftBarButtonCustomView.addSubview(nameShimmerView)
 
         avatarImageView.pinLeft(to: leftBarButtonCustomView)
         avatarImageView.pinCenterY(to: leftBarButtonCustomView)
         avatarImageView.setWidth(44)
         avatarImageView.setHeight(44)
 
+        avatarImageView.addSubview(avatarShimmerView)
+        avatarShimmerView.pin(to: avatarImageView)
+
         nameLabel.pinLeft(to: avatarImageView.trailingAnchor, 8)
         nameLabel.pinRight(to: leftBarButtonCustomView)
         nameLabel.pinCenterY(to: avatarImageView)
         
-        nameSkeletonView.pinLeft(to: avatarImageView.trailingAnchor, 8)
-        nameSkeletonView.pinCenterY(to: avatarImageView)
-        nameSkeletonView.setWidth(140)
-        nameSkeletonView.setHeight(20)
+        nameShimmerView.pinLeft(to: avatarImageView.trailingAnchor, 8)
+        nameShimmerView.pinCenterY(to: avatarImageView)
+        nameShimmerView.setWidth(140)
+        nameShimmerView.setHeight(20)
+        nameShimmerView.pinRight(to: leftBarButtonCustomView, 0, .lsOE)
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(leftBarButtonTapped))
         leftBarButtonCustomView.addGestureRecognizer(tapGesture)
@@ -319,8 +340,49 @@ final class MainViewController: UIViewController {
         leftItem.hidesSharedBackground = true
         navigationItem.leftBarButtonItem = leftItem
 
-        avatarImageView.showAnimatedGradientSkeleton()
-        nameSkeletonView.showAnimatedGradientSkeleton()
+        configureProfileShimmerShape()
+        startProfileLoadingShimmer()
+    }
+
+    private func configureProfileShimmerShape() {
+        avatarShimmerView.layer.cornerRadius = 22
+        avatarShimmerView.layer.masksToBounds = true
+
+        nameShimmerView.layer.cornerRadius = 10
+        nameShimmerView.layer.masksToBounds = true
+    }
+
+    private func startProfileLoadingShimmer() {
+        isProfileShimmerAnimating = true
+        let shimmerStyle = makeProfileShimmerStyle(for: traitCollection)
+        leftBarButtonCustomView.style = shimmerStyle
+        leftBarButtonCustomView.effectBeginTime = CACurrentMediaTime()
+
+        profileShimmerViews.forEach {
+            $0.isHidden = false
+            $0.apply(style: shimmerStyle)
+            $0.startAnimating()
+        }
+    }
+
+    private func stopProfileLoadingShimmer() {
+        isProfileShimmerAnimating = false
+
+        profileShimmerViews.forEach {
+            $0.stopAnimating()
+            $0.isHidden = true
+        }
+    }
+
+    private func makeProfileShimmerStyle(for traitCollection: UITraitCollection) -> ShimmerViewStyle {
+        ShimmerViewStyle(
+            baseColor: UIColor.backgroundSecondary.resolvedColor(with: traitCollection),
+            highlightColor: UIColor.backgroundPrimary.resolvedColor(with: traitCollection),
+            duration: 1.2,
+            interval: 0.4,
+            effectSpan: .points(120),
+            effectAngle: 0 * CGFloat.pi
+        )
     }
 
     // MARK: - Actions

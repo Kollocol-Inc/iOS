@@ -79,7 +79,7 @@ extension InfoBottomSheetPresenting {
                 left: InfoBottomSheetAction(
                     identifier: .cancel,
                     title: "Отмена",
-                    style: .textSecondary
+                    style: .buttonSecondary
                 ),
                 right: InfoBottomSheetAction(
                     identifier: .confirm,
@@ -117,7 +117,7 @@ extension InfoBottomSheetPresenting {
                 left: InfoBottomSheetAction(
                     identifier: .cancel,
                     title: "Отмена",
-                    style: .textSecondary
+                    style: .buttonSecondary
                 ),
                 right: InfoBottomSheetAction(
                     identifier: .confirm,
@@ -150,7 +150,7 @@ extension InfoBottomSheetPresenting {
                 left: InfoBottomSheetAction(
                     identifier: .cancel,
                     title: "Отмена",
-                    style: .textSecondary
+                    style: .buttonSecondary
                 ),
                 right: InfoBottomSheetAction(
                     identifier: .confirm,
