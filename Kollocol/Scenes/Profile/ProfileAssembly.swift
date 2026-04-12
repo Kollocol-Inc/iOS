@@ -11,10 +11,15 @@ enum ProfileAssembly {
     @MainActor
     static func build(
         router: ProfileRouting,
+        userService: UserService,
         sessionManager: SessionManager
     ) -> UIViewController {
         let presenter = ProfileRouter(router: router)
-        let interactor = ProfileLogic(presenter: presenter, sessionManager: sessionManager)
+        let interactor = ProfileLogic(
+            presenter: presenter,
+            userService: userService,
+            sessionManager: sessionManager
+        )
         let view = ProfileViewController(interactor: interactor)
         presenter.view = view
         

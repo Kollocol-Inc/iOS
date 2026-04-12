@@ -123,7 +123,11 @@ final class MainCoordinator {
         )
         myQuizzesNavController = myQuizzesNav
 
-        let profileVC = ProfileAssembly.build(router: self, sessionManager: services.sessionManager)
+        let profileVC = ProfileAssembly.build(
+            router: self,
+            userService: services.userService,
+            sessionManager: services.sessionManager
+        )
         let profileNav = makeTabNavigationController(
             root: profileVC,
             tab: .profile
@@ -487,6 +491,6 @@ protocol StartQuizRouting: ErrorMessageDisplaying {
 }
 
 @MainActor
-protocol ProfileRouting: AnyObject {
+protocol ProfileRouting: ErrorMessageDisplaying {
     func showLogoutConfirmation(onConfirm: @escaping @MainActor () -> Void)
 }
