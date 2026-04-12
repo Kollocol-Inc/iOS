@@ -27,6 +27,7 @@ final class AvatarPickerController: NSObject {
 
     private let onProcessingChanged: @MainActor (Bool) -> Void
     private let onAvatarChanged: @MainActor (AvatarPayload) -> Void
+    private var isAvatarProcessing = false
 
     // MARK: - Lifecycle
     init(
@@ -117,14 +118,15 @@ final class AvatarPickerController: NSObject {
     }
 
     private func crop(image: UIImage) {
-        guard let interactor else { return }
-
-        onProcessingChanged(true)
+        guard let interactor else {
+            endProcessingIfNeeded()
+            return
+        }
 
         Task { @MainActor [weak self] in
             await interactor.presentAvatarCrop(image: image) { [weak self] cropped in
                 guard let self else { return }
-                defer { self.onProcessingChanged(false) }
+                defer { self.endProcessingIfNeeded() }
 
                 guard let cropped else { return }
 
@@ -134,25 +136,48 @@ final class AvatarPickerController: NSObject {
             }
         }
     }
+
+    private func beginProcessingIfNeeded() {
+        guard isAvatarProcessing == false else { return }
+        isAvatarProcessing = true
+        onProcessingChanged(true)
+    }
+
+    private func endProcessingIfNeeded() {
+        guard isAvatarProcessing else { return }
+        isAvatarProcessing = false
+        onProcessingChanged(false)
+    }
 }
 
 // MARK: - PHPickerViewControllerDelegate
 extension AvatarPickerController: PHPickerViewControllerDelegate {
     nonisolated func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-      Task { @MainActor [weak self] in
-          picker.dismiss(animated: true)
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard let result = results.first else {
+                picker.dismiss(animated: true)
+                return
+            }
+            guard result.itemProvider.canLoadObject(ofClass: UIImage.self) else {
+                picker.dismiss(animated: true)
+                return
+            }
 
-          guard let self else { return }
-          guard let result = results.first else { return }
-          guard result.itemProvider.canLoadObject(ofClass: UIImage.self) else { return }
+            self.beginProcessingIfNeeded()
+            picker.dismiss(animated: true)
 
-          result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
-              guard let image = object as? UIImage else { return }
-              Task { @MainActor [weak self] in
-                  self?.crop(image: image)
-              }
-          }
-      }
+            result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    guard let image = object as? UIImage else {
+                        self.endProcessingIfNeeded()
+                        return
+                    }
+                    self.crop(image: image)
+                }
+            }
+        }
     }
 }
 
@@ -171,8 +196,12 @@ extension AvatarPickerController: UIImagePickerControllerDelegate, UINavigationC
         let image = (info[.editedImage] as? UIImage) ?? (info[.originalImage] as? UIImage)
 
         Task { @MainActor [weak self] in
+            guard let self, let image else {
+                picker.dismiss(animated: true)
+                return
+            }
+            self.beginProcessingIfNeeded()
             picker.dismiss(animated: true)
-            guard let self, let image else { return }
             self.crop(image: image)
         }
     }

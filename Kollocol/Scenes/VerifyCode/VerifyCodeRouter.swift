@@ -29,15 +29,25 @@ final class VerifyCodeRouter: VerifyCodePresenter, ServiceErrorHandling {
     }
     
     func presentVerifyingError(_ error: AuthServiceError) async {
-        await presentServiceError(error)
+        await presentServiceError(error, useCase: .verifyCodeSubmit)
         await view?.showCodeValidationFailed()
     }
 
+    func presentResendCodeError(_ error: AuthServiceError) async {
+        await presentServiceError(error, useCase: .verifyCodeResend)
+    }
+
     func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String? {
-        guard useCase == .generic else { return nil }
         guard let authError = error as? AuthServiceError else { return nil }
         guard case .tooManyRequests = authError else { return nil }
 
-        return "Слишком много попыток ввода кода. Попробуйте еще раз через несколько минут"
+        switch useCase {
+        case .verifyCodeSubmit:
+            return "Слишком много попыток ввода кода. Попробуйте еще раз через несколько минут"
+        case .verifyCodeResend:
+            return "Код уже отправлялся недавно. Попробуйте запросить его повторно чуть позже"
+        default:
+            return nil
+        }
     }
 }

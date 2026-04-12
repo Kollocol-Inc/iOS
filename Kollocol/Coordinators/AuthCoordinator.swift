@@ -54,7 +54,8 @@ final class AuthCoordinator {
         case .registration:
             let vc = RegistrationAssembly.build(
                 router: self,
-                userService: services.userService
+                userService: services.userService,
+                sessionManager: services.sessionManager
             )
             navigationController.setViewControllers([vc], animated: true)
         }
@@ -106,7 +107,8 @@ extension AuthCoordinator: AuthRouting {
     func routeToRegistration() {
         let vc = RegistrationAssembly.build(
             router: self,
-            userService: services.userService
+            userService: services.userService,
+            sessionManager: services.sessionManager
         )
         navigationController.pushViewController(vc, animated: true)
     }

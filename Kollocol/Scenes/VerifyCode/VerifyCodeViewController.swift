@@ -57,10 +57,21 @@ final class VerifyCodeViewController: UIViewController {
         label.numberOfLines = 0
         return label
     }()
+
+    private let resendCodeLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.numberOfLines = 1
+        label.isUserInteractionEnabled = true
+        return label
+    }()
     
     // MARK: - Constants
     private enum UIConstants {
         static let descFont = UIFont.systemFont(ofSize: 16, weight: .bold)
+        static let resendFont = UIFont.systemFont(ofSize: 16, weight: .bold)
+        static let resendCountdownStartValue = 59
+        static let resendBottomInset: CGFloat = 12
         
         static let codeFieldWidth: CGFloat = 48
         static let codeFieldHeight: CGFloat = 70
@@ -82,6 +93,8 @@ final class VerifyCodeViewController: UIViewController {
     private var codeFields: [StripedLoadingTextField] { [codeField1, codeField2, codeField3, codeField4] }
     private var isErrorState = false
     private var isSubmitting = false
+    private var resendRemainingSeconds = UIConstants.resendCountdownStartValue
+    private var resendTimer: Timer?
     
     private var centralStackCenterYConstraint: NSLayoutConstraint?
     private var centralStackBottomConstraint: NSLayoutConstraint?
@@ -97,13 +110,25 @@ final class VerifyCodeViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    deinit {
+        resendTimer?.invalidate()
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         enableKeyboardDismissOnBackgroundTap()
         configureUI()
         configureKeyboardObservers()
+        startResendCountdown()
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        navigationController?.navigationBar.tintColor = .textSecondary
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         focusFirstFieldIfPossible()
@@ -128,8 +153,8 @@ final class VerifyCodeViewController: UIViewController {
         view.setPrimaryBackground()
         configureConstraints()
         configureDescLabel()
+        configureResendCodeLabel()
         configureCodeFields()
-        self.navigationController?.isNavigationBarHidden = true
     }
     
     private func configureDescLabel() {
@@ -159,7 +184,7 @@ final class VerifyCodeViewController: UIViewController {
     private func configureConstraints() {
         view.addSubview(kollocolLabel)
         kollocolLabel.pinCenterX(to: view.safeAreaLayoutGuide.centerXAnchor)
-        kollocolLabel.pinTop(to: view.safeAreaLayoutGuide.topAnchor, 70)
+        kollocolLabel.pinTop(to: view.safeAreaLayoutGuide.topAnchor, 15)
 
         view.addSubview(centralStack)
         centralStack.addArrangedSubview(enterCodeLabel)
@@ -172,6 +197,11 @@ final class VerifyCodeViewController: UIViewController {
         
         centralStackBottomConstraint = centralStack.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor, UIConstants.keyboardSpacing)
         centralStackBottomConstraint?.isActive = false
+
+        view.addSubview(resendCodeLabel)
+        resendCodeLabel.pinLeft(to: view.safeAreaLayoutGuide.leadingAnchor, 16)
+        resendCodeLabel.pinCenterX(to: view.safeAreaLayoutGuide.centerXAnchor)
+        resendCodeLabel.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor, UIConstants.resendBottomInset)
     }
     
     private func configureCodeFields() {
@@ -199,6 +229,12 @@ final class VerifyCodeViewController: UIViewController {
             $0.addTarget(self, action: #selector(codeFieldDidBeginFocused(_:)), for: .editingDidBegin)
             $0.addTarget(self, action: #selector(codeFieldDidFinishFocused(_:)), for: .editingDidEnd)
         }
+    }
+
+    private func configureResendCodeLabel() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleResendCodeTap))
+        resendCodeLabel.addGestureRecognizer(tapGesture)
+        updateResendCodeLabel()
     }
     
     private func makeCodeField(tag: Int) -> VerifyCodeTextField {
@@ -330,6 +366,81 @@ final class VerifyCodeViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
+
+    private func startResendCountdown() {
+        resendTimer?.invalidate()
+        resendRemainingSeconds = UIConstants.resendCountdownStartValue
+        updateResendCodeLabel()
+
+        resendTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
+            guard let self else {
+                timer.invalidate()
+                return
+            }
+
+            guard self.resendRemainingSeconds > 0 else {
+                timer.invalidate()
+                self.resendTimer = nil
+                self.updateResendCodeLabel()
+                return
+            }
+
+            self.resendRemainingSeconds -= 1
+            self.updateResendCodeLabel()
+
+            if self.resendRemainingSeconds == 0 {
+                timer.invalidate()
+                self.resendTimer = nil
+            }
+        }
+
+        resendTimer?.tolerance = 0.1
+    }
+
+    private func updateResendCodeLabel() {
+        if resendRemainingSeconds > 0 {
+            resendCodeLabel.attributedText = makeResendCountdownText(seconds: resendRemainingSeconds)
+            resendCodeLabel.accessibilityTraits = .staticText
+            return
+        }
+
+        resendCodeLabel.attributedText = makeResendAvailableText()
+        resendCodeLabel.accessibilityTraits = [.button]
+    }
+
+    private func makeResendCountdownText(seconds: Int) -> NSAttributedString {
+        let secondsText = "\(seconds)"
+        let fullText = "Отправить снова \(secondsText) с"
+        let attributedText = NSMutableAttributedString(
+            string: fullText,
+            attributes: [
+                .foregroundColor: UIColor.textSecondary,
+                .font: UIConstants.resendFont
+            ]
+        )
+
+        if let range = fullText.range(of: secondsText) {
+            attributedText.addAttribute(
+                .foregroundColor,
+                value: UIColor.accentPrimary,
+                range: NSRange(range, in: fullText)
+            )
+        }
+
+        return attributedText
+    }
+
+    private func makeResendAvailableText() -> NSAttributedString {
+        NSAttributedString(
+            string: "Отправить снова",
+            attributes: [
+                .foregroundColor: UIColor.accentPrimary,
+                .font: UIConstants.resendFont,
+                .underlineStyle: NSUnderlineStyle.single.rawValue,
+                .underlineColor: UIColor.accentPrimary
+            ]
+        )
+    }
     
     private func applyKeyboardLayout(lift: CGFloat, duration: Double, options: UIView.AnimationOptions) {
         let isVisible = lift > 0.5
@@ -390,6 +501,17 @@ final class VerifyCodeViewController: UIViewController {
         let lift = max(0, safeAreaBottom - keyboardTop)
 
         applyKeyboardLayout(lift: lift, duration: change.duration, options: change.options)
+    }
+
+    @objc
+    private func handleResendCodeTap() {
+        guard resendRemainingSeconds == 0 else { return }
+        guard isSubmitting == false else { return }
+
+        startResendCountdown()
+        Task {
+            await interactor.resendCode(to: email)
+        }
     }
 }
 

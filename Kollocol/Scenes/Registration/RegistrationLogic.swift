@@ -11,11 +11,17 @@ final class RegistrationLogic: RegistrationInteractor {
     // MARK: - Constants
     private let presenter: RegistrationPresenter
     private let userService: UserService
+    private let sessionManager: SessionManager
 
     // MARK: - Lifecycle
-    init(presenter: RegistrationPresenter, userService: UserService) {
+    init(
+        presenter: RegistrationPresenter,
+        userService: UserService,
+        sessionManager: SessionManager
+    ) {
         self.presenter = presenter
         self.userService = userService
+        self.sessionManager = sessionManager
     }
     
     // MARK: - Methods
@@ -43,5 +49,9 @@ final class RegistrationLogic: RegistrationInteractor {
 
     func presentAvatarDeleteConfirmation(onConfirm: @escaping @MainActor () -> Void) async {
         await presenter.presentDeleteAvatarConfirmation(onConfirm: onConfirm)
+    }
+
+    func cancelRegistration() async {
+        await sessionManager.forcedLogout()
     }
 }

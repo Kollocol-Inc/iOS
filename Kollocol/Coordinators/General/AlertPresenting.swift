@@ -164,6 +164,8 @@ enum ServiceErrorUseCase {
     case registrationSubmit
     case avatarUpload
     case joinQuiz
+    case verifyCodeSubmit
+    case verifyCodeResend
 }
 
 @MainActor

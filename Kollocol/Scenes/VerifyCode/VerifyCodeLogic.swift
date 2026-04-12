@@ -28,4 +28,12 @@ final class VerifyCodeLogic: VerifyCodeInteractor {
             await presenter.presentVerifyingError(AuthServiceError.wrap(error))
         }
     }
+
+    func resendCode(to email: String) async {
+        do {
+            try await authService.resendCode(to: email)
+        } catch {
+            await presenter.presentResendCodeError(AuthServiceError.wrap(error))
+        }
+    }
 }

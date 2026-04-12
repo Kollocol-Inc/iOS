@@ -107,15 +107,19 @@ final class StartViewController: UIViewController {
         configureUI()
         configureKeyboardObservers()
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+        stopLoadingState()
+        updateSendCodeButtonState()
+    }
     
     // MARK: - Methods
     @MainActor
     func showError() {
-        sendCodeButton.isEnabled = true
-        sendCodeButton.setAttributedTitle(Constants.SendCodeButtonTitles.active, for: .normal)
-        sendCodeButton.setAttributedTitle(Constants.SendCodeButtonTitles.disabled, for: .disabled)
-        sendCodeLoader.stopAnimating()
-        emailTextField.stopAnimating()
+        stopLoadingState()
+        updateSendCodeButtonState()
     }
     
     // MARK: - Private Methods
@@ -187,6 +191,23 @@ final class StartViewController: UIViewController {
             self.view.layoutIfNeeded()
         }
     }
+
+    private func stopLoadingState() {
+        sendCodeButton.setAttributedTitle(Constants.SendCodeButtonTitles.active, for: .normal)
+        sendCodeButton.setAttributedTitle(Constants.SendCodeButtonTitles.disabled, for: .disabled)
+        sendCodeLoader.stopAnimating()
+        emailTextField.stopAnimating()
+    }
+
+    private func updateSendCodeButtonState() {
+        let isValid = emailTextField.text?.isValidEmail == true
+
+        UIView.performWithoutAnimation {
+            sendCodeButton.isEnabled = isValid
+            sendCodeButton.alpha = isValid ? 1 : 0.6
+            sendCodeButton.layoutIfNeeded()
+        }
+    }
     
     // MARK: - Actions
     @objc
@@ -204,13 +225,7 @@ final class StartViewController: UIViewController {
     
     @objc
     private func textFieldDidChange() {
-        let isValid = emailTextField.text?.isValidEmail == true
-
-        UIView.performWithoutAnimation {
-            sendCodeButton.isEnabled = isValid
-            sendCodeButton.alpha = isValid ? 1 : 0.6
-            sendCodeButton.layoutIfNeeded()
-        }
+        updateSendCodeButtonState()
     }
 
     @objc

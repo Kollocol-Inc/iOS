@@ -40,7 +40,11 @@ actor AuthServiceImpl: AuthService {
     }
     
     func resendCode(to email: String) async throws {
-        print(1)
+        do {
+            _ = try await api.request(LoginEndpoint(email: email))
+        } catch {
+            throw AuthServiceError.wrap(error)
+        }
     }
     
     func verify(code: String, with email: String) async throws -> Bool {

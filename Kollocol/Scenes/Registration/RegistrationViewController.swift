@@ -116,6 +116,8 @@ final class RegistrationViewController: UIViewController {
     // MARK: - Constants
     private let baseButtonBottomInset: Double = 30
     private let keyboardSpacing: Double = 12
+    private let cancelRegistrationSheetTitle = "Внимание"
+    private let cancelRegistrationSheetDescription = "При отмене регистрации вы будете направлены на начальный экран"
     
     // MARK: - Properties
     private var interactor: RegistrationInteractor
@@ -144,6 +146,11 @@ final class RegistrationViewController: UIViewController {
         configureAvatarPicker()
         configureKeyboardObservers()
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
     
     // MARK: - Methods
     @MainActor
@@ -164,13 +171,13 @@ final class RegistrationViewController: UIViewController {
         configureConstraints()
         configureActions()
         configureTextFields()
-        self.navigationController?.isNavigationBarHidden = true
+        configureNavigationBar()
     }
     
     private func configureConstraints() {
         view.addSubview(kollocolLabel)
         kollocolLabel.pinCenterX(to: view.safeAreaLayoutGuide.centerXAnchor)
-        kollocolLabel.pinTop(to: view.safeAreaLayoutGuide.topAnchor, 70)
+        kollocolLabel.pinTop(to: view.safeAreaLayoutGuide.topAnchor, 15)
 
         view.addSubview(centralStack)
         centralStack.addArrangedSubview(registrationLabel)
@@ -207,6 +214,23 @@ final class RegistrationViewController: UIViewController {
         surnameTextField.returnKeyType = .done
         surnameTextField.enablesReturnKeyAutomatically = true
         surnameTextField.delegate = self
+    }
+
+    private func configureNavigationBar() {
+        navigationItem.hidesBackButton = true
+
+        let cancelRegistrationAction = UIAction { [weak self] _ in
+            self?.presentCancelRegistrationConfirmationSheet()
+        }
+
+        let cancelImage = UIImage(systemName: "xmark")?.withTintColor(
+            .backgroundRedSecondary,
+            renderingMode: .alwaysOriginal
+        )
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: cancelImage,
+            primaryAction: cancelRegistrationAction
+        )
     }
     
     private func configureActions() {
@@ -306,6 +330,32 @@ final class RegistrationViewController: UIViewController {
         )
     }
 
+    private func presentCancelRegistrationConfirmationSheet() {
+        let content = InfoBottomSheetContent(
+            title: cancelRegistrationSheetTitle,
+            description: cancelRegistrationSheetDescription,
+            buttonsConfiguration: .double(
+                left: InfoBottomSheetAction(
+                    identifier: .cancel,
+                    title: "Остаться",
+                    style: .buttonSecondary
+                ),
+                right: InfoBottomSheetAction(
+                    identifier: .confirm,
+                    title: "Отменить регистрацию",
+                    style: .backgroundRedSecondary
+                )
+            )
+        )
+
+        showInfoBottomSheet(content) { [weak self] action in
+            guard action == .confirm else { return }
+            Task { [weak self] in
+                await self?.interactor.cancelRegistration()
+            }
+        }
+    }
+
     // MARK: - Actions
     @objc
     private func registerButtonPressed() {
@@ -338,7 +388,7 @@ final class RegistrationViewController: UIViewController {
 private enum Constants {
     enum RegisterButtonTitles {
         static let disabled = NSAttributedString(
-            string: "Укажи имя и фамилию",
+            string: "Укажите имя и фамилию",
             attributes: [
                 .foregroundColor: UIColor.textWhite,
                 .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
@@ -382,5 +432,12 @@ extension RegistrationViewController: UITextFieldDelegate {
         }
 
         return true
+    }
+}
+
+// MARK: - InfoBottomSheetPresenting
+extension RegistrationViewController: InfoBottomSheetPresenting {
+    var bottomSheetHostViewController: UIViewController? {
+        self
     }
 }

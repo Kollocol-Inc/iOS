@@ -9,6 +9,7 @@ import UIKit
 
 protocol RegistrationInteractor: AvatarFlowInteracting {
     func register(name: String, surname: String, avatarData: Data?) async
+    func cancelRegistration() async
 }
 
 protocol RegistrationPresenter {

@@ -11,10 +11,15 @@ enum RegistrationAssembly {
     @MainActor
     static func build(
         router: AuthRouting,
-        userService: UserService
+        userService: UserService,
+        sessionManager: SessionManager
     ) -> UIViewController {
         let presenter = RegistrationRouter(router: router)
-        let interactor = RegistrationLogic(presenter: presenter, userService: userService)
+        let interactor = RegistrationLogic(
+            presenter: presenter,
+            userService: userService,
+            sessionManager: sessionManager
+        )
         let view = RegistrationViewController(interactor: interactor)
         presenter.view = view
         
