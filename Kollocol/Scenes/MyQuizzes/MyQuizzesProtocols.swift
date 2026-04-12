@@ -19,6 +19,7 @@ protocol MyQuizzesInteractor {
     func routeToStartQuizScreen(templateId: String?) async
     func handleTemplateTap(templateId: String) async
     func handleQuizTypeTap(_ quizType: QuizType) async
+    func handleHostingSearchQueryChanged(_ query: String)
     func handleTemplateSearchQueryChanged(_ query: String)
 }
 

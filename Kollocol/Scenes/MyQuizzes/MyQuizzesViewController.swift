@@ -87,15 +87,8 @@ final class MyQuizzesViewController: UIViewController {
         return control
     }()
 
-    private let templatesSearchTextField: UITextField = {
+    private let searchTextField: UITextField = {
         let field = UITextField()
-        field.attributedPlaceholder = NSAttributedString(
-            string: "Поиск шаблонов",
-            attributes: [
-                .foregroundColor: UIColor.textSecondary,
-                .font: UIFont.systemFont(ofSize: 15, weight: .medium)
-            ]
-        )
         field.backgroundColor = .dividerPrimary
         field.textColor = .textSecondary
         field.font = UIFont.systemFont(ofSize: 15, weight: .medium)
@@ -116,6 +109,42 @@ final class MyQuizzesViewController: UIViewController {
         return field
     }()
 
+    private let searchPlaceholderContainerView: UIView = {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }()
+
+    private let searchPlaceholderPrefixLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Поиск"
+        label.textColor = .textSecondary
+        label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        return label
+    }()
+
+    private let searchPlaceholderSuffixContainerView: UIView = {
+        let view = UIView()
+        view.clipsToBounds = true
+        view.isUserInteractionEnabled = false
+        return view
+    }()
+
+    private let searchPlaceholderCurrentSuffixLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .textSecondary
+        label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        return label
+    }()
+
+    private let searchPlaceholderIncomingSuffixLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .textSecondary
+        label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        label.alpha = 0
+        return label
+    }()
+
     private let createTemplateButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = .accentPrimary
@@ -130,7 +159,6 @@ final class MyQuizzesViewController: UIViewController {
             ),
             for: .normal
         )
-        button.setHeight(44)
         return button
     }()
 
@@ -164,6 +192,9 @@ final class MyQuizzesViewController: UIViewController {
         static let sectionSpacing: CGFloat = 16
         static let pickerHeight: CGFloat = 36
         static let pickerTopInset: CGFloat = 12
+        static let createButtonHeight: CGFloat = 44
+        static let searchPlaceholderAnimationDuration: TimeInterval = 0.5
+        static let searchPlaceholderSuffixSpacing: CGFloat = 4
     }
 
     // MARK: - Properties
@@ -172,8 +203,14 @@ final class MyQuizzesViewController: UIViewController {
     private var rows: [MyQuizzesModels.Row] = []
     private var templateItems: [QuizInstanceViewData] = []
     private var templatesEmptyStateText: String?
+    private var searchQuery = ""
     private var shouldRefreshTemplatesOnAppear = false
     private var templateGenerationTask: Task<Void, Never>?
+
+    private var contentContainerTopConstraint: NSLayoutConstraint?
+    private var searchPlaceholderSuffixWidthConstraint: NSLayoutConstraint?
+    private var currentSearchPlaceholderSuffix = "квизов"
+    private var isSearchPlaceholderAnimating = false
 
     // MARK: - Lifecycle
     init(interactor: MyQuizzesInteractor) {
@@ -220,7 +257,7 @@ final class MyQuizzesViewController: UIViewController {
     @MainActor
     func displayHostingQuizzes(_ items: [QuizInstanceViewData]) {
         rows = buildRows(from: items)
-        myQuizzesTableView.reloadData()
+        reloadTable(myQuizzesTableView)
         myQuizzesRefreshControl.endRefreshing()
     }
 
@@ -228,7 +265,7 @@ final class MyQuizzesViewController: UIViewController {
     func displayTemplates(_ items: [QuizInstanceViewData], emptyStateText: String?) {
         templateItems = items
         templatesEmptyStateText = emptyStateText
-        templatesTableView.reloadData()
+        reloadTable(templatesTableView)
         templatesRefreshControl.endRefreshing()
     }
 
@@ -250,6 +287,12 @@ final class MyQuizzesViewController: UIViewController {
         configureConstraints()
         configureTables()
         configureActions()
+        applyModeLayout(
+            for: mode,
+            from: nil,
+            animated: false,
+            shouldPropagateSearchQuery: false
+        )
     }
 
     private func configureConstraints() {
@@ -259,8 +302,23 @@ final class MyQuizzesViewController: UIViewController {
         modeSegmentedControl.pinRight(to: view.trailingAnchor, UIConstants.navbarHorizontalInset)
         modeSegmentedControl.setHeight(UIConstants.pickerHeight)
 
+        view.addSubview(searchTextField)
+        searchTextField.pinTop(to: modeSegmentedControl.bottomAnchor, UIConstants.sectionSpacing)
+        searchTextField.pinLeft(to: view.leadingAnchor, UIConstants.navbarHorizontalInset)
+        searchTextField.pinRight(to: view.trailingAnchor, UIConstants.navbarHorizontalInset)
+        configureSearchPlaceholder()
+
+        view.addSubview(createTemplateButton)
+        createTemplateButton.pinTop(to: searchTextField.bottomAnchor, UIConstants.sectionSpacing)
+        createTemplateButton.pinLeft(to: view.leadingAnchor, UIConstants.navbarHorizontalInset)
+        createTemplateButton.pinRight(to: view.trailingAnchor, UIConstants.navbarHorizontalInset)
+        createTemplateButton.setHeight(UIConstants.createButtonHeight)
+
         view.addSubview(contentContainerView)
-        contentContainerView.pinTop(to: modeSegmentedControl.bottomAnchor, UIConstants.sectionSpacing)
+        contentContainerTopConstraint = contentContainerView.pinTop(
+            to: searchTextField.bottomAnchor,
+            UIConstants.sectionSpacing
+        )
         contentContainerView.pinLeft(to: view.leadingAnchor)
         contentContainerView.pinRight(to: view.trailingAnchor)
         contentContainerView.pinBottom(to: view.bottomAnchor)
@@ -287,18 +345,8 @@ final class MyQuizzesViewController: UIViewController {
     }
 
     private func configureTemplatesLayout() {
-        templatesContainerView.addSubview(templatesSearchTextField)
-        templatesSearchTextField.pinTop(to: templatesContainerView.topAnchor, 2)
-        templatesSearchTextField.pinLeft(to: templatesContainerView.leadingAnchor, UIConstants.navbarHorizontalInset)
-        templatesSearchTextField.pinRight(to: templatesContainerView.trailingAnchor, UIConstants.navbarHorizontalInset)
-
-        templatesContainerView.addSubview(createTemplateButton)
-        createTemplateButton.pinTop(to: templatesSearchTextField.bottomAnchor, UIConstants.sectionSpacing)
-        createTemplateButton.pinLeft(to: templatesContainerView.leadingAnchor, UIConstants.navbarHorizontalInset)
-        createTemplateButton.pinRight(to: templatesContainerView.trailingAnchor, UIConstants.navbarHorizontalInset)
-
         templatesContainerView.addSubview(templatesTableBackgroundView)
-        templatesTableBackgroundView.pinTop(to: createTemplateButton.bottomAnchor, UIConstants.sectionSpacing)
+        templatesTableBackgroundView.pinTop(to: templatesContainerView.topAnchor)
         templatesTableBackgroundView.pinLeft(to: templatesContainerView.leadingAnchor)
         templatesTableBackgroundView.pinRight(to: templatesContainerView.trailingAnchor)
         templatesTableBackgroundView.pinBottom(to: templatesContainerView.bottomAnchor)
@@ -328,7 +376,7 @@ final class MyQuizzesViewController: UIViewController {
     private func configureActions() {
         modeSegmentedControl.addTarget(self, action: #selector(handlePickerValueChanged), for: .valueChanged)
         configureCreateTemplateMenu()
-        templatesSearchTextField.addTarget(self, action: #selector(handleTemplateSearchTextChanged), for: .editingChanged)
+        searchTextField.addTarget(self, action: #selector(handleSearchTextChanged), for: .editingChanged)
     }
 
     private func configureCreateTemplateMenu() {
@@ -356,6 +404,227 @@ final class MyQuizzesViewController: UIViewController {
         createTemplateButton.showsMenuAsPrimaryAction = true
     }
 
+    private func configureSearchPlaceholder() {
+        searchTextField.attributedPlaceholder = nil
+
+        searchTextField.addSubview(searchPlaceholderContainerView)
+        searchPlaceholderContainerView.pinLeft(to: searchTextField.leadingAnchor, 35)
+        searchPlaceholderContainerView.pinCenterY(to: searchTextField.centerYAnchor)
+        searchPlaceholderContainerView.pinRight(to: searchTextField.trailingAnchor, 12, .lsOE)
+        searchPlaceholderContainerView.setHeight(20)
+
+        searchPlaceholderContainerView.addSubview(searchPlaceholderPrefixLabel)
+        searchPlaceholderPrefixLabel.pinTop(to: searchPlaceholderContainerView.topAnchor)
+        searchPlaceholderPrefixLabel.pinBottom(to: searchPlaceholderContainerView.bottomAnchor)
+        searchPlaceholderPrefixLabel.pinLeft(to: searchPlaceholderContainerView.leadingAnchor)
+
+        searchPlaceholderContainerView.addSubview(searchPlaceholderSuffixContainerView)
+        searchPlaceholderSuffixContainerView.pinLeft(
+            to: searchPlaceholderPrefixLabel.trailingAnchor,
+            UIConstants.searchPlaceholderSuffixSpacing
+        )
+        searchPlaceholderSuffixContainerView.pinTop(to: searchPlaceholderContainerView.topAnchor)
+        searchPlaceholderSuffixContainerView.pinBottom(to: searchPlaceholderContainerView.bottomAnchor)
+        searchPlaceholderSuffixContainerView.pinRight(
+            to: searchPlaceholderContainerView.trailingAnchor,
+            0,
+            .lsOE
+        )
+
+        searchPlaceholderSuffixContainerView.addSubview(searchPlaceholderCurrentSuffixLabel)
+        searchPlaceholderCurrentSuffixLabel.pinLeft(to: searchPlaceholderSuffixContainerView.leadingAnchor)
+        searchPlaceholderCurrentSuffixLabel.pinTop(to: searchPlaceholderSuffixContainerView.topAnchor)
+        searchPlaceholderCurrentSuffixLabel.pinBottom(to: searchPlaceholderSuffixContainerView.bottomAnchor)
+
+        searchPlaceholderSuffixContainerView.addSubview(searchPlaceholderIncomingSuffixLabel)
+        searchPlaceholderIncomingSuffixLabel.pinLeft(to: searchPlaceholderSuffixContainerView.leadingAnchor)
+        searchPlaceholderIncomingSuffixLabel.pinTop(to: searchPlaceholderSuffixContainerView.topAnchor)
+        searchPlaceholderIncomingSuffixLabel.pinBottom(to: searchPlaceholderSuffixContainerView.bottomAnchor)
+
+        searchPlaceholderCurrentSuffixLabel.text = currentSearchPlaceholderSuffix
+        let initialSuffixWidth = widthForSearchPlaceholderSuffix(currentSearchPlaceholderSuffix)
+        searchPlaceholderSuffixWidthConstraint = searchPlaceholderSuffixContainerView.setWidth(initialSuffixWidth)
+        searchPlaceholderIncomingSuffixLabel.transform = CGAffineTransform(
+            translationX: 0,
+            y: searchPlaceholderCurrentSuffixLabel.font.lineHeight
+        )
+
+        updateSearchPlaceholderVisibility()
+    }
+
+    private func searchPlaceholderSuffix(for mode: MyQuizzesModels.Mode) -> String {
+        mode == .templates ? "шаблонов" : "квизов"
+    }
+
+    private func widthForSearchPlaceholderSuffix(_ text: String) -> CGFloat {
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 15, weight: .medium)
+        ]
+        return ceil((text as NSString).size(withAttributes: attributes).width) + 2
+    }
+
+    private func updateSearchPlaceholderVisibility() {
+        let isEmpty = (searchTextField.text ?? "").isEmpty
+        searchPlaceholderContainerView.isHidden = isEmpty == false
+    }
+
+    private func updateSearchPlaceholderSuffix(
+        for mode: MyQuizzesModels.Mode,
+        animated: Bool
+    ) {
+        let newSuffix = searchPlaceholderSuffix(for: mode)
+        guard currentSearchPlaceholderSuffix != newSuffix else { return }
+
+        let applyImmediately = {
+            self.currentSearchPlaceholderSuffix = newSuffix
+            self.searchPlaceholderCurrentSuffixLabel.text = newSuffix
+            self.searchPlaceholderIncomingSuffixLabel.text = nil
+            self.searchPlaceholderIncomingSuffixLabel.alpha = 0
+            self.searchPlaceholderCurrentSuffixLabel.alpha = 1
+            self.searchPlaceholderCurrentSuffixLabel.transform = .identity
+            self.searchPlaceholderIncomingSuffixLabel.transform = CGAffineTransform(
+                translationX: 0,
+                y: self.searchPlaceholderCurrentSuffixLabel.font.lineHeight
+            )
+            self.searchPlaceholderSuffixWidthConstraint?.constant = self.widthForSearchPlaceholderSuffix(newSuffix)
+        }
+
+        guard animated, searchQuery.isEmpty, view.window != nil, isSearchPlaceholderAnimating == false else {
+            applyImmediately()
+            return
+        }
+
+        isSearchPlaceholderAnimating = true
+
+        let lineHeight = searchPlaceholderCurrentSuffixLabel.font.lineHeight
+        let targetWidth = max(
+            widthForSearchPlaceholderSuffix(currentSearchPlaceholderSuffix),
+            widthForSearchPlaceholderSuffix(newSuffix)
+        )
+        searchPlaceholderSuffixWidthConstraint?.constant = targetWidth
+        searchPlaceholderIncomingSuffixLabel.text = newSuffix
+        searchPlaceholderIncomingSuffixLabel.alpha = 1
+        searchPlaceholderIncomingSuffixLabel.transform = CGAffineTransform(translationX: 0, y: lineHeight)
+        searchPlaceholderCurrentSuffixLabel.transform = .identity
+        searchPlaceholderCurrentSuffixLabel.alpha = 1
+
+        UIView.animate(
+            withDuration: UIConstants.searchPlaceholderAnimationDuration,
+            delay: 0,
+            options: [.curveEaseInOut]
+        ) {
+            self.searchPlaceholderCurrentSuffixLabel.transform = CGAffineTransform(translationX: 0, y: -lineHeight)
+            self.searchPlaceholderCurrentSuffixLabel.alpha = 0
+            self.searchPlaceholderIncomingSuffixLabel.transform = .identity
+            self.view.layoutIfNeeded()
+        } completion: { _ in
+            applyImmediately()
+            self.isSearchPlaceholderAnimating = false
+            self.updateSearchPlaceholderVisibility()
+        }
+    }
+
+    private func applyModeLayout(
+        for mode: MyQuizzesModels.Mode,
+        from previousMode: MyQuizzesModels.Mode?,
+        animated: Bool,
+        shouldPropagateSearchQuery: Bool
+    ) {
+        let isTemplatesMode = mode == .templates
+        let visibleContainer = isTemplatesMode ? templatesContainerView : myQuizzesContainerView
+        let hiddenContainer = isTemplatesMode ? myQuizzesContainerView : templatesContainerView
+        let targetTopConstant = isTemplatesMode
+        ? (UIConstants.sectionSpacing * 2 + UIConstants.createButtonHeight)
+        : UIConstants.sectionSpacing
+
+        searchTextField.text = searchQuery
+        updateSearchPlaceholderVisibility()
+        updateSearchPlaceholderSuffix(for: mode, animated: animated)
+
+        if shouldPropagateSearchQuery {
+            interactor.handleHostingSearchQueryChanged(searchQuery)
+            interactor.handleTemplateSearchQueryChanged(searchQuery)
+        }
+
+        guard animated else {
+            visibleContainer.isHidden = false
+            hiddenContainer.isHidden = true
+            visibleContainer.alpha = 1
+            hiddenContainer.alpha = 1
+            visibleContainer.transform = .identity
+            hiddenContainer.transform = .identity
+            contentContainerTopConstraint?.constant = targetTopConstant
+            createTemplateButton.isUserInteractionEnabled = isTemplatesMode
+            view.layoutIfNeeded()
+            return
+        }
+
+        let slideDirection: CGFloat = {
+            switch (previousMode, mode) {
+            case (.myQuizzes, .templates):
+                return 1
+            case (.templates, .myQuizzes):
+                return -1
+            default:
+                return 0
+            }
+        }()
+
+        visibleContainer.isHidden = false
+        hiddenContainer.isHidden = false
+
+        let slideWidth = max(contentContainerView.bounds.width, view.bounds.width)
+        visibleContainer.transform = CGAffineTransform(
+            translationX: slideDirection * slideWidth,
+            y: 0
+        )
+        hiddenContainer.transform = .identity
+        createTemplateButton.isUserInteractionEnabled = false
+
+        UIView.animate(
+            withDuration: 0.32,
+            delay: 0,
+            usingSpringWithDamping: 0.94,
+            initialSpringVelocity: 0.2,
+            options: [.curveEaseInOut]
+        ) {
+            self.contentContainerTopConstraint?.constant = targetTopConstant
+            visibleContainer.transform = .identity
+            hiddenContainer.transform = CGAffineTransform(
+                translationX: -slideDirection * slideWidth,
+                y: 0
+            )
+            self.view.layoutIfNeeded()
+        } completion: { _ in
+            hiddenContainer.isHidden = true
+            hiddenContainer.transform = .identity
+            visibleContainer.isHidden = false
+            visibleContainer.transform = .identity
+            self.createTemplateButton.isUserInteractionEnabled = isTemplatesMode
+        }
+    }
+
+    private func reloadTable(
+        _ tableView: UITableView,
+        rowAnimation: UITableView.RowAnimation = .fade
+    ) {
+        guard tableView.window != nil else {
+            tableView.reloadData()
+            return
+        }
+
+        let sectionsCount = tableView.numberOfSections
+        guard sectionsCount > 0 else {
+            tableView.reloadData()
+            return
+        }
+
+        tableView.reloadSections(
+            IndexSet(integersIn: 0..<sectionsCount),
+            with: rowAnimation
+        )
+    }
+
     private func buildRows(from items: [QuizInstanceViewData]) -> [MyQuizzesModels.Row] {
         let activeItems = items.filter { $0.status == .active }
         let pendingReviewItems = items.filter { $0.status == .pendingReview }
@@ -381,44 +650,14 @@ final class MyQuizzesViewController: UIViewController {
 
     private func switchMode(to newMode: MyQuizzesModels.Mode, animated: Bool) {
         guard newMode != mode else { return }
-
-        let fromView: UIView
-        let toView: UIView
-        let direction: CGFloat
-
-        switch (mode, newMode) {
-        case (.myQuizzes, .templates):
-            fromView = myQuizzesContainerView
-            toView = templatesContainerView
-            direction = 1
-        case (.templates, .myQuizzes):
-            fromView = templatesContainerView
-            toView = myQuizzesContainerView
-            direction = -1
-        default:
-            return
-        }
-
+        let previousMode = mode
         mode = newMode
-
-        guard animated else {
-            fromView.isHidden = true
-            toView.isHidden = false
-            return
-        }
-
-        let width = contentContainerView.bounds.width
-        toView.isHidden = false
-        toView.transform = CGAffineTransform(translationX: direction * width, y: 0)
-        fromView.transform = .identity
-
-        UIView.animate(withDuration: 0.28, delay: 0, options: [.curveEaseInOut]) {
-            fromView.transform = CGAffineTransform(translationX: -direction * width, y: 0)
-            toView.transform = .identity
-        } completion: { _ in
-            fromView.transform = .identity
-            fromView.isHidden = true
-        }
+        applyModeLayout(
+            for: newMode,
+            from: previousMode,
+            animated: animated,
+            shouldPropagateSearchQuery: true
+        )
     }
 
     private func startTemplateGeneration(
@@ -540,14 +779,17 @@ final class MyQuizzesViewController: UIViewController {
     }
 
     @objc
-    private func handleTemplateSearchTextChanged() {
-        interactor.handleTemplateSearchQueryChanged(templatesSearchTextField.text ?? "")
+    private func handleSearchTextChanged() {
+        let query = searchTextField.text ?? ""
+        searchQuery = query
+        updateSearchPlaceholderVisibility()
+        interactor.handleHostingSearchQueryChanged(query)
+        interactor.handleTemplateSearchQueryChanged(query)
     }
 
     @objc
     private func handleTemplatesPullToRefresh() {
-        templatesSearchTextField.text = nil
-        interactor.handleTemplateSearchQueryChanged("")
+        interactor.handleTemplateSearchQueryChanged(searchQuery)
 
         Task {
             await interactor.fetchTemplates()

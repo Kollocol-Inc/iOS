@@ -15,7 +15,9 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
     private let quizParticipationService: QuizParticipationService
 
     // MARK: - Properties
+    private var allHostingQuizzes: [QuizInstance] = []
     private var allTemplates: [QuizTemplate] = []
+    private var hostingSearchQuery = ""
     private var templateSearchQuery = ""
 
     // MARK: - Lifecycle
@@ -35,7 +37,8 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
     func fetchHostingQuizzes() async {
         do {
             let hosting = try await quizService.getHostingQuizzes()
-            await presenter.presentHostingQuizzes(hosting)
+            allHostingQuizzes = hosting
+            await presentFilteredHostingQuizzes()
         } catch {
             await presenter.presentServiceError(QuizServiceError.wrap(error))
         }
@@ -119,6 +122,14 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
         await presenter.presentQuizTypeInfo(quizType)
     }
 
+    func handleHostingSearchQueryChanged(_ query: String) {
+        hostingSearchQuery = query
+
+        Task { [weak self] in
+            await self?.presentFilteredHostingQuizzes()
+        }
+    }
+
     func handleTemplateSearchQueryChanged(_ query: String) {
         templateSearchQuery = query
 
@@ -128,6 +139,23 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
     }
 
     // MARK: - Private Methods
+    private func presentFilteredHostingQuizzes() async {
+        let normalizedQuery = hostingSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard normalizedQuery.isEmpty == false else {
+            await presenter.presentHostingQuizzes(allHostingQuizzes)
+            return
+        }
+
+        let filteredHostingQuizzes = allHostingQuizzes.filter { quiz in
+            let titleContainsQuery = quiz.title?.localizedCaseInsensitiveContains(normalizedQuery) ?? false
+            let accessCodeContainsQuery = quiz.accessCode?.localizedCaseInsensitiveContains(normalizedQuery) ?? false
+            return titleContainsQuery || accessCodeContainsQuery
+        }
+
+        await presenter.presentHostingQuizzes(filteredHostingQuizzes)
+    }
+
     private func presentFilteredTemplates() async {
         let normalizedQuery = templateSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
         let hasAnyTemplates = allTemplates.isEmpty == false
