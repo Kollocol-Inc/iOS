@@ -1788,8 +1788,6 @@ private final class AddQuestionHeaderWithButtonTableViewCell: UITableViewCell {
 
     private let addButtonContainerView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 17
-        view.clipsToBounds = true
         view.setWidth(34)
         view.setHeight(34)
         return view
@@ -1859,10 +1857,18 @@ private final class AddQuestionHeaderWithButtonTableViewCell: UITableViewCell {
 
         addButtonContainerView.addSubview(addButtonGlassBackgroundView)
         addButtonGlassBackgroundView.pin(to: addButtonContainerView)
+        configureGlassBackgroundView(addButtonGlassBackgroundView)
 
-        addButtonContainerView.addSubview(addButton)
-        addButton.pin(to: addButtonContainerView)
+        addButtonGlassBackgroundView.contentView.addSubview(addButton)
+        addButton.pin(to: addButtonGlassBackgroundView.contentView)
         addButton.addTarget(self, action: #selector(handleAddTap), for: .touchUpInside)
+    }
+
+    private func configureGlassBackgroundView(_ view: UIVisualEffectView) {
+        view.backgroundColor = .clear
+        view.clipsToBounds = true
+        view.layer.cornerRadius = 17
+        view.layer.cornerCurve = .continuous
     }
 
     // MARK: - Actions

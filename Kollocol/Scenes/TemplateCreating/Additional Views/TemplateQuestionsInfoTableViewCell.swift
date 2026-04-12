@@ -19,8 +19,6 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
 
     private let addQuestionButtonContainerView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 17
-        view.clipsToBounds = true
         view.setWidth(34)
         view.setHeight(34)
         return view
@@ -47,8 +45,6 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
 
     private let searchToggleButtonContainerView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 17
-        view.clipsToBounds = true
         view.setWidth(34)
         view.setHeight(34)
         return view
@@ -153,15 +149,17 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
 
         addQuestionButtonContainerView.addSubview(addQuestionGlassBackgroundView)
         addQuestionGlassBackgroundView.pin(to: addQuestionButtonContainerView)
+        configureGlassBackgroundView(addQuestionGlassBackgroundView)
 
-        addQuestionButtonContainerView.addSubview(addQuestionButton)
-        addQuestionButton.pin(to: addQuestionButtonContainerView)
+        addQuestionGlassBackgroundView.contentView.addSubview(addQuestionButton)
+        addQuestionButton.pin(to: addQuestionGlassBackgroundView.contentView)
 
         searchToggleButtonContainerView.addSubview(searchToggleGlassBackgroundView)
         searchToggleGlassBackgroundView.pin(to: searchToggleButtonContainerView)
+        configureGlassBackgroundView(searchToggleGlassBackgroundView)
 
-        searchToggleButtonContainerView.addSubview(searchToggleButton)
-        searchToggleButton.pin(to: searchToggleButtonContainerView)
+        searchToggleGlassBackgroundView.contentView.addSubview(searchToggleButton)
+        searchToggleButton.pin(to: searchToggleGlassBackgroundView.contentView)
 
         searchToggleButton.addSubview(searchToggleImageView)
         searchToggleImageView.pinCenter(to: searchToggleButton)
@@ -170,6 +168,13 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
     private func configureActions() {
         addQuestionButton.addTarget(self, action: #selector(handleAddQuestionTap), for: .touchUpInside)
         searchToggleButton.addTarget(self, action: #selector(handleSearchToggleTap), for: .touchUpInside)
+    }
+
+    private func configureGlassBackgroundView(_ view: UIVisualEffectView) {
+        view.backgroundColor = .clear
+        view.clipsToBounds = true
+        view.layer.cornerRadius = 17
+        view.layer.cornerCurve = .continuous
     }
 
     private func configureSearchToggleButton(
