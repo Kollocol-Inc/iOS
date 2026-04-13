@@ -9,6 +9,7 @@ import Foundation
 
 struct CreateInstanceRequest {
     let deadline: Date?
+    let groupId: String?
     let templateId: String?
     let title: String?
 }

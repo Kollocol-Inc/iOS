@@ -87,6 +87,7 @@ actor StartQuizLogic: StartQuizInteractor {
 
         return CreateInstanceRequest(
             deadline: deadline,
+            groupId: nil,
             templateId: template.id,
             title: title
         )

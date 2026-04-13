@@ -7,6 +7,12 @@
 
 import Foundation
 
+enum AppThemePreference: String {
+    case system
+    case light
+    case dark
+}
+
 // MARK: - UserDefaultsServiceImpl
 final class UserDefaultsServiceImpl: UserDefaultsService {
     private let defaults: UserDefaults
@@ -40,6 +46,18 @@ final class UserDefaultsServiceImpl: UserDefaultsService {
         get { value(for: .isRegistered) ?? false }
         set { set(newValue, for: .isRegistered) }
     }
+
+    var appThemePreference: AppThemePreference {
+        get {
+            guard let rawValue: String = value(for: .appThemePreference),
+                  let preference = AppThemePreference(rawValue: rawValue)
+            else {
+                return .system
+            }
+            return preference
+        }
+        set { set(newValue.rawValue, for: .appThemePreference) }
+    }
 }
 
 // MARK: - UserDefaultsService
@@ -50,9 +68,11 @@ protocol UserDefaultsService: AnyObject {
     func exists(_ key: UserDefaultsKey) -> Bool
 
     var isRegistered: Bool { get set }
+    var appThemePreference: AppThemePreference { get set }
 }
 
 // MARK: - UserDefaultsKey
 enum UserDefaultsKey: String {
     case isRegistered
+    case appThemePreference
 }

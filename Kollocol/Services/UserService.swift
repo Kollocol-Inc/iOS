@@ -90,7 +90,11 @@ actor UserServiceImpl: UserService {
     }
 
     func deleteAvatar() async throws {
-        // TODO: implement
+        do {
+            _ = try await api.request(DeleteAvatarEndpoint())
+        } catch {
+            throw UserServiceError.wrap(error)
+        }
     }
 
 }

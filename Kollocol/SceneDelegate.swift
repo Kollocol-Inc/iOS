@@ -75,6 +75,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         )
         
         let window = UIWindow(windowScene: windowScene)
+        applyTheme(udService.appThemePreference, to: window)
         window.rootViewController = nav
         window.makeKeyAndVisible()
         self.window = window
@@ -112,4 +113,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
 
+}
+
+// MARK: - Private Methods
+private extension SceneDelegate {
+    func applyTheme(_ preference: AppThemePreference, to window: UIWindow) {
+        switch preference {
+        case .system:
+            window.overrideUserInterfaceStyle = .unspecified
+        case .light:
+            window.overrideUserInterfaceStyle = .light
+        case .dark:
+            window.overrideUserInterfaceStyle = .dark
+        }
+    }
 }

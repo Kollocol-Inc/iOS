@@ -6,10 +6,17 @@
 //
 
 import UIKit
+import Mantis
+import PhotosUI
+import ObjectiveC
 
 @MainActor
 final class MainCoordinator {
     // MARK: - Constants
+    private enum AssociatedKeys {
+        static var avatarCropHandlerKey: UInt8 = 0
+    }
+
     private enum Tab {
         case main
         case groups
@@ -126,7 +133,8 @@ final class MainCoordinator {
         let profileVC = ProfileAssembly.build(
             router: self,
             userService: services.userService,
-            sessionManager: services.sessionManager
+            sessionManager: services.sessionManager,
+            udService: services.udService
         )
         let profileNav = makeTabNavigationController(
             root: profileVC,
@@ -222,6 +230,30 @@ final class MainCoordinator {
             return "waitingRoom"
         case .participating:
             return "participating"
+        }
+    }
+
+    private func presentSafely(_ viewController: UIViewController) {
+        if let presented = navigationController.presentedViewController {
+            let shouldDismissFirst =
+                presented is PHPickerViewController ||
+                presented is UIImagePickerController ||
+                presented.isBeingDismissed ||
+                presented.view.window == nil
+
+            if shouldDismissFirst {
+                navigationController.dismiss(animated: true) { [weak self] in
+                    guard let self else { return }
+                    self.navigationController.present(viewController, animated: true)
+                }
+                return
+            }
+        }
+
+        if let host = topMostViewController() {
+            host.present(viewController, animated: true)
+        } else {
+            navigationController.present(viewController, animated: true)
         }
     }
 }
@@ -409,6 +441,28 @@ extension MainCoordinator: ProfileRouting {
             onConfirm: onConfirm
         )
     }
+
+    func showAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) {
+        var config = Mantis.Config()
+        config.presetFixedRatioType = .alwaysUsingOnePresetFixedRatio(ratio: 1)
+        config.cropViewConfig.cropShapeType = .circle(maskOnly: true)
+        config.cropViewConfig.showAttachedRotationControlView = false
+
+        let cropViewController = Mantis.cropViewController(image: image, config: config)
+        cropViewController.modalPresentationStyle = .fullScreen
+
+        let handler = AvatarCropHandler(onFinish: onFinish)
+        cropViewController.delegate = handler
+
+        objc_setAssociatedObject(
+            cropViewController,
+            &AssociatedKeys.avatarCropHandlerKey,
+            handler,
+            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+        )
+
+        presentSafely(cropViewController)
+    }
 }
 
 // MARK: - TemplateCreatingRouting
@@ -493,4 +547,5 @@ protocol StartQuizRouting: ErrorMessageDisplaying {
 @MainActor
 protocol ProfileRouting: ErrorMessageDisplaying {
     func showLogoutConfirmation(onConfirm: @escaping @MainActor () -> Void)
+    func showAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void)
 }

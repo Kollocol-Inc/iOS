@@ -131,7 +131,9 @@ final class MainViewController: UIViewController {
         super.viewWillAppear(animated)
 
         Task {
-            await interactor.fetchQuizzes()
+            async let userProfileTask: Void = interactor.fetchUserProfile()
+            async let quizzesTask: Void = interactor.fetchQuizzes()
+            _ = await (userProfileTask, quizzesTask)
         }
     }
 

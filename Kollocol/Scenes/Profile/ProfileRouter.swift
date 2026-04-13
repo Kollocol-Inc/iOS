@@ -22,18 +22,40 @@ final class ProfileRouter: ProfilePresenter, ServiceErrorHandling {
 
     // MARK: - Methods
     func presentUserProfile(_ user: UserDTO) async {
-        let fullName = [user.firstName, user.lastName]
-            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { $0.isEmpty == false }
-            .joined(separator: " ")
-
+        let firstName = user.firstName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let lastName = user.lastName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let email = user.email?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
         await view?.displayUserProfile(
             avatarUrl: user.avatarUrl,
-            fullName: fullName,
+            firstName: firstName,
+            lastName: lastName,
             email: email
         )
+    }
+
+    func presentNotificationsSettings(_ settings: ProfileModels.NotificationsSettings) async {
+        await view?.displayNotificationsSettings(settings)
+    }
+
+    func presentThemeOption(_ option: ProfileModels.ThemeOption) async {
+        await view?.displayThemeOption(option)
+    }
+
+    func presentProfileUpdateError(_ error: UserServiceError) async {
+        await presentServiceError(error, useCase: .generic)
+    }
+
+    func presentAvatarUploadError(_ error: UserServiceError) async {
+        await presentServiceError(error, useCase: .avatarUpload)
+    }
+
+    func presentAvatarDeleteError(_ error: UserServiceError) async {
+        await presentServiceError(error, useCase: .generic)
+    }
+
+    func presentAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) async {
+        await router.showAvatarCrop(image: image, onFinish: onFinish)
     }
 
     func presentServiceError(_ error: UserServiceError) async {
@@ -42,5 +64,20 @@ final class ProfileRouter: ProfilePresenter, ServiceErrorHandling {
 
     func presentLogoutConfirmation(onConfirm: @escaping @MainActor () -> Void) async {
         await router.showLogoutConfirmation(onConfirm: onConfirm)
+    }
+
+    func overrideMessage(for error: Error, useCase: ServiceErrorUseCase) -> String? {
+        guard let userServiceError = error as? UserServiceError else { return nil }
+
+        switch useCase {
+        case .avatarUpload:
+            if userServiceError == .badRequest {
+                return "Выбранная фотография слишком большая, выберите другую"
+            }
+            return "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
+
+        default:
+            return nil
+        }
     }
 }

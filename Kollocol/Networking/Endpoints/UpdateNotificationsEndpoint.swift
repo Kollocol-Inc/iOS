@@ -34,5 +34,12 @@ struct UpdateNotificationsEndpoint: Endpoint {
         let groupInvites: Bool
         let newQuizzes: Bool
         let quizResults: Bool
+
+        private enum CodingKeys: String, CodingKey {
+            case deadlineReminder = "deadline_reminder"
+            case groupInvites = "group_invites"
+            case newQuizzes = "new_quizzes"
+            case quizResults = "quiz_results"
+        }
     }
 }
