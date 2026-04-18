@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 import ShimmerView
 import PhotosUI
 import AVFoundation
@@ -545,8 +546,21 @@ final class ProfileViewController: UIViewController {
                 }
 
                 Task { [weak self] in
-                    await self?.interactor.uploadAvatar(data: imageData)
+                    guard let self else { return }
+                    let isUploadSuccessful = await self.interactor.uploadAvatar(data: imageData)
+                    guard isUploadSuccessful else { return }
+                    await self.clearKingfisherCache()
                 }
+            }
+        }
+    }
+
+    private func clearKingfisherCache() async {
+        let imageCache = ImageCache.default
+        imageCache.clearMemoryCache()
+        await withCheckedContinuation { continuation in
+            imageCache.clearDiskCache {
+                continuation.resume()
             }
         }
     }

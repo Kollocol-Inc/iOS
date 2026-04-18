@@ -16,6 +16,7 @@ enum TemplateCreatingModels {
         case questionActions
         case questionsSummary
         case questionsSearch
+        case empty(text: String)
         case question(index: Int, sourceIndex: Int, question: Question, isAIGenerated: Bool)
         case questionShimmer
     }

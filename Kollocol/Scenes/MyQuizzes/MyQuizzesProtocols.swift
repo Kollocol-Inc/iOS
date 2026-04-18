@@ -17,6 +17,7 @@ protocol MyQuizzesInteractor {
     func routeToCreateTemplateScreen() async
     func routeToCreateTemplateScreen(from generatedTemplate: GeneratedTemplate) async
     func routeToStartQuizScreen(templateId: String?) async
+    func deleteTemplate(templateId: String) async
     func handleTemplateTap(templateId: String) async
     func handleQuizTypeTap(_ quizType: QuizType) async
     func handleHostingSearchQueryChanged(_ query: String)

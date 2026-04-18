@@ -42,6 +42,7 @@ final class TemplateCreatingViewController: UIViewController {
         static let validationErrorTitle = "Ошибка"
         static let titleRequiredMessage = "Укажите название шаблона"
         static let questionsRequiredMessage = "Недостаточно вопросов"
+        static let noSearchResultsMessage = "Нет вопросов, содержащих такой текст"
         static let deleteTemplateAlertTitle = "Удаление шаблона"
         static let deleteTemplateAlertMessage = "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
         static let editUnsavedChangesAlertMessage = "Вы уверены, что хотите вернуться назад? Все изменения будут утеряны безвозвратно"
@@ -243,6 +244,7 @@ final class TemplateCreatingViewController: UIViewController {
         tableView.register(TextInputTableViewCell.self, forCellReuseIdentifier: TextInputTableViewCell.reuseIdentifier)
         tableView.register(TemplateSettingsTableViewCell.self, forCellReuseIdentifier: TemplateSettingsTableViewCell.reuseIdentifier)
         tableView.register(DividerTableViewCell.self, forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier)
+        tableView.register(EmptyStateTableViewCell.self, forCellReuseIdentifier: EmptyStateTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionActionsTableViewCell.self, forCellReuseIdentifier: TemplateQuestionActionsTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionsInfoTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsInfoTableViewCell.reuseIdentifier)
         tableView.register(TemplateQuestionsSearchTableViewCell.self, forCellReuseIdentifier: TemplateQuestionsSearchTableViewCell.reuseIdentifier)
@@ -499,6 +501,9 @@ final class TemplateCreatingViewController: UIViewController {
 
     private func rebuildRows() {
         let visibleItems = filteredQuestionDisplayItems()
+        let hasQuestions = questions.isEmpty == false
+        let isSearchFilterActive = searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+        let shouldShowSearchEmptyState = hasQuestions && isSearchFilterActive && visibleItems.isEmpty
 
         var newRows: [TemplateCreatingModels.Row] = [
             .header("Название"),
@@ -507,28 +512,32 @@ final class TemplateCreatingViewController: UIViewController {
             .settings
         ]
 
-        if visibleItems.isEmpty == false {
+        if hasQuestions {
             newRows.append(.divider)
             newRows.append(.questionsSummary)
             if isSearchVisible {
                 newRows.append(.questionsSearch)
             }
 
-            var visibleQuestionIndex = 0
-            visibleItems.forEach { item in
-                switch item {
-                case .question(let sourceIndex, let question, let isAIGenerated):
-                    newRows.append(
-                        .question(
-                            index: visibleQuestionIndex,
-                            sourceIndex: sourceIndex,
-                            question: question,
-                            isAIGenerated: isAIGenerated
+            if shouldShowSearchEmptyState {
+                newRows.append(.empty(text: UIConstants.noSearchResultsMessage))
+            } else {
+                var visibleQuestionIndex = 0
+                visibleItems.forEach { item in
+                    switch item {
+                    case .question(let sourceIndex, let question, let isAIGenerated):
+                        newRows.append(
+                            .question(
+                                index: visibleQuestionIndex,
+                                sourceIndex: sourceIndex,
+                                question: question,
+                                isAIGenerated: isAIGenerated
+                            )
                         )
-                    )
-                    visibleQuestionIndex += 1
-                case .shimmer:
-                    newRows.append(.questionShimmer)
+                        visibleQuestionIndex += 1
+                    case .shimmer:
+                        newRows.append(.questionShimmer)
+                    }
                 }
             }
         }
@@ -1164,6 +1173,12 @@ final class TemplateCreatingViewController: UIViewController {
         tableView.reloadData()
     }
 
+    private func questionSourceIndex(at indexPath: IndexPath) -> Int? {
+        guard rows.indices.contains(indexPath.row) else { return nil }
+        guard case .question(_, let sourceIndex, _, _) = rows[indexPath.row] else { return nil }
+        return sourceIndex
+    }
+
     private static func normalizedTitle(_ title: String?) -> String {
         (title ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -1365,6 +1380,17 @@ extension TemplateCreatingViewController: UITableViewDataSource {
             shouldFocusSearchField = false
             return cell
 
+        case .empty(let text):
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: EmptyStateTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? EmptyStateTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(text: text)
+            return cell
+
         case .question(let index, let sourceIndex, let question, let isAIGenerated):
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: TemplateQuestionCardTableViewCell.reuseIdentifier,
@@ -1417,6 +1443,8 @@ extension TemplateCreatingViewController: UITableViewDelegate {
             return UITableView.automaticDimension
         case .questionsSearch:
             return UITableView.automaticDimension
+        case .empty:
+            return UITableView.automaticDimension
         case .question:
             return UITableView.automaticDimension
         case .questionShimmer:
@@ -1434,6 +1462,8 @@ extension TemplateCreatingViewController: UITableViewDelegate {
             return 66
         case .questionsSearch:
             return 60
+        case .empty:
+            return 34
         case .question:
             return 140
         case .questionShimmer:
@@ -1448,9 +1478,36 @@ extension TemplateCreatingViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
 
-        guard rows.indices.contains(indexPath.row) else { return }
-        guard case .question(_, let sourceIndex, _, _) = rows[indexPath.row] else { return }
-
+        guard let sourceIndex = questionSourceIndex(at: indexPath) else { return }
         handleEditQuestionTap(sourceIndex: sourceIndex)
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        contextMenuConfigurationForRowAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        guard let sourceIndex = questionSourceIndex(at: indexPath) else { return nil }
+
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+            guard let self else { return UIMenu() }
+
+            let editAction = UIAction(
+                title: "Изменить",
+                image: UIImage(systemName: "pencil")
+            ) { _ in
+                self.handleEditQuestionTap(sourceIndex: sourceIndex)
+            }
+
+            let deleteAction = UIAction(
+                title: "Удалить",
+                image: UIImage(systemName: "trash.fill"),
+                attributes: .destructive
+            ) { _ in
+                self.handleDeleteQuestionTap(sourceIndex: sourceIndex)
+            }
+
+            return UIMenu(children: [editAction, deleteAction])
+        }
     }
 }

@@ -65,11 +65,13 @@ final class ProfileLogic: ProfileInteractor {
         }
     }
 
-    func uploadAvatar(data: Data) async {
+    func uploadAvatar(data: Data) async -> Bool {
         do {
             try await userService.uploadAvatar(data: data)
+            return true
         } catch {
             await presenter.presentAvatarUploadError(UserServiceError.wrap(error))
+            return false
         }
     }
 

@@ -110,6 +110,16 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
         await presenter.presentStartQuizScreen(template: template)
     }
 
+    func deleteTemplate(templateId: String) async {
+        do {
+            try await quizService.deleteTemplate(by: templateId)
+            allTemplates.removeAll { $0.id == templateId }
+            await presentFilteredTemplates()
+        } catch {
+            await presenter.presentServiceError(QuizServiceError.wrap(error))
+        }
+    }
+
     func handleTemplateTap(templateId: String) async {
         guard let template = allTemplates.first(where: { $0.id == templateId }) else {
             return

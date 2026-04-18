@@ -12,7 +12,7 @@ protocol ProfileInteractor {
     func fetchNotificationsSettings() async
     func fetchThemeOption() async
     func updateUserProfile(name: String, surname: String) async
-    func uploadAvatar(data: Data) async
+    func uploadAvatar(data: Data) async -> Bool
     func deleteAvatar() async
     func updateNewQuizzesNotification(isEnabled: Bool) async
     func updateQuizResultsNotification(isEnabled: Bool) async

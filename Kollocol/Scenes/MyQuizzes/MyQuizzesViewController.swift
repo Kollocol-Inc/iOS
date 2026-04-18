@@ -195,6 +195,8 @@ final class MyQuizzesViewController: UIViewController {
         static let createButtonHeight: CGFloat = 44
         static let searchPlaceholderAnimationDuration: TimeInterval = 0.5
         static let searchPlaceholderSuffixSpacing: CGFloat = 4
+        static let deleteTemplateAlertTitle = "Удаление шаблона"
+        static let deleteTemplateAlertMessage = "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
     }
 
     // MARK: - Properties
@@ -648,6 +650,49 @@ final class MyQuizzesViewController: UIViewController {
         ]
     }
 
+    private func templateItem(at indexPath: IndexPath) -> QuizInstanceViewData? {
+        guard templateItems.indices.contains(indexPath.row) else { return nil }
+        return templateItems[indexPath.row]
+    }
+
+    private func makeTemplateDeleteMessage(templateTitle: String?) -> String {
+        let normalizedTitle = templateTitle?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let displayTitle = normalizedTitle.isEmpty ? "без названия" : "«\(normalizedTitle)»"
+        return String(format: UIConstants.deleteTemplateAlertMessage, displayTitle)
+    }
+
+    private func handleTemplateStartTap(_ item: QuizInstanceViewData) {
+        Task { [weak self] in
+            await self?.interactor.routeToStartQuizScreen(templateId: item.id)
+        }
+    }
+
+    private func handleTemplateEditTap(_ item: QuizInstanceViewData) {
+        guard let templateId = item.id else { return }
+
+        Task { [weak self] in
+            await self?.interactor.handleTemplateTap(templateId: templateId)
+        }
+    }
+
+    private func handleTemplateDeleteTap(_ item: QuizInstanceViewData) {
+        guard let templateId = item.id else { return }
+
+        let message = makeTemplateDeleteMessage(templateTitle: item.title)
+        showConfirmationAlert(
+            title: UIConstants.deleteTemplateAlertTitle,
+            message: message,
+            cancelTitle: "Отмена",
+            confirmTitle: "Удалить",
+            confirmStyle: .destructive
+        ) { [weak self] in
+            Task { [weak self] in
+                await self?.interactor.deleteTemplate(templateId: templateId)
+            }
+        }
+    }
+
     private func switchMode(to newMode: MyQuizzesModels.Mode, animated: Bool) {
         guard newMode != mode else { return }
         let previousMode = mode
@@ -797,6 +842,13 @@ final class MyQuizzesViewController: UIViewController {
     }
 }
 
+// MARK: - AlertPresenting
+extension MyQuizzesViewController: AlertPresenting {
+    func presentAlert(_ alert: UIAlertController) {
+        present(alert, animated: true)
+    }
+}
+
 // MARK: - UITableViewDataSource
 extension MyQuizzesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -838,9 +890,7 @@ extension MyQuizzesViewController: UITableViewDataSource {
                 }
             }
             cell.onQuizStartTap = { [weak self] in
-                Task { [weak self] in
-                    await self?.interactor.routeToStartQuizScreen(templateId: item.id)
-                }
+                self?.handleTemplateStartTap(item)
             }
 
             return cell
@@ -932,11 +982,44 @@ extension MyQuizzesViewController: UITableViewDelegate {
         guard tableView === templatesTableView else { return }
         tableView.deselectRow(at: indexPath, animated: true)
 
-        guard templateItems.indices.contains(indexPath.row) else { return }
-        guard let templateId = templateItems[indexPath.row].id else { return }
+        guard let item = templateItem(at: indexPath) else { return }
+        handleTemplateEditTap(item)
+    }
 
-        Task {
-            await interactor.handleTemplateTap(templateId: templateId)
+    func tableView(
+        _ tableView: UITableView,
+        contextMenuConfigurationForRowAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        guard tableView === templatesTableView else { return nil }
+        guard let item = templateItem(at: indexPath), item.id != nil else { return nil }
+
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+            guard let self else { return UIMenu() }
+
+            let startAction = UIAction(
+                title: "Запустить",
+                image: UIImage(systemName: "play.fill")
+            ) { _ in
+                self.handleTemplateStartTap(item)
+            }
+
+            let editAction = UIAction(
+                title: "Изменить",
+                image: UIImage(systemName: "pencil")
+            ) { _ in
+                self.handleTemplateEditTap(item)
+            }
+
+            let deleteAction = UIAction(
+                title: "Удалить",
+                image: UIImage(systemName: "trash.fill"),
+                attributes: .destructive
+            ) { _ in
+                self.handleTemplateDeleteTap(item)
+            }
+
+            return UIMenu(children: [startAction, editAction, deleteAction])
         }
     }
 }
