@@ -12,4 +12,5 @@ enum QuizStatus: String {
     case active = "active"
     case pendingReview = "pending_review"
     case reviewed = "reviewed"
+    case publishedResults = "published_results"
 }
