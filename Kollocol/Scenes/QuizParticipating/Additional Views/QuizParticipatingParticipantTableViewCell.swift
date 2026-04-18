@@ -173,7 +173,6 @@ final class QuizParticipatingParticipantTableViewCell: UITableViewCell {
         let imageConfiguration = UIImage.SymbolConfiguration(pointSize: 17, weight: .regular)
         imageAttachment.image = UIImage(systemName: "medal.fill", withConfiguration: imageConfiguration)?
             .withTintColor(medalColor, renderingMode: .alwaysOriginal)
-        imageAttachment.bounds = CGRect(x: 0, y: -2, width: 17, height: 17)
 
         attributedText.append(NSAttributedString(attachment: imageAttachment))
         attributedText.append(

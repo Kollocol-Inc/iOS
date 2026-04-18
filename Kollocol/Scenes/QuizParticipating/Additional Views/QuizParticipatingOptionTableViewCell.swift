@@ -126,12 +126,6 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
         if let iconImage = UIImage(systemName: "person.2.fill", withConfiguration: imageConfiguration)?
             .withTintColor(.accentPrimary, renderingMode: .alwaysOriginal) {
             imageAttachment.image = iconImage
-            imageAttachment.bounds = CGRect(
-                x: 0,
-                y: -2,
-                width: iconImage.size.width,
-                height: iconImage.size.height
-            )
             attributedText.append(NSAttributedString(attachment: imageAttachment))
             attributedText.append(NSAttributedString(string: " "))
         }

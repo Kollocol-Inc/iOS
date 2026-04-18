@@ -90,7 +90,6 @@ final class QuizParticipantsOverviewReviewHeaderTableViewCell: UITableViewCell {
         let configuration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
         attachment.image = UIImage(systemName: systemName, withConfiguration: configuration)?
             .withTintColor(tintColor, renderingMode: .alwaysOriginal)
-        attachment.bounds = CGRect(x: 0, y: -2, width: 20, height: 20)
         return NSAttributedString(attachment: attachment)
     }
 }

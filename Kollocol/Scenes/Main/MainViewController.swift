@@ -97,6 +97,7 @@ final class MainViewController: UIViewController {
     private var quizHostingInstances: [QuizInstanceViewData] = []
     private var rows: [MainModels.Row] = []
     private var isProfileShimmerAnimating = false
+    private var profileLeftBarButtonItem: UIBarButtonItem?
 
     private lazy var profileShimmerViews: [ShimmerView] = [
         avatarShimmerView,
@@ -130,11 +131,23 @@ final class MainViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        if navigationItem.leftBarButtonItem == nil {
+            navigationItem.leftBarButtonItem = profileLeftBarButtonItem
+        }
+
         Task {
             async let userProfileTask: Void = interactor.fetchUserProfile()
             async let quizzesTask: Void = interactor.fetchQuizzes()
             _ = await (userProfileTask, quizzesTask)
         }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        // During push from Main, custom left bar item may briefly artifact under destination back button.
+        // Temporarily removing it avoids carrying its snapshot into transition.
+        navigationItem.leftBarButtonItem = nil
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -288,6 +301,16 @@ final class MainViewController: UIViewController {
         // title
         navigationItem.title = nil
         navigationItem.titleView = nil
+        navigationItem.backButtonDisplayMode = .minimal
+
+        let backButtonItem = UIBarButtonItem(
+            title: "",
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        backButtonItem.hidesSharedBackground = true
+        navigationItem.backBarButtonItem = backButtonItem
 
         // left button
         configureLeftBarButton()
@@ -340,6 +363,7 @@ final class MainViewController: UIViewController {
 
         let leftItem = UIBarButtonItem(customView: leftBarButtonCustomView)
         leftItem.hidesSharedBackground = true
+        profileLeftBarButtonItem = leftItem
         navigationItem.leftBarButtonItem = leftItem
 
         configureProfileShimmerShape()

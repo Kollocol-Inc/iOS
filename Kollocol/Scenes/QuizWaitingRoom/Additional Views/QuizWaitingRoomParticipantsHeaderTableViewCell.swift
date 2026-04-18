@@ -82,7 +82,6 @@ final class QuizWaitingRoomParticipantsHeaderTableViewCell: UITableViewCell {
         let imageConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
         imageAttachment.image = UIImage(systemName: "person.fill", withConfiguration: imageConfiguration)?
             .withTintColor(.accentPrimary, renderingMode: .alwaysOriginal)
-        imageAttachment.bounds = CGRect(x: 0, y: -2, width: 20, height: 20)
 
         attributedText.append(NSAttributedString(attachment: imageAttachment))
         return attributedText

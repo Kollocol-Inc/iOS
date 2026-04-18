@@ -309,13 +309,13 @@ final class QuizParticipantsOverviewViewController: UIViewController {
             previousBackIndicatorTransitionMaskImage = navigationBar.backIndicatorTransitionMaskImage
         }
 
-        navigationBar.tintColor = .textPrimary
+        navigationBar.tintColor = .textSecondary
 
         let backConfiguration = UIImage.SymbolConfiguration(
             font: .systemFont(ofSize: 17, weight: .semibold)
         )
         let backImage = UIImage(systemName: "chevron.backward", withConfiguration: backConfiguration)?
-            .withTintColor(.textPrimary, renderingMode: .alwaysOriginal)
+            .withTintColor(.textSecondary, renderingMode: .alwaysOriginal)
 
         if let backImage {
             navigationBar.backIndicatorImage = backImage
@@ -346,7 +346,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         let buttonAlpha = publishButtonAlpha()
         let imageConfiguration = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
         let image = UIImage(systemName: "paperplane.fill", withConfiguration: imageConfiguration)?
-            .withTintColor(.textPrimary.withAlphaComponent(buttonAlpha), renderingMode: .alwaysOriginal)
+            .withTintColor(.textSecondary.withAlphaComponent(buttonAlpha), renderingMode: .alwaysOriginal)
 
         let action = UIAction { [weak self] _ in
             self?.handlePublishResultsTap()
