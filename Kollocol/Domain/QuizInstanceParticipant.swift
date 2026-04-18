@@ -8,6 +8,10 @@
 import Foundation
 
 struct QuizInstanceParticipant {
+    let avatarURL: String?
+    let email: String?
+    let firstName: String?
+    let lastName: String?
     let maxPossibleScore: Int?
     let reviewStatus: QuizReviewStatus?
     let sessionStatus: SessionStatus?

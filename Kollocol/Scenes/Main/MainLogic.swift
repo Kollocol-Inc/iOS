@@ -88,13 +88,30 @@ final class MainLogic: MainInteractor {
     }
 
     func handleQuizCardTap(_ quiz: QuizInstanceViewData) async {
+        let normalizedTitle = normalizedString(quiz.title)
+        let isHostingQuiz = isHostingQuiz(quiz)
+        let normalizedInstanceId = normalizedString(quiz.id)
+        let shouldRouteToAsyncParticipantsOverview = isHostingQuiz
+            && quiz.quizType == .async
+            && normalizedInstanceId.isEmpty == false
+
+        if shouldRouteToAsyncParticipantsOverview {
+            await presenter.presentQuizParticipantsOverview(
+                .init(
+                    instanceId: normalizedInstanceId,
+                    quizTitle: normalizedTitle,
+                    quizStatus: quiz.status,
+                    mode: .asyncState
+                )
+            )
+            return
+        }
+
         let accessCode = quiz.accessCode?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         guard accessCode.isEmpty == false else {
             return
         }
 
-        let normalizedTitle = normalizedString(quiz.title)
-        let isHostingQuiz = isHostingQuiz(quiz)
         let shouldShowAsyncStartConfirmation = quiz.quizType == .async && isHostingQuiz == false
 
         if shouldShowAsyncStartConfirmation {

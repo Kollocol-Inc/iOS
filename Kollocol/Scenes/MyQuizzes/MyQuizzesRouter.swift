@@ -50,6 +50,10 @@ final class MyQuizzesRouter: MyQuizzesPresenter, ServiceErrorHandling {
         )
     }
 
+    func presentQuizParticipantsOverview(_ initialData: QuizParticipantsOverviewModels.InitialData) async {
+        await router.routeToQuizParticipantsOverviewFromMyQuizzes(initialData: initialData)
+    }
+
     func presentStartQuizScreen(template: QuizTemplate) async {
         await router.routeToStartQuizScreen(template: template)
     }

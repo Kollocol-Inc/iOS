@@ -93,6 +93,43 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
         )
     }
 
+    func handleHostingQuizTap(_ quiz: QuizInstanceViewData, section: MyQuizzesModels.MyQuizzesSection) async {
+        let normalizedTitle = quiz.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let normalizedInstanceId = quiz.id?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        switch section {
+        case .active:
+            let shouldRouteToAsyncParticipantsOverview = quiz.quizType == .async
+                && normalizedInstanceId.isEmpty == false
+
+            if shouldRouteToAsyncParticipantsOverview {
+                await presenter.presentQuizParticipantsOverview(
+                    .init(
+                        instanceId: normalizedInstanceId,
+                        quizTitle: normalizedTitle,
+                        quizStatus: quiz.status,
+                        mode: .asyncState
+                    )
+                )
+                return
+            }
+
+            await handleQuizCardTap(quiz)
+
+        case .pendingReview, .reviewed:
+            guard normalizedInstanceId.isEmpty == false else { return }
+
+            await presenter.presentQuizParticipantsOverview(
+                .init(
+                    instanceId: normalizedInstanceId,
+                    quizTitle: normalizedTitle,
+                    quizStatus: quiz.status,
+                    mode: .review
+                )
+            )
+        }
+    }
+
     func routeToCreateTemplateScreen() async {
         await presenter.presentCreateTemplateScreen()
     }

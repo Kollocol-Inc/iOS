@@ -21,6 +21,7 @@ protocol MainPresenter {
     func presentQuizzes(participating: [QuizInstance], hosting: [QuizInstance]) async
     func presentServiceError(_ error: any UserFacingError) async
     func presentProfileScreen() async
+    func presentQuizParticipantsOverview(_ initialData: QuizParticipantsOverviewModels.InitialData) async
     func presentJoinQuizSuccess(accessCode: String) async
     func presentJoinQuizError(_ error: QuizParticipationServiceError) async
     func presentJoinQuizConfirmation(accessCode: String, quizTitle: String) async

@@ -43,6 +43,10 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
         await router.routeToProfileScreen()
     }
 
+    func presentQuizParticipantsOverview(_ initialData: QuizParticipantsOverviewModels.InitialData) async {
+        await router.routeToQuizParticipantsOverviewFromMain(initialData: initialData)
+    }
+
     func presentJoinQuizSuccess(accessCode: String) async {
         await view?.resetCodeFields()
         await router.routeToQuizWaitingRoom(accessCode: accessCode)

@@ -156,7 +156,7 @@ actor MockQuizServiceImpl: QuizService {
                     totalQuestions: "10",
                     totalTime: "1000"
                 ),
-                sessionStatus: .notStarted
+                sessionStatus: .joined
             ),
             ParticipatingInstance(
                 instance: QuizInstance(
@@ -179,7 +179,7 @@ actor MockQuizServiceImpl: QuizService {
                     totalQuestions: "10",
                     totalTime: "1000"
                 ),
-                sessionStatus: .notStarted
+                sessionStatus: .joined
             )
         ]
     }
@@ -297,6 +297,10 @@ actor MockQuizServiceImpl: QuizService {
     func getQuizInstanceParticipants(by instanceId: String) async throws -> [QuizInstanceParticipant] {
         return [
             QuizInstanceParticipant(
+                avatarURL: nil,
+                email: "arsenii@example.com",
+                firstName: "Arsenii",
+                lastName: "Potiakin",
                 maxPossibleScore: 3,
                 reviewStatus: .pendingReview,
                 sessionStatus: .finished,
@@ -304,6 +308,10 @@ actor MockQuizServiceImpl: QuizService {
                 userId: "user-1"
             ),
             QuizInstanceParticipant(
+                avatarURL: nil,
+                email: "anna@example.com",
+                firstName: "Anna",
+                lastName: "Ivanova",
                 maxPossibleScore: 3,
                 reviewStatus: .reviewed,
                 sessionStatus: .finished,

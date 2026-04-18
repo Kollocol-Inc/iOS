@@ -14,6 +14,7 @@ protocol MyQuizzesInteractor {
     func generateTemplate(prompt: String) async throws -> GeneratedTemplate
     func handleTemplateGenerationError(_ error: MLServiceError) async
     func handleQuizCardTap(_ quiz: QuizInstanceViewData) async
+    func handleHostingQuizTap(_ quiz: QuizInstanceViewData, section: MyQuizzesModels.MyQuizzesSection) async
     func routeToCreateTemplateScreen() async
     func routeToCreateTemplateScreen(from generatedTemplate: GeneratedTemplate) async
     func routeToStartQuizScreen(templateId: String?) async
@@ -31,6 +32,7 @@ protocol MyQuizzesPresenter {
     func presentTemplateGenerationError(_ error: MLServiceError) async
     func presentCreateTemplateScreen() async
     func presentCreateTemplateScreen(from generatedTemplate: GeneratedTemplate) async
+    func presentQuizParticipantsOverview(_ initialData: QuizParticipantsOverviewModels.InitialData) async
     func presentStartQuizScreen(template: QuizTemplate) async
     func presentTemplateEditingScreen(_ template: QuizTemplate) async
     func presentJoinQuizSuccess(accessCode: String) async

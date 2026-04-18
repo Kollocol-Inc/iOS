@@ -630,7 +630,9 @@ final class MyQuizzesViewController: UIViewController {
     private func buildRows(from items: [QuizInstanceViewData]) -> [MyQuizzesModels.Row] {
         let activeItems = items.filter { $0.status == .active }
         let pendingReviewItems = items.filter { $0.status == .pendingReview }
-        let reviewedItems = items.filter { $0.status == .reviewed }
+        let reviewedItems = items.filter { item in
+            item.status == .reviewed || item.status == .publishedResults
+        }
 
         return [
             .header(title: "Провожу"),
@@ -923,11 +925,11 @@ extension MyQuizzesViewController: UITableViewDataSource {
                     await self?.interactor.routeToStartQuizScreen(templateId: item.id)
                 }
             }
-            cell.onQuizTap = section == .active ? { [weak self] item in
+            cell.onQuizTap = { [weak self] item in
                 Task { [weak self] in
-                    await self?.interactor.handleQuizCardTap(item)
+                    await self?.interactor.handleHostingQuizTap(item, section: section)
                 }
-            } : nil
+            }
             return cell
 
         case .empty(let text):

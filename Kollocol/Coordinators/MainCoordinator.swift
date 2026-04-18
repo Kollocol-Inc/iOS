@@ -189,6 +189,19 @@ final class MainCoordinator {
         return myQuizzesNavController.viewControllers.first { $0 is MyQuizzesViewController } as? MyQuizzesViewController
     }
 
+    private func pushQuizParticipantsOverviewScreen(
+        on navigationController: UINavigationController,
+        initialData: QuizParticipantsOverviewModels.InitialData
+    ) {
+        let viewController = QuizParticipantsOverviewAssembly.build(
+            router: self,
+            initialData: initialData,
+            quizService: services.quizService
+        )
+        viewController.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(viewController, animated: true)
+    }
+
     private func startQuizWaitingRoom(
         on navigationController: UINavigationController,
         accessCode: String,
@@ -300,6 +313,11 @@ extension MainCoordinator: MainRouting {
             accessCode: accessCode,
             startDestination: startDestination
         )
+    }
+
+    func routeToQuizParticipantsOverviewFromMain(initialData: QuizParticipantsOverviewModels.InitialData) {
+        guard let mainNavController else { return }
+        pushQuizParticipantsOverviewScreen(on: mainNavController, initialData: initialData)
     }
 
     func showError(title: String, message: String) {
@@ -427,6 +445,11 @@ extension MainCoordinator: MyQuizzesRouting {
         )
     }
 
+    func routeToQuizParticipantsOverviewFromMyQuizzes(initialData: QuizParticipantsOverviewModels.InitialData) {
+        guard let myQuizzesNavController else { return }
+        pushQuizParticipantsOverviewScreen(on: myQuizzesNavController, initialData: initialData)
+    }
+
 }
 
 // MARK: - ProfileRouting
@@ -499,6 +522,7 @@ extension MainCoordinator: StartQuizRouting {
 protocol MainRouting: ErrorMessageDisplaying {
     func routeToProfileScreen()
     func routeToQuizWaitingRoom(accessCode: String) async
+    func routeToQuizParticipantsOverviewFromMain(initialData: QuizParticipantsOverviewModels.InitialData)
     func showQuizTypeInfoBottomSheet(title: String, description: String)
     func showQuizConnectionUnavailableBottomSheet(description: String)
     func showQuizJoinConnectionErrorBottomSheet()
@@ -524,6 +548,7 @@ protocol MyQuizzesRouting: ErrorMessageDisplaying {
     func routeToEditTemplateScreen(template: QuizTemplate)
     func routeToStartQuizScreen(template: QuizTemplate)
     func routeToQuizWaitingRoomFromMyQuizzes(accessCode: String) async
+    func routeToQuizParticipantsOverviewFromMyQuizzes(initialData: QuizParticipantsOverviewModels.InitialData)
     func showQuizTypeInfoBottomSheet(title: String, description: String)
     func showQuizConnectionUnavailableBottomSheet(description: String)
     func showQuizJoinConfirmationBottomSheet(
@@ -549,3 +574,8 @@ protocol ProfileRouting: ErrorMessageDisplaying {
     func showLogoutConfirmation(onConfirm: @escaping @MainActor () -> Void)
     func showAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void)
 }
+
+@MainActor
+protocol QuizParticipantsOverviewRouting: ErrorMessageDisplaying {}
+
+extension MainCoordinator: QuizParticipantsOverviewRouting {}
