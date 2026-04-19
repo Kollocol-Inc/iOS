@@ -18,7 +18,8 @@ enum QuizParticipantsOverviewAssembly {
         let interactor = QuizParticipantsOverviewLogic(
             presenter: presenter,
             quizService: quizService,
-            instanceId: initialData.instanceId
+            instanceId: initialData.instanceId,
+            quizTitle: initialData.quizTitle
         )
         let view = QuizParticipantsOverviewViewController(
             interactor: interactor,

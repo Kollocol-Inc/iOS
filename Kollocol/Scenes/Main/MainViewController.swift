@@ -199,6 +199,11 @@ final class MainViewController: UIViewController {
         }
     }
 
+    @MainActor
+    func prepareForForwardNavigationTransition() {
+        navigationItem.leftBarButtonItem = nil
+    }
+
     // MARK: - Private Methods
     private func configureUI() {
         view.setPrimaryBackground()

@@ -69,7 +69,7 @@ final class QuizParticipantsOverviewParticipantTableViewCell: UITableViewCell {
     private enum UIConstants {
         static let leadingInset: CGFloat = 28
         static let statusToAvatarSpacing: CGFloat = 12
-        static let statusSymbolSize: CGFloat = 23
+        static let statusSymbolSize: CGFloat = 20
         static let chevronSymbolSize: CGFloat = 20
     }
 

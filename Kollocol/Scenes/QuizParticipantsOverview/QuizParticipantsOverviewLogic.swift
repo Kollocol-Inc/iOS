@@ -12,16 +12,19 @@ actor QuizParticipantsOverviewLogic: QuizParticipantsOverviewInteractor {
     private let presenter: QuizParticipantsOverviewPresenter
     private let quizService: QuizService
     private let instanceId: String
+    private let quizTitle: String
 
     // MARK: - Lifecycle
     init(
         presenter: QuizParticipantsOverviewPresenter,
         quizService: QuizService,
-        instanceId: String
+        instanceId: String,
+        quizTitle: String
     ) {
         self.presenter = presenter
         self.quizService = quizService
         self.instanceId = instanceId
+        self.quizTitle = quizTitle
     }
 
     // MARK: - Methods
@@ -41,5 +44,26 @@ actor QuizParticipantsOverviewLogic: QuizParticipantsOverviewInteractor {
         } catch {
             await presenter.presentServiceError(QuizServiceError.wrap(error))
         }
+    }
+
+    func handleParticipantTap(
+        participantId: String?,
+        fullName: String,
+        email: String?
+    ) async {
+        let normalizedParticipantID = participantId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard normalizedParticipantID.isEmpty == false else {
+            return
+        }
+
+        await presenter.presentParticipantReview(
+            .init(
+                instanceId: instanceId,
+                participantId: normalizedParticipantID,
+                participantFullName: fullName,
+                participantEmail: email,
+                quizTitle: quizTitle
+            )
+        )
     }
 }

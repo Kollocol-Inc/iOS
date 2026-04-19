@@ -29,6 +29,10 @@ final class QuizParticipantsOverviewRouter: QuizParticipantsOverviewPresenter, S
         await view?.displayQuizResultsPublished()
     }
 
+    func presentParticipantReview(_ initialData: QuizParticipantReviewModels.InitialData) async {
+        await router.routeToQuizParticipantReview(initialData: initialData)
+    }
+
     func presentServiceError(_ error: QuizServiceError) async {
         await presentServiceError(error, useCase: .generic)
     }

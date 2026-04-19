@@ -189,11 +189,30 @@ final class MainCoordinator {
         return myQuizzesNavController.viewControllers.first { $0 is MyQuizzesViewController } as? MyQuizzesViewController
     }
 
+    private func prepareMainLeftBarButtonForPushTransition() {
+        guard let mainNavController else { return }
+        guard let mainViewController = mainNavController.topViewController as? MainViewController else { return }
+        mainViewController.prepareForForwardNavigationTransition()
+    }
+
     private func pushQuizParticipantsOverviewScreen(
         on navigationController: UINavigationController,
         initialData: QuizParticipantsOverviewModels.InitialData
     ) {
         let viewController = QuizParticipantsOverviewAssembly.build(
+            router: self,
+            initialData: initialData,
+            quizService: services.quizService
+        )
+        viewController.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(viewController, animated: true)
+    }
+
+    private func pushQuizParticipantReviewScreen(
+        on navigationController: UINavigationController,
+        initialData: QuizParticipantReviewModels.InitialData
+    ) {
+        let viewController = QuizParticipantReviewAssembly.build(
             router: self,
             initialData: initialData,
             quizService: services.quizService
@@ -293,6 +312,7 @@ extension MainCoordinator: MainRouting {
 
     func routeToQuizWaitingRoom(accessCode: String) async {
         guard let mainNavController else { return }
+        prepareMainLeftBarButtonForPushTransition()
         logQuizFlow("routeToQuizWaitingRoom called from Main. accessCode=\(accessCode)")
 
         let connectedPayload = await services.quizParticipationService.currentConnectedPayload()
@@ -317,6 +337,7 @@ extension MainCoordinator: MainRouting {
 
     func routeToQuizParticipantsOverviewFromMain(initialData: QuizParticipantsOverviewModels.InitialData) {
         guard let mainNavController else { return }
+        prepareMainLeftBarButtonForPushTransition()
         pushQuizParticipantsOverviewScreen(on: mainNavController, initialData: initialData)
     }
 
@@ -576,6 +597,21 @@ protocol ProfileRouting: ErrorMessageDisplaying {
 }
 
 @MainActor
-protocol QuizParticipantsOverviewRouting: ErrorMessageDisplaying {}
+protocol QuizParticipantsOverviewRouting: ErrorMessageDisplaying {
+    func routeToQuizParticipantReview(initialData: QuizParticipantReviewModels.InitialData)
+}
 
-extension MainCoordinator: QuizParticipantsOverviewRouting {}
+extension MainCoordinator: QuizParticipantsOverviewRouting {
+    func routeToQuizParticipantReview(initialData: QuizParticipantReviewModels.InitialData) {
+        guard let navigationController = topMostViewController()?.navigationController else {
+            return
+        }
+
+        pushQuizParticipantReviewScreen(on: navigationController, initialData: initialData)
+    }
+}
+
+@MainActor
+protocol QuizParticipantReviewRouting: ErrorMessageDisplaying {}
+
+extension MainCoordinator: QuizParticipantReviewRouting {}

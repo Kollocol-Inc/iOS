@@ -13,6 +13,7 @@ struct UserAnswerDTO: Decodable {
     let questionId: String?
     let score: Int?
     let timeSpentMs: Int?
+    let isReviewed: Bool?
 
     private enum CodingKeys: String, CodingKey {
         case answer
@@ -20,6 +21,7 @@ struct UserAnswerDTO: Decodable {
         case questionId = "question_id"
         case score
         case timeSpentMs = "time_spent_ms"
+        case isReviewed = "is_reviewed"
     }
 }
 
@@ -29,6 +31,7 @@ extension UserAnswerDTO {
         return QuizParticipantAnswer(
             answer: self.answer,
             isCorrect: self.isCorrect,
+            isReviewed: self.isReviewed,
             questionId: self.questionId,
             score: self.score,
             timeSpentMs: self.timeSpentMs
@@ -52,6 +55,7 @@ extension UserAnswerDTO {
         }
 
         isCorrect = try container.decodeIfPresent(Bool.self, forKey: .isCorrect)
+        isReviewed = try container.decodeIfPresent(Bool.self, forKey: .isReviewed)
         questionId = try container.decodeIfPresent(String.self, forKey: .questionId)
         score = try container.decodeIfPresent(Int.self, forKey: .score)
         timeSpentMs = try container.decodeIfPresent(Int.self, forKey: .timeSpentMs)

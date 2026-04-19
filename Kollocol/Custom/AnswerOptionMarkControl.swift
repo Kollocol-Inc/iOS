@@ -73,8 +73,10 @@ final class AnswerOptionMarkControl: UIControl {
         static let regularMultipleCornerRadius: CGFloat = 4
 
         static let borderWidth: CGFloat = 1.5
-        static let compactSymbolPointSize: CGFloat = 8
-        static let regularSymbolPointSize: CGFloat = 9
+        static let compactSymbolPointSize: CGFloat = 11
+        static let regularSymbolPointSize: CGFloat = 14
+        static let compactMultipleSymbolSide: CGFloat = 11
+        static let regularMultipleSymbolSide: CGFloat = 14
 
         static let loadingStripeWidth: CGFloat = 4
         static let loadingStripeSpacing: CGFloat = 4
@@ -246,7 +248,13 @@ final class AnswerOptionMarkControl: UIControl {
             height: innerSide
         )
 
-        symbolImageView.frame = bounds
+        let symbolSide = multipleSymbolSide(for: configuration.size)
+        symbolImageView.frame = CGRect(
+            x: boundsCenterX - symbolSide / 2,
+            y: boundsCenterY - symbolSide / 2,
+            width: symbolSide,
+            height: symbolSide
+        )
     }
 
     private func sideLength(for size: Size) -> CGFloat {
@@ -278,6 +286,15 @@ final class AnswerOptionMarkControl: UIControl {
             case .regular:
                 return UIConstants.regularMultipleCornerRadius
             }
+        }
+    }
+
+    private func multipleSymbolSide(for size: Size) -> CGFloat {
+        switch size {
+        case .compact:
+            return UIConstants.compactMultipleSymbolSide
+        case .regular:
+            return UIConstants.regularMultipleSymbolSide
         }
     }
 

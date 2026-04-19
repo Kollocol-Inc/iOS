@@ -18,7 +18,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         field.attributedPlaceholder = NSAttributedString(
             string: "Поиск участников",
             attributes: [
-                .foregroundColor: UIColor.textSecondary,
+                .foregroundColor: UIColor.textPrimary,
                 .font: UIFont.systemFont(ofSize: 15, weight: .medium)
             ]
         )
@@ -103,7 +103,6 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         static let emptyParticipantsMessage = "Нет участников"
         static let emptyFinishedParticipantsMessage = "Нет участников, прошедших квиз"
         static let emptyNotStartedParticipantsMessage = "Нет участников, которые не приступили к прохождению"
-        static let emptySearchParticipantsMessage = "Нет участников с таким именем, фамилией или почтой"
 
         static let passedTitle = "Прошли"
         static let notStartedTitle = "Не приступили"
@@ -178,15 +177,15 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         rebuildRows()
         configureUI()
         configureNavigationBar()
-
-        Task {
-            await interactor.fetchParticipants()
-        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         applyBackButtonAppearance()
+
+        Task {
+            await interactor.fetchParticipants()
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -413,7 +412,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         appendFinishedSectionRows(
             participants: finishedParticipants,
             emptyText: isSearchActive
-                ? UIConstants.emptySearchParticipantsMessage
+                ? UIConstants.emptyParticipantsMessage
                 : UIConstants.emptyFinishedParticipantsMessage,
             into: &result
         )
@@ -421,7 +420,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
             title: UIConstants.notStartedTitle,
             participants: notStartedParticipants,
             emptyText: isSearchActive
-            ? UIConstants.emptySearchParticipantsMessage
+            ? UIConstants.emptyParticipantsMessage
             : UIConstants.emptyNotStartedParticipantsMessage,
             showsChevron: false,
             isDimmed: true,
@@ -474,12 +473,6 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         emptyText: String,
         into rows: inout [QuizParticipantsOverviewModels.Row]
     ) {
-        if participants.isEmpty {
-            rows.append(.header(title: UIConstants.passedTitle))
-            rows.append(.empty(text: emptyText))
-            return
-        }
-
         let reviewedCount = participants.filter { $0.reviewStatus == .reviewed }.count
         rows.append(
             .reviewHeader(
@@ -488,6 +481,12 @@ final class QuizParticipantsOverviewViewController: UIViewController {
                 reviewedCount: reviewedCount
             )
         )
+
+        if participants.isEmpty {
+            rows.append(.empty(text: emptyText))
+            return
+        }
+
         participants.forEach { participant in
             rows.append(
                 .participant(
@@ -757,6 +756,19 @@ extension QuizParticipantsOverviewViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+
+        let row = rows[indexPath.row]
+        guard case let .participant(data) = row, data.showsChevron else {
+            return
+        }
+
+        Task {
+            await interactor.handleParticipantTap(
+                participantId: data.userId,
+                fullName: data.fullName,
+                email: data.email
+            )
+        }
     }
 }
 

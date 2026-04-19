@@ -82,7 +82,7 @@ final class QuizParticipatingOpenAnswerTableViewCell: UITableViewCell {
         answerTextView.pinTop(to: contentView.topAnchor, 0)
         answerTextView.pinLeft(to: contentView.leadingAnchor, 24)
         answerTextView.pinRight(to: contentView.trailingAnchor, 24)
-        answerTextView.pinBottom(to: contentView.bottomAnchor, 20)
+        answerTextView.pinBottom(to: contentView.bottomAnchor, 12)
         answerTextView.setHeight(120)
         answerTextView.delegate = self
     }

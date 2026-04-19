@@ -331,6 +331,7 @@ actor MockQuizServiceImpl: QuizService {
                 QuizParticipantAnswer(
                     answer: "0",
                     isCorrect: true,
+                    isReviewed: true,
                     questionId: "q1",
                     score: 1,
                     timeSpentMs: 5400
@@ -338,6 +339,7 @@ actor MockQuizServiceImpl: QuizService {
                 QuizParticipantAnswer(
                     answer: "Model View Controller",
                     isCorrect: nil,
+                    isReviewed: false,
                     questionId: "q2",
                     score: nil,
                     timeSpentMs: 17000

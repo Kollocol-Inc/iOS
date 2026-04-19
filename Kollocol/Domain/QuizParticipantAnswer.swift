@@ -10,6 +10,7 @@ import Foundation
 struct QuizParticipantAnswer {
     let answer: String?
     let isCorrect: Bool?
+    let isReviewed: Bool?
     let questionId: String?
     let score: Int?
     let timeSpentMs: Int?
