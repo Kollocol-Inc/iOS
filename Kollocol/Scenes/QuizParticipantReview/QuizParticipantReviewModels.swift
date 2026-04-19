@@ -67,6 +67,7 @@ enum QuizParticipantReviewModels {
     struct BottomControlsViewData {
         let isVisible: Bool
         let showsGradeButton: Bool
+        let showsAIReviewButton: Bool
         let canGoPrevious: Bool
         let canGoNext: Bool
     }

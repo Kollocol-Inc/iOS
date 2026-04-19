@@ -35,6 +35,8 @@ final class QuizParticipantReviewQuestionSwitcherTableViewCell: UITableViewCell 
 
     private var items: [QuizParticipantReviewModels.QuestionSwitcherItemViewData] = []
     private var selectedQuestionIndex = 0
+    private var previousSelectedQuestionIndex: Int?
+    private var hasPerformedInitialCentering = false
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -57,8 +59,13 @@ final class QuizParticipantReviewQuestionSwitcherTableViewCell: UITableViewCell 
         items: [QuizParticipantReviewModels.QuestionSwitcherItemViewData],
         selectedQuestionIndex: Int
     ) {
+        let shouldAnimateCentering = hasPerformedInitialCentering
+            && previousSelectedQuestionIndex != selectedQuestionIndex
+
         self.items = items
         self.selectedQuestionIndex = selectedQuestionIndex
+        previousSelectedQuestionIndex = selectedQuestionIndex
+        hasPerformedInitialCentering = true
         collectionView.reloadData()
 
         guard items.indices.contains(selectedQuestionIndex) else {
@@ -68,7 +75,12 @@ final class QuizParticipantReviewQuestionSwitcherTableViewCell: UITableViewCell 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             let indexPath = IndexPath(item: selectedQuestionIndex, section: 0)
-            self.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
+            self.collectionView.layoutIfNeeded()
+            self.collectionView.scrollToItem(
+                at: indexPath,
+                at: .centeredHorizontally,
+                animated: shouldAnimateCentering
+            )
         }
     }
 
@@ -122,7 +134,6 @@ extension QuizParticipantReviewQuestionSwitcherTableViewCell: UICollectionViewDe
 
         let index = indexPath.item
         onQuestionTap?(index)
-        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
     }
 }
 

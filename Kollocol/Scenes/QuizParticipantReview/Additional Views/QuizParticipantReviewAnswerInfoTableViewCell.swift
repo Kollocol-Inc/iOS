@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import SwiftUI
+import Shimmer
 
 final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
     // MARK: - UI Components
@@ -42,6 +44,13 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
         return label
     }()
 
+    private let shimmerContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.isHidden = true
+        return view
+    }()
+
     // MARK: - Constants
     static let reuseIdentifier = "QuizParticipantReviewAnswerInfoTableViewCell"
 
@@ -50,6 +59,7 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
         static let badgeLeadingInset: CGFloat = 18
         static let badgeTopInset: CGFloat = 8
         static let loadingToTextSpacing: CGFloat = 4
+        static let loadingSize: CGFloat = 10
         static let answerTopInset: CGFloat = 8
         static let answerBottomInset: CGFloat = 12
         static let symbolPointSize: CGFloat = 8
@@ -59,6 +69,7 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
     // MARK: - Properties
     private var badgeLeadingConstraint: NSLayoutConstraint?
     private var badgeLeadingToLoaderConstraint: NSLayoutConstraint?
+    private var shimmerHostingController: UIHostingController<AIThinkingShimmerTextView>?
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -77,14 +88,16 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
         loadingIndicator.isHidden = true
         badgeLabel.attributedText = nil
         badgeLabel.text = nil
+        answerLabel.text = nil
+        answerLabel.isHidden = false
+        shimmerContainerView.isHidden = true
+        shimmerHostingController?.rootView = AIThinkingShimmerTextView(text: "")
         badgeLeadingConstraint?.isActive = true
         badgeLeadingToLoaderConstraint?.isActive = false
     }
 
     // MARK: - Methods
     func configure(with viewData: QuizParticipantReviewModels.AnswerInfoViewData) {
-        answerLabel.text = viewData.text
-
         switch viewData.badge {
         case .correctAnswer:
             loadingIndicator.stopAnimating()
@@ -95,6 +108,7 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
                 systemImageName: "checkmark",
                 text: "Верный ответ"
             )
+            showPlainAnswer(text: viewData.text)
 
         case .ai:
             loadingIndicator.stopAnimating()
@@ -105,6 +119,7 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
                 systemImageName: "sparkles",
                 text: "ИИ"
             )
+            showPlainAnswer(text: viewData.text)
 
         case .aiLoading:
             loadingIndicator.isHidden = false
@@ -113,6 +128,7 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
             badgeLeadingToLoaderConstraint?.isActive = true
             badgeLabel.attributedText = nil
             badgeLabel.text = "ИИ"
+            showShimmeringAnswer(text: viewData.text)
         }
     }
 
@@ -129,10 +145,9 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
         containerView.pinRight(to: contentView.trailingAnchor, UIConstants.horizontalInset)
 
         containerView.addSubview(loadingIndicator)
-        loadingIndicator.pinTop(to: containerView.topAnchor, UIConstants.badgeTopInset)
         loadingIndicator.pinLeft(to: containerView.leadingAnchor, UIConstants.badgeLeadingInset)
-        loadingIndicator.setWidth(12)
-        loadingIndicator.setHeight(12)
+        loadingIndicator.setWidth(UIConstants.loadingSize)
+        loadingIndicator.setHeight(UIConstants.loadingSize)
 
         containerView.addSubview(badgeLabel)
         badgeLabel.pinTop(to: containerView.topAnchor, UIConstants.badgeTopInset)
@@ -143,12 +158,49 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
         )
         badgeLeadingToLoaderConstraint?.isActive = false
         badgeLabel.pinRight(to: containerView.trailingAnchor, UIConstants.badgeLeadingInset)
+        loadingIndicator.pinCenterY(to: badgeLabel.centerYAnchor)
 
         containerView.addSubview(answerLabel)
         answerLabel.pinTop(to: badgeLabel.bottomAnchor, UIConstants.answerTopInset)
         answerLabel.pinLeft(to: containerView.leadingAnchor, UIConstants.badgeLeadingInset)
         answerLabel.pinRight(to: containerView.trailingAnchor, UIConstants.badgeLeadingInset)
         answerLabel.pinBottom(to: containerView.bottomAnchor, UIConstants.answerBottomInset)
+
+        containerView.addSubview(shimmerContainerView)
+        shimmerContainerView.pinTop(to: badgeLabel.bottomAnchor, UIConstants.answerTopInset)
+        shimmerContainerView.pinLeft(to: containerView.leadingAnchor, UIConstants.badgeLeadingInset)
+        shimmerContainerView.pinRight(to: containerView.trailingAnchor, UIConstants.badgeLeadingInset)
+        shimmerContainerView.pinBottom(to: containerView.bottomAnchor, UIConstants.answerBottomInset)
+
+        configureShimmerView()
+    }
+
+    private func configureShimmerView() {
+        guard shimmerHostingController == nil else {
+            return
+        }
+
+        let hostingController = UIHostingController(
+            rootView: AIThinkingShimmerTextView(text: "")
+        )
+        hostingController.view.backgroundColor = .clear
+
+        shimmerContainerView.addSubview(hostingController.view)
+        hostingController.view.pin(to: shimmerContainerView)
+
+        shimmerHostingController = hostingController
+    }
+
+    private func showPlainAnswer(text: String) {
+        answerLabel.text = text
+        answerLabel.isHidden = false
+        shimmerContainerView.isHidden = true
+    }
+
+    private func showShimmeringAnswer(text: String) {
+        shimmerHostingController?.rootView = AIThinkingShimmerTextView(text: text)
+        answerLabel.isHidden = true
+        shimmerContainerView.isHidden = false
     }
 
     private func makeBadgeAttributedText(systemImageName: String, text: String) -> NSAttributedString {
@@ -188,5 +240,24 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
         )
         return UIImage(systemName: systemImageName, withConfiguration: configuration)?
             .withTintColor(.textSecondary, renderingMode: .alwaysOriginal)
+    }
+}
+
+private struct AIThinkingShimmerTextView: View {
+    // MARK: - Properties
+    let text: String
+
+    // MARK: - Body
+    var body: some View {
+        Text(text)
+            .font(.system(size: 17, weight: .medium))
+            .foregroundStyle(Color(uiColor: .textSecondary))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .environment(\.layoutDirection, .leftToRight)
+            .shimmering(
+                active: true,
+                animation: .linear(duration: 1.2).repeatForever(autoreverses: false)
+            )
     }
 }

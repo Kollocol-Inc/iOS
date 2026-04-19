@@ -60,6 +60,38 @@ final class QuizParticipantReviewViewController: UIViewController {
         return view
     }()
 
+    private let scoreControlsContainerStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.alignment = .fill
+        stackView.distribution = .fillEqually
+        stackView.spacing = 12
+        return stackView
+    }()
+
+    private let aiReviewButton: UIButton = {
+        let button = UIButton(type: .system)
+        let configuration = UIImage.SymbolConfiguration(
+            font: .systemFont(ofSize: 14, weight: .semibold)
+        )
+        let image = UIImage(systemName: "wand.and.sparkles.inverse", withConfiguration: configuration)?
+            .withTintColor(.buttonSecondary, renderingMode: .alwaysOriginal)
+        button.backgroundColor = .clear
+        button.layer.cornerRadius = 18
+        button.layer.borderWidth = 1.5
+        button.layer.borderColor = UIColor.buttonSecondary.cgColor
+        button.setTitleColor(.buttonSecondary, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
+        button.setImage(image, for: .normal)
+        button.setTitle("ИИ", for: .normal)
+        button.semanticContentAttribute = .forceLeftToRight
+        button.imageView?.contentMode = .scaleAspectFit
+        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 0)
+        button.setHeight(42)
+        return button
+    }()
+
     private let gradeButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = .accentPrimary
@@ -162,6 +194,9 @@ final class QuizParticipantReviewViewController: UIViewController {
 
         static let completionDoneTitle = "Квиз полностью проверен"
         static let completionDoneDescription = "Все вопросы оценены"
+
+        static let aiReviewConfirmationTitle = "Подтверждение"
+        static let aiReviewConfirmationDescription = "Вы уверены, что хотите получить рекомендацию от ИИ?"
     }
 
     // MARK: - Properties
@@ -184,6 +219,7 @@ final class QuizParticipantReviewViewController: UIViewController {
     private var bottomControlsState: QuizParticipantReviewModels.BottomControlsViewData = .init(
         isVisible: false,
         showsGradeButton: false,
+        showsAIReviewButton: false,
         canGoPrevious: false,
         canGoNext: false
     )
@@ -324,7 +360,9 @@ final class QuizParticipantReviewViewController: UIViewController {
         bottomButtonsStackView.pinRight(to: bottomIslandView.trailingAnchor, 12)
         scoreButtonsBottomConstraint = bottomButtonsStackView.pinBottom(to: bottomIslandView.bottomAnchor)
 
-        bottomButtonsStackView.addArrangedSubview(scoreControlView)
+        bottomButtonsStackView.addArrangedSubview(scoreControlsContainerStackView)
+        scoreControlsContainerStackView.addArrangedSubview(scoreControlView)
+        scoreControlsContainerStackView.addArrangedSubview(aiReviewButton)
         bottomButtonsStackView.addArrangedSubview(gradeButton)
         bottomButtonsStackView.addArrangedSubview(navigationButtonsStackView)
         navigationButtonsStackView.addArrangedSubview(previousQuestionButton)
@@ -362,6 +400,7 @@ final class QuizParticipantReviewViewController: UIViewController {
     }
 
     private func configureActions() {
+        aiReviewButton.addTarget(self, action: #selector(handleAIReviewTap), for: .touchUpInside)
         gradeButton.addTarget(self, action: #selector(handleGradeTap), for: .touchUpInside)
         previousQuestionButton.addTarget(self, action: #selector(handlePreviousQuestionTap), for: .touchUpInside)
         nextQuestionButton.addTarget(self, action: #selector(handleNextQuestionTap), for: .touchUpInside)
@@ -424,8 +463,14 @@ final class QuizParticipantReviewViewController: UIViewController {
         bottomIslandView.isHidden = isVisible == false
 
         scoreControlView.isHidden = scoreControlState.isVisible == false
+        aiReviewButton.isHidden = bottomControlsState.showsAIReviewButton == false
+        scoreControlsContainerStackView.isHidden = scoreControlView.isHidden && aiReviewButton.isHidden
+
         gradeButton.isHidden = bottomControlsState.showsGradeButton == false
         navigationButtonsStackView.isHidden = bottomControlsState.showsGradeButton
+
+        aiReviewButton.isEnabled = isVisible && bottomControlsState.showsAIReviewButton
+        aiReviewButton.alpha = aiReviewButton.isEnabled ? 1 : 0.6
 
         gradeButton.isEnabled = isVisible && bottomControlsState.showsGradeButton
         gradeButton.alpha = gradeButton.isEnabled ? 1 : 0.6
@@ -512,6 +557,36 @@ final class QuizParticipantReviewViewController: UIViewController {
     }
 
     // MARK: - Actions
+    @objc
+    private func handleAIReviewTap() {
+        let content = InfoBottomSheetContent(
+            title: UIConstants.aiReviewConfirmationTitle,
+            description: UIConstants.aiReviewConfirmationDescription,
+            buttonsConfiguration: .double(
+                left: InfoBottomSheetAction(
+                    identifier: .cancel,
+                    title: "Отмена",
+                    style: .buttonSecondary
+                ),
+                right: InfoBottomSheetAction(
+                    identifier: .confirm,
+                    title: "ОК",
+                    style: .accentPrimary
+                )
+            )
+        )
+
+        showInfoBottomSheet(content) { [weak self] action in
+            guard action == .confirm else {
+                return
+            }
+
+            Task { [weak self] in
+                await self?.interactor.handleAIReviewTap()
+            }
+        }
+    }
+
     @objc
     private func handleGradeTap() {
         Task {

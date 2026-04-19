@@ -15,6 +15,7 @@ protocol QuizParticipantReviewInteractor: Actor {
     func handleScoreInputCommit(_ text: String?) async
     func handleDecreaseScoreTap() async
     func handleIncreaseScoreTap() async
+    func handleAIReviewTap() async
     func handleGradeTap() async
     func handleCompletionTap() async
 }

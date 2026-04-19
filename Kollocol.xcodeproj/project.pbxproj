@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		E26132252F83105B005B74A0 /* ShimmerView in Frameworks */ = {isa = PBXBuildFile; productRef = E26132242F83105B005B74A0 /* ShimmerView */; };
+		E2B4FE672F9544C400930FC0 /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = E2B4FE662F9544C400930FC0 /* Shimmer */; };
 		E2B6B0262F5309D10025A5B0 /* SkeletonView in Frameworks */ = {isa = PBXBuildFile; productRef = E2B6B0252F5309D10025A5B0 /* SkeletonView */; };
 		E2B6B0292F5309EE0025A5B0 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = E2B6B0282F5309EE0025A5B0 /* Kingfisher */; };
 		E2F0BBA82F3E87360071EDCE /* Mantis in Frameworks */ = {isa = PBXBuildFile; productRef = E2F0BBA72F3E87360071EDCE /* Mantis */; };
@@ -44,6 +45,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E2B6B0292F5309EE0025A5B0 /* Kingfisher in Frameworks */,
+				E2B4FE672F9544C400930FC0 /* Shimmer in Frameworks */,
 				E2B6B0262F5309D10025A5B0 /* SkeletonView in Frameworks */,
 				E2F0BBA82F3E87360071EDCE /* Mantis in Frameworks */,
 				E26132252F83105B005B74A0 /* ShimmerView in Frameworks */,
@@ -93,6 +95,7 @@
 				E2B6B0252F5309D10025A5B0 /* SkeletonView */,
 				E2B6B0282F5309EE0025A5B0 /* Kingfisher */,
 				E26132242F83105B005B74A0 /* ShimmerView */,
+				E2B4FE662F9544C400930FC0 /* Shimmer */,
 			);
 			productName = Kollocol;
 			productReference = AE87EB722F3058390067D95A /* Kollocol.app */;
@@ -127,6 +130,7 @@
 				E2B6B0242F5309D10025A5B0 /* XCRemoteSwiftPackageReference "SkeletonView" */,
 				E2B6B0272F5309EE0025A5B0 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				E26132232F83105B005B74A0 /* XCRemoteSwiftPackageReference "ShimmerView" */,
+				E2B4FE652F9544C400930FC0 /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AE87EB732F3058390067D95A /* Products */;
@@ -374,6 +378,14 @@
 				minimumVersion = 0.5.1;
 			};
 		};
+		E2B4FE652F9544C400930FC0 /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/markiv/SwiftUI-Shimmer.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.1;
+			};
+		};
 		E2B6B0242F5309D10025A5B0 /* XCRemoteSwiftPackageReference "SkeletonView" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Juanpe/SkeletonView";
@@ -405,6 +417,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E26132232F83105B005B74A0 /* XCRemoteSwiftPackageReference "ShimmerView" */;
 			productName = ShimmerView;
+		};
+		E2B4FE662F9544C400930FC0 /* Shimmer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2B4FE652F9544C400930FC0 /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */;
+			productName = Shimmer;
 		};
 		E2B6B0252F5309D10025A5B0 /* SkeletonView */ = {
 			isa = XCSwiftPackageProductDependency;

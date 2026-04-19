@@ -9,6 +9,11 @@ import Foundation
 
 actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
     // MARK: - Properties
+    private enum AIReviewState {
+        case loading
+        case ready(QuizAnswerReviewSuggestion)
+    }
+
     private let presenter: QuizParticipantReviewPresenter
     private let quizService: QuizService
     private let initialData: QuizParticipantReviewModels.InitialData
@@ -17,6 +22,7 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
     private var answersByQuestionId: [String: QuizParticipantAnswer] = [:]
     private var selectedQuestionIndex = 0
     private var scoreDraftByQuestionId: [String: Int] = [:]
+    private var aiReviewStateByQuestionId: [String: AIReviewState] = [:]
 
     // MARK: - Lifecycle
     init(
@@ -39,6 +45,7 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
             self.details = details
             rebuildAnswersIndex(details.answers)
             selectedQuestionIndex = 0
+            aiReviewStateByQuestionId = [:]
             await presentCurrentState()
         } catch {
             await presenter.presentServiceError(QuizServiceError.wrap(error))
@@ -134,6 +141,44 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
         await presentCurrentState()
     }
 
+    func handleAIReviewTap() async {
+        guard let context = selectedOpenQuestionContext() else {
+            return
+        }
+        guard aiReviewStateByQuestionId[context.questionId] == nil else {
+            return
+        }
+
+        let participantId = normalizedString(initialData.participantId)
+        guard participantId.isEmpty == false else {
+            return
+        }
+
+        aiReviewStateByQuestionId[context.questionId] = .loading
+        await presentCurrentState()
+
+        do {
+            let suggestion = try await quizService.reviewParticipantAnswer(
+                instanceId: initialData.instanceId,
+                request: ReviewAnswerRequest(
+                    participantId: participantId,
+                    questionId: context.questionId
+                )
+            )
+            if let suggestedScore = suggestion.suggestedScore {
+                let maxScore = max(0, context.question.maxScore ?? 0)
+                let clampedScore = min(max(0, suggestedScore), maxScore)
+                scoreDraftByQuestionId[context.questionId] = clampedScore
+            }
+            aiReviewStateByQuestionId[context.questionId] = .ready(suggestion)
+            await presentCurrentState()
+        } catch {
+            aiReviewStateByQuestionId[context.questionId] = nil
+            await presentCurrentState()
+            await presenter.presentServiceError(QuizServiceError.wrap(error))
+        }
+    }
+
     func handleGradeTap() async {
         guard let context = selectedOpenQuestionContext() else {
             return
@@ -195,6 +240,7 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
                 bottomControls: .init(
                     isVisible: false,
                     showsGradeButton: false,
+                    showsAIReviewButton: false,
                     canGoPrevious: false,
                     canGoNext: false
                 )
@@ -219,6 +265,7 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
                 bottomControls: .init(
                     isVisible: false,
                     showsGradeButton: false,
+                    showsAIReviewButton: false,
                     canGoPrevious: false,
                     canGoNext: false
                 )
@@ -242,6 +289,7 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
 
         switch selectedQuestion.type {
         case .openEnded:
+            let questionId = normalizedString(selectedQuestion.id)
             rows.append(.openAnswer(text: selectedAnswer?.answer ?? ""))
             if let correctAnswerText = openCorrectAnswerText(selectedQuestion.correctAnswer) {
                 rows.append(
@@ -252,6 +300,9 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
                         )
                     )
                 )
+            }
+            if let aiReviewViewData = makeAIReviewAnswerInfoViewData(questionId: questionId) {
+                rows.append(.answerInfo(aiReviewViewData))
             }
 
         case .singleChoice, .multiChoice:
@@ -273,6 +324,7 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
             bottomControls: makeBottomControlsViewData(
                 question: selectedQuestion,
                 answer: selectedAnswer,
+                questionId: normalizedString(selectedQuestion.id),
                 questionsCount: details.questions.count
             )
         )
@@ -609,9 +661,36 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
         return normalizedText.isEmpty ? nil : normalizedText
     }
 
+    private func makeAIReviewAnswerInfoViewData(
+        questionId: String
+    ) -> QuizParticipantReviewModels.AnswerInfoViewData? {
+        guard let state = aiReviewStateByQuestionId[questionId] else {
+            return nil
+        }
+
+        switch state {
+        case .loading:
+            return .init(badge: .aiLoading, text: "Думаю...")
+
+        case .ready(let suggestion):
+            return .init(
+                badge: .ai,
+                text: aiReviewText(from: suggestion)
+            )
+        }
+    }
+
+    private func aiReviewText(from suggestion: QuizAnswerReviewSuggestion) -> String {
+        let feedback = normalizedString(suggestion.feedback)
+        let normalizedFeedback = feedback.isEmpty ? "Комментарий отсутствует" : feedback
+        let suggestedScore = suggestion.suggestedScore ?? 0
+        return "\(normalizedFeedback)\nРекомендуемый балл — \(suggestedScore)"
+    }
+
     private func makeBottomControlsViewData(
         question: Question,
         answer: QuizParticipantAnswer?,
+        questionId: String,
         questionsCount: Int
     ) -> QuizParticipantReviewModels.BottomControlsViewData {
         let isOpenQuestion = question.type == .openEnded
@@ -622,10 +701,14 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
             }
             return hasScoreChanges(question: question, answer: answer)
         }()
+        let shouldShowAIReviewButton = isOpenQuestion
+            && questionId.isEmpty == false
+            && aiReviewStateByQuestionId[questionId] == nil
 
         return .init(
             isVisible: questionsCount > 0,
             showsGradeButton: shouldShowGradeButton,
+            showsAIReviewButton: shouldShowAIReviewButton,
             canGoPrevious: selectedQuestionIndex > 0,
             canGoNext: selectedQuestionIndex < questionsCount - 1
         )

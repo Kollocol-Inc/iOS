@@ -7,10 +7,26 @@
 
 import UIKit
 
+private final class ExpandedHitAreaButton: UIButton {
+    var extraTouchInset: CGFloat = 16
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        guard isHidden == false,
+              alpha > 0.01,
+              isUserInteractionEnabled,
+              isEnabled else {
+            return false
+        }
+
+        let expandedBounds = bounds.insetBy(dx: -extraTouchInset, dy: -extraTouchInset)
+        return expandedBounds.contains(point)
+    }
+}
+
 final class QuizParticipantReviewScoreControlView: UIView {
     // MARK: - UI Components
-    private let minusButton: UIButton = {
-        let button = UIButton(type: .system)
+    private let minusButton: ExpandedHitAreaButton = {
+        let button = ExpandedHitAreaButton(type: .system)
         let configuration = UIImage.SymbolConfiguration(
             font: .systemFont(ofSize: 16, weight: .regular)
         )
@@ -30,8 +46,8 @@ final class QuizParticipantReviewScoreControlView: UIView {
         return field
     }()
 
-    private let plusButton: UIButton = {
-        let button = UIButton(type: .system)
+    private let plusButton: ExpandedHitAreaButton = {
+        let button = ExpandedHitAreaButton(type: .system)
         let configuration = UIImage.SymbolConfiguration(
             font: .systemFont(ofSize: 16, weight: .regular)
         )
