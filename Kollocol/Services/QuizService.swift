@@ -120,6 +120,14 @@ actor QuizServiceImpl: QuizService {
         }
     }
 
+    func deleteQuizInstance(by instanceId: String) async throws {
+        do {
+            _ = try await api.request(DeleteQuizInstanceEndpoint(instanceId: instanceId))
+        } catch {
+            throw QuizServiceError.wrap(error)
+        }
+    }
+
     func getQuizInstanceParticipants(by instanceId: String) async throws -> [QuizInstanceParticipant] {
         do {
             let response = try await api.request(GetQuizInstanceParticipantsEndpoint(instanceId: instanceId))
@@ -197,6 +205,7 @@ protocol QuizService: Actor {
     @discardableResult
     func createQuizInstance(_ request: CreateInstanceRequest) async throws -> String?
     func getQuizInstance(by instanceId: String) async throws -> QuizInstanceDetails
+    func deleteQuizInstance(by instanceId: String) async throws
     func getQuizInstanceParticipants(by instanceId: String) async throws -> [QuizInstanceParticipant]
     func getParticipantAnswers(instanceId: String, participantId: String) async throws -> QuizParticipantAnswersDetails
     func gradeParticipantAnswer(instanceId: String, request: GradeAnswerRequest) async throws

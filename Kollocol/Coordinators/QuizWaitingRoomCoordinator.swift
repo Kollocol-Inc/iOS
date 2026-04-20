@@ -24,6 +24,7 @@ final class QuizWaitingRoomCoordinator {
 
     private let navigationController: UINavigationController
     private let quizParticipationService: QuizParticipationService
+    private let quizService: QuizService
     private let initialData: QuizWaitingRoomModels.InitialData
     private let startDestination: StartDestination
     private let onFinish: () -> Void
@@ -34,12 +35,14 @@ final class QuizWaitingRoomCoordinator {
     init(
         navigationController: UINavigationController,
         quizParticipationService: QuizParticipationService,
+        quizService: QuizService,
         initialData: QuizWaitingRoomModels.InitialData,
         startDestination: StartDestination = .waitingRoom,
         onFinish: @escaping () -> Void
     ) {
         self.navigationController = navigationController
         self.quizParticipationService = quizParticipationService
+        self.quizService = quizService
         self.initialData = initialData
         self.startDestination = startDestination
         self.onFinish = onFinish
@@ -58,6 +61,7 @@ final class QuizWaitingRoomCoordinator {
             let viewController = QuizWaitingRoomAssembly.build(
                 router: self,
                 quizParticipationService: quizParticipationService,
+                quizService: quizService,
                 initialData: initialData
             )
             viewController.hidesBottomBarWhenPushed = true
@@ -67,7 +71,8 @@ final class QuizWaitingRoomCoordinator {
         case .participating:
             let viewController = QuizParticipatingAssembly.build(
                 router: self,
-                quizParticipationService: quizParticipationService
+                quizParticipationService: quizParticipationService,
+                quizService: quizService
             )
             viewController.hidesBottomBarWhenPushed = true
             navigationController.pushViewController(viewController, animated: true)
@@ -87,6 +92,34 @@ final class QuizWaitingRoomCoordinator {
             navigationController.popToViewController(entryViewController, animated: animated)
         } else {
             navigationController.popToRootViewController(animated: animated)
+        }
+    }
+
+    private func performShowQuizCanceledSheetAndClose(quizTitle: String) {
+        let normalizedQuizTitle = quizTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedQuizTitle = normalizedQuizTitle.isEmpty ? "Квиз" : normalizedQuizTitle
+
+        let showSheet: () -> Void = { [weak self] in
+            guard let self else { return }
+            self.showInfoBottomSheet(
+                title: "Успешно",
+                description: "Квиз \(resolvedQuizTitle) был успешно отменен",
+                buttonTitle: "ОК"
+            )
+            self.onFinish()
+        }
+
+        popToEntryViewController(animated: true)
+
+        if let transitionCoordinator = navigationController.transitionCoordinator {
+            transitionCoordinator.animate(alongsideTransition: nil) { _ in
+                showSheet()
+            }
+            return
+        }
+
+        DispatchQueue.main.async {
+            showSheet()
         }
     }
 }
@@ -119,7 +152,8 @@ extension QuizWaitingRoomCoordinator: QuizWaitingRoomRouting {
         logQuizFlow("routeToQuizParticipating called from waiting room")
         let viewController = QuizParticipatingAssembly.build(
             router: self,
-            quizParticipationService: quizParticipationService
+            quizParticipationService: quizParticipationService,
+            quizService: quizService
         )
         viewController.hidesBottomBarWhenPushed = true
         navigationController.pushViewController(viewController, animated: true)
@@ -181,6 +215,11 @@ extension QuizWaitingRoomCoordinator: QuizWaitingRoomRouting {
             showSheet()
         }
     }
+
+    func showQuizCanceledSheetAndClose(quizTitle: String) {
+        logQuizFlow("showQuizCanceledSheetAndClose called")
+        performShowQuizCanceledSheetAndClose(quizTitle: quizTitle)
+    }
 }
 
 // MARK: - QuizParticipatingRouting
@@ -199,6 +238,32 @@ extension QuizWaitingRoomCoordinator: QuizParticipatingRouting {
             onConfirm: onConfirm
         )
     }
+
+    func showQuizDeletedByCreatorSheetAndClose() {
+        let showSheet: () -> Void = { [weak self] in
+            guard let self else { return }
+            self.showInfoBottomSheet(
+                title: "С прискорбием сообщаем...",
+                description: "Квиз был отменен создателем",
+                buttonTitle: "ОК"
+            )
+            self.onFinish()
+        }
+
+        popToEntryViewController(animated: true)
+
+        if let transitionCoordinator = navigationController.transitionCoordinator {
+            transitionCoordinator.animate(alongsideTransition: nil) { _ in
+                showSheet()
+            }
+            return
+        }
+
+        DispatchQueue.main.async {
+            showSheet()
+        }
+    }
+
 }
 
 @MainActor
@@ -212,6 +277,8 @@ protocol QuizWaitingRoomRouting: ErrorMessageDisplaying {
     )
     func showKickedFromQuizSheetAndClose(quizTitle: String?)
     func showSessionReplacedSheetAndClose()
+    func showQuizDeletedByCreatorSheetAndClose()
+    func showQuizCanceledSheetAndClose(quizTitle: String)
 }
 
 // MARK: - Private Methods

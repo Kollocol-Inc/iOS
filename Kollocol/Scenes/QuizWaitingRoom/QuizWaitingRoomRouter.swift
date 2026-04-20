@@ -67,6 +67,14 @@ final class QuizWaitingRoomRouter: QuizWaitingRoomPresenter, ServiceErrorHandlin
         await router.showSessionReplacedSheetAndClose()
     }
 
+    func presentQuizDeletedByCreator() async {
+        await router.showQuizDeletedByCreatorSheetAndClose()
+    }
+
+    func presentQuizCanceled(quizTitle: String) async {
+        await router.showQuizCanceledSheetAndClose(quizTitle: quizTitle)
+    }
+
     func presentLeaveConfirmation() async {
         await router.showQuizLeaveConfirmation { [weak self] in
             self?.view?.confirmLeaveAfterAlert()

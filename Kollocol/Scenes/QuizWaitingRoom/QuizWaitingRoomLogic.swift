@@ -11,6 +11,8 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
     // MARK: - Properties
     private let presenter: QuizWaitingRoomPresenter
     private let quizParticipationService: QuizParticipationService
+    private let quizService: QuizService
+    private let accessCode: String
 
     private var eventsTask: Task<Void, Never>?
     private var participantsCount = 1
@@ -21,6 +23,8 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
     private var participants: [QuizParticipant] = []
     private var lastServerErrorAt: Date?
     private var hasRoutedToParticipating = false
+    private var hasRequestedFlowClose = false
+    private var isCancelingQuiz = false
 
     private static let logDateFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
@@ -31,10 +35,14 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
     // MARK: - Lifecycle
     init(
         presenter: QuizWaitingRoomPresenter,
-        quizParticipationService: QuizParticipationService
+        quizParticipationService: QuizParticipationService,
+        quizService: QuizService,
+        accessCode: String
     ) {
         self.presenter = presenter
         self.quizParticipationService = quizParticipationService
+        self.quizService = quizService
+        self.accessCode = accessCode
     }
 
     // MARK: - Methods
@@ -82,6 +90,7 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
     func handleLeaveTap() async {
         eventsTask?.cancel()
         eventsTask = nil
+        hasRequestedFlowClose = true
 
         await quizParticipationService.disconnect()
         await presenter.presentCloseFlow()
@@ -95,6 +104,36 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
         do {
             try await quizParticipationService.startQuiz()
         } catch {
+            await presenter.presentServiceError(QuizParticipationServiceError.wrap(error))
+        }
+    }
+
+    func handleCancelQuizTap() async {
+        guard isCreator else {
+            return
+        }
+
+        isCancelingQuiz = true
+        do {
+            guard let instanceId = try await resolveCurrentInstanceID() else {
+                isCancelingQuiz = false
+                await presenter.presentServerError(message: "Не удалось отменить квиз")
+                return
+            }
+
+            try await quizService.deleteQuizInstance(by: instanceId)
+
+            let cachedQuizTitle = await quizParticipationService.currentQuizTitle()
+            let resolvedQuizTitle = normalizedQuizTitle(quizTitle ?? cachedQuizTitle) ?? "Квиз"
+
+            hasRequestedFlowClose = true
+            eventsTask?.cancel()
+            eventsTask = nil
+            await quizParticipationService.disconnect()
+
+            await presenter.presentQuizCanceled(quizTitle: resolvedQuizTitle)
+        } catch {
+            isCancelingQuiz = false
             await presenter.presentServiceError(QuizParticipationServiceError.wrap(error))
         }
     }
@@ -153,6 +192,9 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
             await handle(message)
 
         case .failure(let failure):
+            if hasRequestedFlowClose || isCancelingQuiz {
+                return
+            }
             guard shouldPresentStreamFailure(failure) else {
                 return
             }
@@ -197,9 +239,13 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
             if await handleSessionReplacedIfNeeded(message) {
                 return
             }
+            if await handleQuizDeletedByCreatorIfNeeded(message) {
+                return
+            }
             if isKickedError(message) {
                 let cachedQuizTitle = await quizParticipationService.currentQuizTitle()
                 let resolvedQuizTitle = quizTitle ?? cachedQuizTitle
+                hasRequestedFlowClose = true
                 eventsTask?.cancel()
                 eventsTask = nil
                 await quizParticipationService.disconnect()
@@ -254,6 +300,33 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
         return email.isEmpty ? nil : email
     }
 
+    private func resolveCurrentInstanceID() async throws -> String? {
+        let normalizedAccessCode = await resolveCurrentAccessCode()
+        guard normalizedAccessCode.isEmpty == false else {
+            return nil
+        }
+
+        let instances = try await quizService.getHostingQuizzes(status: nil)
+        return instances
+            .first { instance in
+                let instanceAccessCode = instance.accessCode?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                return instanceAccessCode == normalizedAccessCode
+            }?
+            .id?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func resolveCurrentAccessCode() async -> String {
+        if case .connected(let connectedAccessCode) = await quizParticipationService.currentConnectionState() {
+            let normalizedConnectedAccessCode = connectedAccessCode.trimmingCharacters(in: .whitespacesAndNewlines)
+            if normalizedConnectedAccessCode.isEmpty == false {
+                return normalizedConnectedAccessCode
+            }
+        }
+
+        return accessCode.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private func participantDisplayName(_ participant: QuizParticipant) -> String {
         let fullName = [participant.firstName, participant.lastName]
             .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -283,10 +356,29 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
             return false
         }
 
+        hasRequestedFlowClose = true
         eventsTask?.cancel()
         eventsTask = nil
         await quizParticipationService.disconnect()
         await presenter.presentSessionReplaced()
+        return true
+    }
+
+    private func handleQuizDeletedByCreatorIfNeeded(_ message: String) async -> Bool {
+        guard isQuizDeletedError(message) else {
+            return false
+        }
+
+        lastServerErrorAt = Date()
+        if isCancelingQuiz || hasRequestedFlowClose {
+            return true
+        }
+
+        hasRequestedFlowClose = true
+        eventsTask?.cancel()
+        eventsTask = nil
+        await quizParticipationService.disconnect()
+        await presenter.presentQuizDeletedByCreator()
         return true
     }
 
@@ -295,6 +387,13 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
         return normalizedMessage == "session replaced by another device"
+    }
+
+    private func isQuizDeletedError(_ message: String) -> Bool {
+        let normalizedMessage = message
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        return normalizedMessage.contains("game has been deleted")
     }
 
     private func sortParticipants(_ participants: [QuizParticipant]) -> [QuizParticipant] {

@@ -29,6 +29,10 @@ final class QuizParticipantsOverviewRouter: QuizParticipantsOverviewPresenter, S
         await view?.displayQuizResultsPublished()
     }
 
+    func presentQuizCanceled(quizTitle: String) async {
+        await router.showQuizCanceledSheetAndClose(quizTitle: quizTitle)
+    }
+
     func presentParticipantReview(_ initialData: QuizParticipantReviewModels.InitialData) async {
         await router.routeToQuizParticipantReview(initialData: initialData)
     }

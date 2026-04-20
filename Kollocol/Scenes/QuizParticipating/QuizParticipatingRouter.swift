@@ -45,6 +45,14 @@ final class QuizParticipatingRouter: QuizParticipatingPresenter, ServiceErrorHan
         await router.showSessionReplacedSheetAndClose()
     }
 
+    func presentQuizDeletedByCreator() async {
+        await router.showQuizDeletedByCreatorSheetAndClose()
+    }
+
+    func presentQuizCanceled(quizTitle: String) async {
+        await router.showQuizCanceledSheetAndClose(quizTitle: quizTitle)
+    }
+
     func presentLeaveConfirmation() async {
         await router.showQuizLeaveConfirmation { [weak self] in
             self?.view?.confirmLeaveAfterAlert()
@@ -62,4 +70,6 @@ protocol QuizParticipatingRouting: ErrorMessageDisplaying {
     func showQuizLeaveConfirmation(onConfirm: @escaping @MainActor () -> Void)
     func showKickedFromQuizSheetAndClose(quizTitle: String?)
     func showSessionReplacedSheetAndClose()
+    func showQuizDeletedByCreatorSheetAndClose()
+    func showQuizCanceledSheetAndClose(quizTitle: String)
 }

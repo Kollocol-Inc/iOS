@@ -115,6 +115,11 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         static let publishConfirmDescription = "Вы уверены, что хотите опубликовать результаты? Все участники получат уведомление. Это действие необратимо"
         static let publishConfirmActionTitle = "Опубликовать"
         static let cancelActionTitle = "Отмена"
+
+        static let cancelQuizConfirmationTitle = "Подтверждение"
+        static let cancelQuizConfirmationDescription = "Вы уверены, что хотите отменить квиз %@? Это действие необратимо"
+        static let cancelQuizCloseActionTitle = "Закрыть"
+        static let cancelQuizConfirmActionTitle = "Отменить"
     }
 
     // MARK: - Properties
@@ -282,6 +287,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
 
     private func configureActions() {
         searchTextField.addTarget(self, action: #selector(handleSearchTextChanged), for: .editingChanged)
+        cancelQuizButton.addTarget(self, action: #selector(handleCancelQuizTap), for: .touchUpInside)
     }
 
     private func configureNavigationBar() {
@@ -646,6 +652,43 @@ final class QuizParticipantsOverviewViewController: UIViewController {
     private func handlePullToRefresh() {
         Task {
             await interactor.fetchParticipants()
+        }
+    }
+
+    @objc
+    private func handleCancelQuizTap() {
+        let normalizedTitle = initialData.quizTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedQuizTitle = normalizedTitle.isEmpty ? "Квиз" : normalizedTitle
+        let description = UIConstants.cancelQuizConfirmationDescription.replacingOccurrences(
+            of: "%@",
+            with: resolvedQuizTitle
+        )
+
+        let content = InfoBottomSheetContent(
+            title: UIConstants.cancelQuizConfirmationTitle,
+            description: description,
+            buttonsConfiguration: .double(
+                left: InfoBottomSheetAction(
+                    identifier: .cancel,
+                    title: UIConstants.cancelQuizCloseActionTitle,
+                    style: .buttonSecondary
+                ),
+                right: InfoBottomSheetAction(
+                    identifier: .confirm,
+                    title: UIConstants.cancelQuizConfirmActionTitle,
+                    style: .backgroundRedSecondary
+                )
+            )
+        )
+
+        showInfoBottomSheet(content) { [weak self] action in
+            guard action == .confirm else {
+                return
+            }
+
+            Task { [weak self] in
+                await self?.interactor.cancelQuiz()
+            }
         }
     }
 }

@@ -46,6 +46,15 @@ actor QuizParticipantsOverviewLogic: QuizParticipantsOverviewInteractor {
         }
     }
 
+    func cancelQuiz() async {
+        do {
+            try await quizService.deleteQuizInstance(by: instanceId)
+            await presenter.presentQuizCanceled(quizTitle: quizTitle)
+        } catch {
+            await presenter.presentServiceError(QuizServiceError.wrap(error))
+        }
+    }
+
     func handleParticipantTap(
         participantId: String?,
         fullName: String,

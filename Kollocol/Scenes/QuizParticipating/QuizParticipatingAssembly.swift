@@ -11,12 +11,14 @@ enum QuizParticipatingAssembly {
     @MainActor
     static func build(
         router: QuizParticipatingRouting,
-        quizParticipationService: QuizParticipationService
+        quizParticipationService: QuizParticipationService,
+        quizService: QuizService
     ) -> UIViewController {
         let presenter = QuizParticipatingRouter(router: router)
         let interactor = QuizParticipatingLogic(
             presenter: presenter,
-            quizParticipationService: quizParticipationService
+            quizParticipationService: quizParticipationService,
+            quizService: quizService
         )
         let view = QuizParticipatingViewController(interactor: interactor)
         presenter.view = view

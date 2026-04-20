@@ -117,6 +117,10 @@ final class QuizWaitingRoomViewController: UIViewController {
     // MARK: - Constants
     private enum Constants {
         static let defaultNavigationTitle = "Квиз"
+        static let cancelQuizConfirmationTitle = "Подтверждение"
+        static let cancelQuizConfirmationDescription = "Вы уверены, что хотите отменить квиз %@? Это действие необратимо"
+        static let cancelQuizConfirmActionTitle = "Отменить"
+        static let cancelQuizCloseActionTitle = "Закрыть"
     }
 
     // MARK: - Properties
@@ -220,6 +224,13 @@ final class QuizWaitingRoomViewController: UIViewController {
         }
     }
 
+    @MainActor
+    func confirmCancelQuizAfterSheet() {
+        Task {
+            await interactor.handleCancelQuizTap()
+        }
+    }
+
     // MARK: - Private Methods
     private func configureUI() {
         view.setPrimaryBackground()
@@ -277,6 +288,7 @@ final class QuizWaitingRoomViewController: UIViewController {
 
     private func configureActions() {
         startQuizButton.addTarget(self, action: #selector(handleStartQuizTap), for: .touchUpInside)
+        cancelQuizButton.addTarget(self, action: #selector(handleCancelQuizTap), for: .touchUpInside)
     }
 
     private func configureNavigationBar() {
@@ -371,6 +383,41 @@ final class QuizWaitingRoomViewController: UIViewController {
         }
     }
 
+    @objc
+    private func handleCancelQuizTap() {
+        let quizTitle = navigationTitleLabel.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let resolvedQuizTitle = quizTitle.isEmpty ? Constants.defaultNavigationTitle : quizTitle
+        let description = Constants.cancelQuizConfirmationDescription.replacingOccurrences(
+            of: "%@",
+            with: resolvedQuizTitle
+        )
+
+        let content = InfoBottomSheetContent(
+            title: Constants.cancelQuizConfirmationTitle,
+            description: description,
+            buttonsConfiguration: .double(
+                left: InfoBottomSheetAction(
+                    identifier: .cancel,
+                    title: Constants.cancelQuizCloseActionTitle,
+                    style: .buttonSecondary
+                ),
+                right: InfoBottomSheetAction(
+                    identifier: .confirm,
+                    title: Constants.cancelQuizConfirmActionTitle,
+                    style: .backgroundRedSecondary
+                )
+            )
+        )
+
+        showInfoBottomSheet(content) { [weak self] action in
+            guard action == .confirm else {
+                return
+            }
+
+            self?.confirmCancelQuizAfterSheet()
+        }
+    }
+
     private func handleLeaveTap() {
         Task {
             await interactor.handleLeaveAttempt()
@@ -458,5 +505,12 @@ extension QuizWaitingRoomViewController: UITableViewDelegate {
         case .participant:
             return 54
         }
+    }
+}
+
+// MARK: - InfoBottomSheetPresenting
+extension QuizWaitingRoomViewController: InfoBottomSheetPresenting {
+    var bottomSheetHostViewController: UIViewController? {
+        self
     }
 }

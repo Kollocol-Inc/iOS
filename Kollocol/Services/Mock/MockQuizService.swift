@@ -294,6 +294,10 @@ actor MockQuizServiceImpl: QuizService {
         )
     }
 
+    func deleteQuizInstance(by instanceId: String) async throws {
+
+    }
+
     func getQuizInstanceParticipants(by instanceId: String) async throws -> [QuizInstanceParticipant] {
         return [
             QuizInstanceParticipant(

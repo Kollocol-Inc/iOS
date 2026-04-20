@@ -12,12 +12,15 @@ enum QuizWaitingRoomAssembly {
     static func build(
         router: QuizWaitingRoomRouting,
         quizParticipationService: QuizParticipationService,
+        quizService: QuizService,
         initialData: QuizWaitingRoomModels.InitialData
     ) -> UIViewController {
         let presenter = QuizWaitingRoomRouter(router: router)
         let interactor = QuizWaitingRoomLogic(
             presenter: presenter,
-            quizParticipationService: quizParticipationService
+            quizParticipationService: quizParticipationService,
+            quizService: quizService,
+            accessCode: initialData.accessCode
         )
         let view = QuizWaitingRoomViewController(
             interactor: interactor,

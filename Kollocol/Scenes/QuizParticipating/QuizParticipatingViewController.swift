@@ -134,6 +134,15 @@ final class QuizParticipatingViewController: UIViewController {
         return label
     }()
 
+    // MARK: - Constants
+    private enum UIConstants {
+        static let defaultQuizTitle = "Квиз"
+        static let cancelQuizConfirmationTitle = "Подтверждение"
+        static let cancelQuizConfirmationDescription = "Вы уверены, что хотите отменить квиз %@? Это действие необратимо"
+        static let cancelQuizCloseActionTitle = "Закрыть"
+        static let cancelQuizConfirmActionTitle = "Отменить"
+    }
+
     // MARK: - Properties
     private let interactor: QuizParticipatingInteractor
 
@@ -222,6 +231,7 @@ final class QuizParticipatingViewController: UIViewController {
 
         self.state = state
         currentQuestionIdentity = newQuestionIdentity
+        updateCancelQuizBarButton()
 
         if state.isTimerVisible == false {
             stopTimer()
@@ -374,6 +384,22 @@ final class QuizParticipatingViewController: UIViewController {
         )
 
         navigationItem.hidesBackButton = true
+        updateCancelQuizBarButton()
+    }
+
+    private func updateCancelQuizBarButton() {
+        guard state.isCreator else {
+            navigationItem.rightBarButtonItem = nil
+            return
+        }
+
+        let action = UIAction { [weak self] _ in
+            self?.handleCancelQuizTap()
+        }
+
+        let image = UIImage(systemName: "xmark")?
+            .withTintColor(.backgroundRedSecondary, renderingMode: .alwaysOriginal)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, primaryAction: action)
     }
 
     private func applyBottomButtonState(title: String, isEnabled: Bool) {
@@ -729,6 +755,42 @@ final class QuizParticipatingViewController: UIViewController {
             await interactor.handleLeaveAttempt()
         }
     }
+
+    private func handleCancelQuizTap() {
+        let normalizedTitle = navigationTitleLabel.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let resolvedQuizTitle = normalizedTitle.isEmpty ? UIConstants.defaultQuizTitle : normalizedTitle
+        let description = UIConstants.cancelQuizConfirmationDescription.replacingOccurrences(
+            of: "%@",
+            with: resolvedQuizTitle
+        )
+
+        let content = InfoBottomSheetContent(
+            title: UIConstants.cancelQuizConfirmationTitle,
+            description: description,
+            buttonsConfiguration: .double(
+                left: InfoBottomSheetAction(
+                    identifier: .cancel,
+                    title: UIConstants.cancelQuizCloseActionTitle,
+                    style: .buttonSecondary
+                ),
+                right: InfoBottomSheetAction(
+                    identifier: .confirm,
+                    title: UIConstants.cancelQuizConfirmActionTitle,
+                    style: .backgroundRedSecondary
+                )
+            )
+        )
+
+        showInfoBottomSheet(content) { [weak self] action in
+            guard action == .confirm else {
+                return
+            }
+
+            Task { [weak self] in
+                await self?.interactor.handleCancelQuizTap()
+            }
+        }
+    }
 }
 
 // MARK: - UITableViewDataSource
@@ -925,5 +987,12 @@ extension QuizParticipatingViewController: UITableViewDelegate {
         case .answerOption:
             return 64
         }
+    }
+}
+
+// MARK: - InfoBottomSheetPresenting
+extension QuizParticipatingViewController: InfoBottomSheetPresenting {
+    var bottomSheetHostViewController: UIViewController? {
+        self
     }
 }

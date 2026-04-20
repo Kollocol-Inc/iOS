@@ -10,6 +10,7 @@ import Foundation
 protocol QuizParticipantsOverviewInteractor: Actor {
     func fetchParticipants() async
     func publishQuizResults() async
+    func cancelQuiz() async
     func handleParticipantTap(
         participantId: String?,
         fullName: String,
@@ -20,6 +21,7 @@ protocol QuizParticipantsOverviewInteractor: Actor {
 protocol QuizParticipantsOverviewPresenter {
     func presentParticipants(_ participants: [QuizInstanceParticipant]) async
     func presentPublishQuizResultsSuccess() async
+    func presentQuizCanceled(quizTitle: String) async
     func presentParticipantReview(_ initialData: QuizParticipantReviewModels.InitialData) async
     func presentServiceError(_ error: QuizServiceError) async
 }

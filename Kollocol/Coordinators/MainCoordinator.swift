@@ -235,6 +235,7 @@ final class MainCoordinator {
         let coordinator = QuizWaitingRoomCoordinator(
             navigationController: navigationController,
             quizParticipationService: services.quizParticipationService,
+            quizService: services.quizService,
             initialData: .init(accessCode: accessCode),
             startDestination: startDestination,
             onFinish: { [weak self] in
@@ -599,6 +600,7 @@ protocol ProfileRouting: ErrorMessageDisplaying {
 @MainActor
 protocol QuizParticipantsOverviewRouting: ErrorMessageDisplaying {
     func routeToQuizParticipantReview(initialData: QuizParticipantReviewModels.InitialData)
+    func showQuizCanceledSheetAndClose(quizTitle: String)
 }
 
 extension MainCoordinator: QuizParticipantsOverviewRouting {
@@ -608,6 +610,36 @@ extension MainCoordinator: QuizParticipantsOverviewRouting {
         }
 
         pushQuizParticipantReviewScreen(on: navigationController, initialData: initialData)
+    }
+
+    func showQuizCanceledSheetAndClose(quizTitle: String) {
+        guard let navigationController = topMostViewController()?.navigationController else {
+            return
+        }
+
+        let normalizedQuizTitle = quizTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedQuizTitle = normalizedQuizTitle.isEmpty ? "Квиз" : normalizedQuizTitle
+
+        navigationController.popViewController(animated: true)
+
+        let showSheet: () -> Void = { [weak self] in
+            self?.showInfoBottomSheet(
+                title: "Успешно",
+                description: "Квиз \(resolvedQuizTitle) был успешно отменен",
+                buttonTitle: "ОК"
+            )
+        }
+
+        if let transitionCoordinator = navigationController.transitionCoordinator {
+            transitionCoordinator.animate(alongsideTransition: nil) { _ in
+                showSheet()
+            }
+            return
+        }
+
+        DispatchQueue.main.async {
+            showSheet()
+        }
     }
 }
 

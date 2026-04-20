@@ -11,6 +11,7 @@ protocol QuizParticipatingInteractor: Actor {
     func handleViewDidLoad() async
     func handleLeaveAttempt() async
     func handleLeaveTap() async
+    func handleCancelQuizTap() async
     func handleSubmitTap() async
     func handleOptionTap(_ index: Int) async
     func handleOpenAnswerTextChanged(_ text: String) async
@@ -23,6 +24,8 @@ protocol QuizParticipatingPresenter {
     func presentServerError(message: String) async
     func presentKickedFromQuiz(quizTitle: String?) async
     func presentSessionReplaced() async
+    func presentQuizDeletedByCreator() async
+    func presentQuizCanceled(quizTitle: String) async
     func presentLeaveConfirmation() async
     func presentCloseFlow() async
 }
