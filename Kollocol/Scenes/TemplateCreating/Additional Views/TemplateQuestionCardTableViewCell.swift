@@ -327,7 +327,7 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 8, weight: .regular)
         label.textColor = .accentPrimary
-        label.text = "ИИ"
+        label.text = "ai".localized
         return label
     }()
 
@@ -708,10 +708,13 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
         let indexText = String(format: "%02d", index + 1)
         let questionType = questionTypeText(question.type)
         let timeText: String = {
-            guard let timeLimitSec = question.timeLimitSec else { return "0 с." }
-            return "\(timeLimitSec)".asHmsFromSeconds() ?? "0 с."
+            guard let timeLimitSec = question.timeLimitSec else { return "timeZeroSeconds".localized }
+            return "\(timeLimitSec)".asHmsFromSeconds() ?? "timeZeroSeconds".localized
         }()
-        let scoreText = "\(question.maxScore ?? 0) б."
+        let scoreText = String(
+            format: "questionScoreShortFormat".localized,
+            question.maxScore ?? 0
+        )
 
         return "\(indexText) • \(questionType) • \(timeText) • \(scoreText)"
     }
@@ -719,13 +722,13 @@ final class TemplateQuestionCardTableViewCell: UITableViewCell {
     private func questionTypeText(_ type: QuestionType?) -> String {
         switch type {
         case .multiChoice:
-            return "MULTI"
+            return "questionTypeMultiUppercase".localized
         case .singleChoice:
-            return "SINGLE"
+            return "questionTypeSingleUppercase".localized
         case .openEnded:
-            return "OPEN ENDED"
+            return "questionTypeOpenEndedUppercase".localized
         case nil:
-            return "OPEN ENDED"
+            return "questionTypeOpenEndedUppercase".localized
         }
     }
 

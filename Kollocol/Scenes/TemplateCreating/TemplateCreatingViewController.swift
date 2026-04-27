@@ -37,19 +37,19 @@ final class TemplateCreatingViewController: UIViewController {
 
     // MARK: - Constants
     private enum UIConstants {
-        static let createTitle = "Создание шаблона"
-        static let editTitle = "Изменение шаблона"
-        static let validationErrorTitle = "Ошибка"
-        static let titleRequiredMessage = "Укажите название шаблона"
-        static let questionsRequiredMessage = "Недостаточно вопросов"
-        static let noSearchResultsMessage = "Нет вопросов, содержащих такой текст"
-        static let deleteTemplateAlertTitle = "Удаление шаблона"
-        static let deleteTemplateAlertMessage = "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
-        static let editUnsavedChangesAlertMessage = "Вы уверены, что хотите вернуться назад? Все изменения будут утеряны безвозвратно"
-        static let createUnsavedChangesAlertMessage = "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно"
-        static let aiGenerationInProgressAlertMessage = "Вы уверены, что хотите выйти? Генерация вопросов в процессе"
-        static let aiCompletionValidationTitle = "С прискорбием сообщаем..."
-        static let aiCompletionValidationDescription = "Для дополнения с ИИ необходимо указать название квиза или добавить хотя бы один вопрос"
+        static let createTitle = "templateCreationTitle".localized
+        static let editTitle = "templateEditingTitle".localized
+        static let validationErrorTitle = "errorTitle".localized
+        static let titleRequiredMessage = "specifyTemplateTitle".localized
+        static let questionsRequiredMessage = "insufficientQuestions".localized
+        static let noSearchResultsMessage = "noQuestionsContainingText".localized
+        static let deleteTemplateAlertTitle = "deleteTemplateTitle".localized
+        static let deleteTemplateAlertMessage = "confirmDeleteTemplateFormat".localized
+        static let editUnsavedChangesAlertMessage = "confirmBackUnsavedChanges".localized
+        static let createUnsavedChangesAlertMessage = "confirmExitUnsavedChanges".localized
+        static let aiGenerationInProgressAlertMessage = "confirmExitQuestionsGenerationInProgress".localized
+        static let aiCompletionValidationTitle = "withRegretTitle".localized
+        static let aiCompletionValidationDescription = "aiCompletionValidationDescription".localized
     }
 
     private enum AIQuestionsGenerationConstants {
@@ -207,7 +207,7 @@ final class TemplateCreatingViewController: UIViewController {
         if let nameInputCell {
             nameInputCell.configure(
                 title: titleText,
-                placeholder: "Введите название",
+                placeholder: "enterTitlePlaceholder".localized,
                 isLoading: isLoading
             )
         }
@@ -413,7 +413,7 @@ final class TemplateCreatingViewController: UIViewController {
             guard let templateId = editingTemplateId else {
                 showAlert(
                     title: UIConstants.validationErrorTitle,
-                    message: "Не удалось определить шаблон для обновления"
+                    message: "failedResolveTemplateForUpdate".localized
                 )
                 return
             }
@@ -449,10 +449,10 @@ final class TemplateCreatingViewController: UIViewController {
             : UIConstants.createUnsavedChangesAlertMessage
 
         showConfirmationAlert(
-            title: "Внимание",
+            title: "attentionTitle".localized,
             message: message,
-            cancelTitle: "Отмена",
-            confirmTitle: "Выйти",
+            cancelTitle: "cancel".localized,
+            confirmTitle: "exit".localized,
             confirmStyle: .destructive
         ) { [weak self] in
             self?.navigationController?.popViewController(animated: true)
@@ -463,14 +463,14 @@ final class TemplateCreatingViewController: UIViewController {
         guard let templateId = editingTemplateId else { return }
 
         let templateTitle = Self.normalizedTitle(sourceTemplate?.title)
-        let displayTitle = templateTitle.isEmpty ? "без названия" : "«\(templateTitle)»"
+        let displayTitle = templateTitle.isEmpty ? "untitled".localized : "«\(templateTitle)»"
         let message = String(format: UIConstants.deleteTemplateAlertMessage, displayTitle)
 
         showConfirmationAlert(
             title: UIConstants.deleteTemplateAlertTitle,
             message: message,
-            cancelTitle: "Отмена",
-            confirmTitle: "Удалить",
+            cancelTitle: "cancel".localized,
+            confirmTitle: "delete".localized,
             confirmStyle: .destructive
         ) { [weak self] in
             guard let self else { return }
@@ -506,9 +506,9 @@ final class TemplateCreatingViewController: UIViewController {
         let shouldShowSearchEmptyState = hasQuestions && isSearchFilterActive && visibleItems.isEmpty
 
         var newRows: [TemplateCreatingModels.Row] = [
-            .header("Название"),
+            .header("title".localized),
             .nameInput,
-            .header("Параметры"),
+            .header("parameters".localized),
             .settings
         ]
 
@@ -622,7 +622,7 @@ final class TemplateCreatingViewController: UIViewController {
 
     private func totalTimeText() -> String {
         let seconds = totalTimeInSeconds()
-        return "\(seconds)".asHmsFromSeconds() ?? "0 с."
+        return "\(seconds)".asHmsFromSeconds() ?? "timeZeroSeconds".localized
     }
 
     private func handleAddQuestionTap() {
@@ -675,10 +675,10 @@ final class TemplateCreatingViewController: UIViewController {
         guard questions.indices.contains(sourceIndex) else { return }
 
         showConfirmationAlert(
-            title: "Удаление вопроса",
-            message: "Вы уверены, что хотите удалить вопрос?",
-            cancelTitle: "Отмена",
-            confirmTitle: "Удалить",
+            title: "deleteQuestionTitle".localized,
+            message: "confirmDeleteQuestion".localized,
+            cancelTitle: "cancel".localized,
+            confirmTitle: "delete".localized,
             confirmStyle: .destructive
         ) { [weak self] in
             guard let self else { return }
@@ -786,23 +786,23 @@ final class TemplateCreatingViewController: UIViewController {
             showInfoBottomSheet(
                 title: UIConstants.aiCompletionValidationTitle,
                 description: UIConstants.aiCompletionValidationDescription,
-                buttonTitle: "ОК"
+                buttonTitle: "ok".localized
             )
             return
         }
 
         let content = InfoBottomSheetContent(
-            title: "Подтверждение",
-            description: "Вы уверены, что хотите дополнить шаблон сгенерированными вопросами?",
+            title: "confirmationTitle".localized,
+            description: "confirmAppendGeneratedQuestions".localized,
             buttonsConfiguration: .double(
                 left: InfoBottomSheetAction(
                     identifier: .cancel,
-                    title: "Отмена",
+                    title: "cancel".localized,
                     style: .buttonSecondary
                 ),
                 right: InfoBottomSheetAction(
                     identifier: .confirm,
-                    title: "Подтвердить",
+                    title: "confirm".localized,
                     style: .accentPrimary
                 )
             )
@@ -909,10 +909,10 @@ final class TemplateCreatingViewController: UIViewController {
         onConfirm: @escaping () -> Void
     ) {
         showConfirmationAlert(
-            title: "Внимание",
+            title: "attentionTitle".localized,
             message: UIConstants.aiGenerationInProgressAlertMessage,
-            cancelTitle: "Отмена",
-            confirmTitle: "Выйти",
+            cancelTitle: "cancel".localized,
+            confirmTitle: "exit".localized,
             confirmStyle: .destructive
         ) {
             onConfirm()
@@ -1276,7 +1276,7 @@ extension TemplateCreatingViewController: UITableViewDataSource {
 
             cell.configure(
                 title: titleText,
-                placeholder: "Введите название",
+                placeholder: "enterTitlePlaceholder".localized,
                 isLoading: isLoading
             )
             cell.onTextChanged = { [weak self] newText in
@@ -1493,14 +1493,14 @@ extension TemplateCreatingViewController: UITableViewDelegate {
             guard let self else { return UIMenu() }
 
             let editAction = UIAction(
-                title: "Изменить",
+                title: "edit".localized,
                 image: UIImage(systemName: "pencil")
             ) { _ in
                 self.handleEditQuestionTap(sourceIndex: sourceIndex)
             }
 
             let deleteAction = UIAction(
-                title: "Удалить",
+                title: "delete".localized,
                 image: UIImage(systemName: "trash.fill"),
                 attributes: .destructive
             ) { _ in

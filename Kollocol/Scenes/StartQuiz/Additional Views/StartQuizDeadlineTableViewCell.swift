@@ -13,7 +13,7 @@ final class StartQuizDeadlineTableViewCell: UITableViewCell {
         let label = UILabel()
         label.textColor = .textSecondary
         label.font = UIFont.systemFont(ofSize: 17, weight: .medium)
-        label.text = "Дедлайн"
+        label.text = "deadline".localized
         return label
     }()
 

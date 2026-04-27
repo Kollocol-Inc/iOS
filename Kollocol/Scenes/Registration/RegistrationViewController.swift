@@ -25,7 +25,7 @@ final class RegistrationViewController: UIViewController {
     
     private let registrationLabel: UILabel = {
         let label = UILabel()
-        label.text = "Регистрация"
+        label.text = "registrationTitle".localized
         label.textColor = .textPrimary
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
@@ -42,7 +42,7 @@ final class RegistrationViewController: UIViewController {
     private let nameTextField: StripedLoadingTextField = {
         let field = StripedLoadingTextField()
         let attributedPlaceholder = NSAttributedString(
-            string: "Имя",
+            string: "firstNamePlaceholder".localized,
             attributes: [
                 .foregroundColor: UIColor.textSecondary,
                 .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
@@ -64,7 +64,7 @@ final class RegistrationViewController: UIViewController {
     private let surnameTextField: StripedLoadingTextField = {
         let field = StripedLoadingTextField()
         let attributedPlaceholder = NSAttributedString(
-            string: "Фамилия",
+            string: "lastNamePlaceholder".localized,
             attributes: [
                 .foregroundColor: UIColor.textSecondary,
                 .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
@@ -116,10 +116,10 @@ final class RegistrationViewController: UIViewController {
     // MARK: - Constants
     private let baseButtonBottomInset: Double = 30
     private let keyboardSpacing: Double = 12
-    private let cancelRegistrationSheetTitle = "Внимание"
-    private let cancelRegistrationSheetDescription = "При отмене регистрации вы будете направлены на начальный экран"
-    private let cameraAccessDeniedSheetTitle = "Внимание"
-    private let cameraAccessDeniedSheetDescription = "У приложения нет доступа к камере. Перейдите в настройки и выдайте соответствующие разрешения, после чего вернитесь обратно и попробуйте снова"
+    private let cancelRegistrationSheetTitle = "attentionTitle".localized
+    private let cancelRegistrationSheetDescription = "cancelRegistrationDescription".localized
+    private let cameraAccessDeniedSheetTitle = "attentionTitle".localized
+    private let cameraAccessDeniedSheetDescription = "cameraAccessDeniedDescription".localized
     
     // MARK: - Properties
     private var interactor: RegistrationInteractor
@@ -342,12 +342,12 @@ final class RegistrationViewController: UIViewController {
             buttonsConfiguration: .double(
                 left: InfoBottomSheetAction(
                     identifier: .cancel,
-                    title: "Остаться",
+                    title: "stay".localized,
                     style: .buttonSecondary
                 ),
                 right: InfoBottomSheetAction(
                     identifier: .confirm,
-                    title: "Отменить регистрацию",
+                    title: "cancelRegistration".localized,
                     style: .backgroundRedSecondary
                 )
             )
@@ -365,7 +365,7 @@ final class RegistrationViewController: UIViewController {
         showInfoBottomSheet(
             title: cameraAccessDeniedSheetTitle,
             description: cameraAccessDeniedSheetDescription,
-            buttonTitle: "ОК"
+            buttonTitle: "ok".localized
         )
     }
 
@@ -401,7 +401,7 @@ final class RegistrationViewController: UIViewController {
 private enum Constants {
     enum RegisterButtonTitles {
         static let disabled = NSAttributedString(
-            string: "Укажите имя и фамилию",
+            string: "specifyNameAndSurname".localized,
             attributes: [
                 .foregroundColor: UIColor.textWhite,
                 .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
@@ -409,7 +409,7 @@ private enum Constants {
         )
 
         static let active = NSAttributedString(
-            string: "Зарегистрироваться",
+            string: "register".localized,
             attributes: [
                 .foregroundColor: UIColor.textWhite,
                 .font: UIFont.systemFont(ofSize: 14, weight: .semibold)

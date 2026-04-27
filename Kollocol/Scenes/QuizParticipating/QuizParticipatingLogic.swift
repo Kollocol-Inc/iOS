@@ -10,11 +10,11 @@ import Foundation
 actor QuizParticipatingLogic: QuizParticipatingInteractor {
     // MARK: - Constants
     private enum Constants {
-        static let participantSubmitButtonTitle = "Ответить"
-        static let participantWaitingButtonTitle = "Ожидаем следующего вопроса"
-        static let creatorWaitingButtonTitle = "Ожидаем ответа всех участников"
-        static let creatorNextQuestionButtonTitle = "Следующий вопрос"
-        static let finalExitButtonTitle = "Выйти"
+        static let participantSubmitButtonTitle = "answer".localized
+        static let participantWaitingButtonTitle = "waitingNextQuestion".localized
+        static let creatorWaitingButtonTitle = "waitingAllParticipantsAnswers".localized
+        static let creatorNextQuestionButtonTitle = "nextQuestion".localized
+        static let finalExitButtonTitle = "exit".localized
     }
 
     // MARK: - Properties
@@ -158,14 +158,14 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
         do {
             guard let instanceId = try await resolveCurrentInstanceID() else {
                 isCancelingQuiz = false
-                await presenter.presentServerError(message: "Не удалось отменить квиз")
+                await presenter.presentServerError(message: "failedCancelQuiz".localized)
                 return
             }
 
             try await quizService.deleteQuizInstance(by: instanceId)
 
             let cachedQuizTitle = await quizParticipationService.currentQuizTitle()
-            let resolvedQuizTitle = normalizedQuizTitle(quizTitle ?? cachedQuizTitle) ?? "Квиз"
+            let resolvedQuizTitle = normalizedQuizTitle(quizTitle ?? cachedQuizTitle) ?? "quizDefaultTitle".localized
 
             hasRequestedFlowClose = true
             eventsTask?.cancel()
@@ -174,7 +174,7 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             await presenter.presentQuizCanceled(quizTitle: resolvedQuizTitle)
         } catch {
             isCancelingQuiz = false
-            await presenter.presentServerError(message: "Не удалось отменить квиз")
+            await presenter.presentServerError(message: "failedCancelQuiz".localized)
         }
     }
 

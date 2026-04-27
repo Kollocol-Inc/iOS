@@ -131,9 +131,11 @@ final class ProfileViewController: UIViewController {
         static let emailShimmerHeight: CGFloat = 12
         static let avatarJPEGQuality: CGFloat = 0.8
 
-        static let cameraAccessDeniedSheetTitle = "Внимание"
-        static let cameraAccessDeniedSheetDescription = "У приложения нет доступа к камере. Перейдите в настройки и выдайте соответствующие разрешения, после чего вернитесь обратно и попробуйте снова"
+        static let cameraAccessDeniedSheetTitle = "attentionTitle"
+        static let cameraAccessDeniedSheetDescription = "cameraAccessDeniedDescription"
         static let themeTransitionDuration: TimeInterval = 0.4
+        static let languageTransitionDuration: TimeInterval = 0.25
+        static let settingsRowHeight: CGFloat = 44
     }
 
     // MARK: - Properties
@@ -144,9 +146,10 @@ final class ProfileViewController: UIViewController {
     private var hasAvatar = false
     private var notificationsSettings = ProfileModels.NotificationsSettings.default
     private var selectedThemeOption: ProfileModels.ThemeOption = .system
+    private var selectedLanguageOption: ProfileModels.LanguageOption = .system
 
     private let rows: [ProfileModels.Row] = [
-        .header("Уведомления"),
+        .header("notificationsHeader"),
         .notificationToggle(type: .newQuiz),
         .divider,
         .notificationToggle(type: .quizResults),
@@ -154,8 +157,10 @@ final class ProfileViewController: UIViewController {
         .notificationToggle(type: .groupInvites),
         .divider,
         .notificationDeadline,
-        .header("Настройки"),
-        .theme
+        .header("settingsHeader"),
+        .theme,
+        .divider,
+        .language
     ]
 
     private lazy var profileShimmerViews: [ShimmerView] = [
@@ -183,7 +188,8 @@ final class ProfileViewController: UIViewController {
             async let profileTask: Void = interactor.fetchUserProfile()
             async let notificationsTask: Void = interactor.fetchNotificationsSettings()
             async let themeTask: Void = interactor.fetchThemeOption()
-            _ = await (profileTask, notificationsTask, themeTask)
+            async let languageTask: Void = interactor.fetchLanguageOption()
+            _ = await (profileTask, notificationsTask, themeTask, languageTask)
         }
     }
 
@@ -193,6 +199,11 @@ final class ProfileViewController: UIViewController {
         guard traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else { return }
 
         updateAvatarBorderColor(for: traitCollection)
+
+        if selectedThemeOption == .system {
+            tableView.reloadData()
+        }
+
         guard isProfileShimmerAnimating else { return }
 
         let shimmerStyle = makeProfileShimmerStyle(for: effectiveShimmerTraitCollection)
@@ -232,6 +243,13 @@ final class ProfileViewController: UIViewController {
         tableView.reloadData()
     }
 
+    @MainActor
+    func displayLanguageOption(_ option: ProfileModels.LanguageOption) {
+        guard selectedLanguageOption != option else { return }
+        selectedLanguageOption = option
+        applyLanguage()
+    }
+
     // MARK: - Private Methods
     private func configureUI() {
         view.setPrimaryBackground()
@@ -247,7 +265,7 @@ final class ProfileViewController: UIViewController {
 
     private func configureNavbar() {
         // title
-        var title = AttributedString("Профиль")
+        var title = AttributedString("profileTitle".localized)
         title.foregroundColor = .textSecondary
         title.font = .systemFont(ofSize: 20, weight: .bold)
         navigationItem.attributedTitle = title
@@ -375,21 +393,21 @@ final class ProfileViewController: UIViewController {
 
     private func configureProfileMenu() {
         let editNameAction = UIAction(
-            title: "Изменить имя или фамилию",
+            title: "editNameOrSurname".localized,
             image: UIImage(systemName: "pencil")
         ) { [weak self] _ in
             self?.presentProfileNameUpdateAlert()
         }
 
         let galleryAction = UIAction(
-            title: "Галерея",
+            title: "gallery".localized,
             image: UIImage(systemName: "photo.on.rectangle.angled.fill")
         ) { [weak self] _ in
             self?.presentGalleryPicker()
         }
 
         let cameraAction = UIAction(
-            title: "Сделать фото",
+            title: "takePhoto".localized,
             image: UIImage(systemName: "camera.fill")
         ) { [weak self] _ in
             self?.presentCameraPicker()
@@ -401,7 +419,7 @@ final class ProfileViewController: UIViewController {
         ]
         if hasAvatar {
             let deletePhotoAction = UIAction(
-                title: "Удалить фото",
+                title: "deletePhoto".localized,
                 image: UIImage(systemName: "trash.fill"),
                 attributes: [.destructive]
             ) { [weak self] _ in
@@ -411,7 +429,7 @@ final class ProfileViewController: UIViewController {
         }
 
         let profilePhotoSection = UIMenu(
-            title: "Фото профиля",
+            title: "profilePhoto".localized,
             options: .displayInline,
             children: profilePhotoActions
         )
@@ -427,25 +445,25 @@ final class ProfileViewController: UIViewController {
 
     private func presentProfileNameUpdateAlert() {
         let alert = UIAlertController(
-            title: "Изменить имя или фамилию",
+            title: "editNameOrSurname".localized,
             message: nil,
             preferredStyle: .alert
         )
 
         alert.addTextField { [weak self] textField in
-            textField.placeholder = "Имя"
+            textField.placeholder = "firstNamePlaceholder".localized
             textField.autocapitalizationType = .words
             textField.text = self?.currentFirstName
         }
 
         alert.addTextField { [weak self] textField in
-            textField.placeholder = "Фамилия"
+            textField.placeholder = "lastNamePlaceholder".localized
             textField.autocapitalizationType = .words
             textField.text = self?.currentLastName
         }
 
-        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Обновить", style: .default) { [weak self, weak alert] _ in
+        alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
+        alert.addAction(UIAlertAction(title: "update".localized, style: .default) { [weak self, weak alert] _ in
             guard let self,
                   let textFields = alert?.textFields,
                   textFields.count == 2
@@ -527,9 +545,9 @@ final class ProfileViewController: UIViewController {
 
     private func presentCameraAccessDeniedSheet() {
         showInfoBottomSheet(
-            title: UIConstants.cameraAccessDeniedSheetTitle,
-            description: UIConstants.cameraAccessDeniedSheetDescription,
-            buttonTitle: "ОК"
+            title: UIConstants.cameraAccessDeniedSheetTitle.localized,
+            description: UIConstants.cameraAccessDeniedSheetDescription.localized,
+            buttonTitle: "ok".localized
         )
     }
 
@@ -590,6 +608,15 @@ final class ProfileViewController: UIViewController {
         }
     }
 
+    private func languageOptions() -> [ProfileMenuSettingTableViewCell.Option] {
+        ProfileModels.LanguageOption.allCases.map { option in
+            ProfileMenuSettingTableViewCell.Option(
+                id: option.rawValue,
+                title: option.title
+            )
+        }
+    }
+
     private func applyTheme(_ option: ProfileModels.ThemeOption) {
         UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
@@ -604,6 +631,29 @@ final class ProfileViewController: UIViewController {
                     window.layoutIfNeeded()
                 }
             }
+    }
+
+    private func applyLanguage() {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .forEach { window in
+                UIView.transition(
+                    with: window,
+                    duration: UIConstants.languageTransitionDuration,
+                    options: [.transitionCrossDissolve, .allowAnimatedContent]
+                ) { [weak self] in
+                    guard let self else { return }
+                    self.refreshLocalizedContent()
+                    window.layoutIfNeeded()
+                }
+            }
+    }
+
+    private func refreshLocalizedContent() {
+        configureNavbar()
+        configureProfileMenu()
+        tableView.reloadData()
     }
 
     private func handleNotificationToggleChange(
@@ -652,8 +702,44 @@ final class ProfileViewController: UIViewController {
         }
     }
 
+    private func handleLanguageChange(_ option: ProfileModels.LanguageOption) {
+        guard selectedLanguageOption != option else { return }
+
+        Task { [weak self] in
+            await self?.interactor.updateLanguageOption(option)
+        }
+    }
+
     private var effectiveShimmerTraitCollection: UITraitCollection {
         view.window?.traitCollection ?? traitCollection
+    }
+
+    private var resolvedSystemInterfaceStyle: UIUserInterfaceStyle {
+        view.window?.traitCollection.userInterfaceStyle ?? traitCollection.userInterfaceStyle
+    }
+
+    private func themeLeadingIconSystemName() -> String {
+        switch selectedThemeOption {
+        case .light:
+            return "sun.max.fill"
+        case .dark:
+            return "moon.fill"
+        case .system:
+            return resolvedSystemInterfaceStyle == .dark ? "moon.fill" : "sun.max.fill"
+        }
+    }
+
+    private func notificationLeadingIconSystemName(
+        for type: ProfileModels.NotificationToggleType
+    ) -> String {
+        switch type {
+        case .newQuiz:
+            return "gamecontroller.fill"
+        case .quizResults:
+            return "list.bullet.clipboard.fill"
+        case .groupInvites:
+            return "person.2.badge.plus.fill"
+        }
     }
 
     private func startProfileLoadingShimmer() {
@@ -763,7 +849,7 @@ extension ProfileViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
 
-            cell.configure(text: text)
+            cell.configure(text: text.localized)
             return cell
 
         case .notificationToggle(let type):
@@ -784,7 +870,11 @@ extension ProfileViewController: UITableViewDataSource {
                 isOn = notificationsSettings.groupInvites
             }
 
-            cell.configure(title: type.title, isOn: isOn)
+            cell.configure(
+                title: type.title,
+                leadingIconSystemName: notificationLeadingIconSystemName(for: type),
+                isOn: isOn
+            )
             cell.onToggleChanged = { [weak self] isEnabled in
                 self?.handleNotificationToggleChange(type, isEnabled: isEnabled)
             }
@@ -809,9 +899,10 @@ extension ProfileViewController: UITableViewDataSource {
 
             let selected = notificationsSettings.deadlineReminder
             cell.configure(
-                title: "Дедлайн",
+                title: "deadline".localized,
                 options: deadlineOptions(),
-                selectedOptionID: selected.rawValue
+                selectedOptionID: selected.rawValue,
+                leadingIconSystemName: "flame.fill"
             )
             cell.onOptionSelected = { [weak self] selectedID in
                 guard let option = ProfileModels.DeadlineReminderOption(rawValue: selectedID) else { return }
@@ -829,13 +920,35 @@ extension ProfileViewController: UITableViewDataSource {
 
             let selected = selectedThemeOption
             cell.configure(
-                title: "Тема",
+                title: "theme".localized,
                 options: themeOptions(),
-                selectedOptionID: selected.rawValue
+                selectedOptionID: selected.rawValue,
+                leadingIconSystemName: themeLeadingIconSystemName()
             )
             cell.onOptionSelected = { [weak self] selectedID in
                 guard let option = ProfileModels.ThemeOption(rawValue: selectedID) else { return }
                 self?.handleThemeChange(option)
+            }
+            return cell
+
+        case .language:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: ProfileMenuSettingTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? ProfileMenuSettingTableViewCell else {
+                return UITableViewCell()
+            }
+
+            let selected = selectedLanguageOption
+            cell.configure(
+                title: "language".localized,
+                options: languageOptions(),
+                selectedOptionID: selected.rawValue,
+                leadingIconSystemName: "globe"
+            )
+            cell.onOptionSelected = { [weak self] selectedID in
+                guard let option = ProfileModels.LanguageOption(rawValue: selectedID) else { return }
+                self?.handleLanguageChange(option)
             }
             return cell
         }
@@ -848,6 +961,8 @@ extension ProfileViewController: UITableViewDelegate {
         switch rows[indexPath.row] {
         case .divider:
             return 1
+        case .notificationToggle, .notificationDeadline, .theme, .language:
+            return UIConstants.settingsRowHeight
         default:
             return UITableView.automaticDimension
         }
@@ -857,6 +972,8 @@ extension ProfileViewController: UITableViewDelegate {
         switch rows[indexPath.row] {
         case .divider:
             return 1
+        case .notificationToggle, .notificationDeadline, .theme, .language:
+            return UIConstants.settingsRowHeight
         default:
             return 44
         }

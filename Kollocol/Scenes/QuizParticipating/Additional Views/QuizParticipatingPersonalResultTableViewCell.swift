@@ -93,7 +93,7 @@ final class QuizParticipatingPersonalResultTableViewCell: UITableViewCell {
 
     private func makePlaceAttributedText(place: Int) -> NSAttributedString {
         let attributedText = NSMutableAttributedString(
-            string: "Ваше место: ",
+            string: "yourPlacePrefix".localized,
             attributes: [
                 .font: UIFont.systemFont(ofSize: 17, weight: .medium),
                 .foregroundColor: UIColor.textPrimary

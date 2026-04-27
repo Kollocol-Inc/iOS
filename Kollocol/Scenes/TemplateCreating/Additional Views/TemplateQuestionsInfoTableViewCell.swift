@@ -229,7 +229,11 @@ final class TemplateQuestionsInfoTableViewCell: UITableViewCell {
         result.append(NSAttributedString(string: "• ", attributes: textAttributes))
         result.append(
             NSAttributedString(
-                string: "\(totalScore) б. • \(totalTimeText) ",
+                string: String(
+                    format: "templateQuestionsSummaryScoreTimeFormat".localized,
+                    totalScore,
+                    totalTimeText
+                ),
                 attributes: textAttributes
             )
         )

@@ -41,15 +41,15 @@ final class RegistrationRouter: RegistrationPresenter, ServiceErrorHandling {
         switch useCase {
         case .registrationSubmit:
             if userServiceError == .badRequest {
-                return "Ошибка при регистрации. Попробуйте еще раз или вернитесь позже"
+                return "registrationFailedError".localized
             }
             return nil
 
         case .avatarUpload:
             if userServiceError == .badRequest {
-                return "Выбранная фотография слишком большая, выберите другую"
+                return "avatarTooLargeError".localized
             }
-            return "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
+            return "avatarUploadFailedError".localized
 
         default:
             return nil

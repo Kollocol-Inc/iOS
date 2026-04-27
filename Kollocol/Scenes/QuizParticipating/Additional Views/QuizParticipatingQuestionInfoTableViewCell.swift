@@ -53,7 +53,10 @@ final class QuizParticipatingQuestionInfoTableViewCell: UITableViewCell {
             tintColor: .textWhite
         )
 
-        scoreLabel.text = "\(viewData.maxScore) б."
+        scoreLabel.text = String(
+            format: "questionScoreShortFormat".localized,
+            viewData.maxScore
+        )
 
         let isCritical = viewData.remainingSeconds < 10
         let timerTextColor: UIColor = isCritical ? .backgroundRedSecondary : .textWhite

@@ -29,7 +29,7 @@ final class VerifyCodeViewController: UIViewController {
     
     private lazy var enterCodeLabel: UILabel = {
         let label = UILabel()
-        label.text = "Введите код"
+        label.text = "verifyCodeEnterTitle".localized
         label.textColor = .textPrimary
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
@@ -159,7 +159,7 @@ final class VerifyCodeViewController: UIViewController {
     
     private func configureDescLabel() {
         let codeSentText = NSAttributedString(
-            string: "Ваш код был отправлен на\n",
+            string: "verifyCodeSentToPrefix".localized,
             attributes: [
                 .foregroundColor: UIColor.textSecondary,
                 .font: UIConstants.descFont
@@ -410,7 +410,10 @@ final class VerifyCodeViewController: UIViewController {
 
     private func makeResendCountdownText(seconds: Int) -> NSAttributedString {
         let secondsText = "\(seconds)"
-        let fullText = "Отправить снова \(secondsText) с"
+        let fullText = String(
+            format: "verifyCodeResendCountdownFormat".localized,
+            secondsText
+        )
         let attributedText = NSMutableAttributedString(
             string: fullText,
             attributes: [
@@ -432,7 +435,7 @@ final class VerifyCodeViewController: UIViewController {
 
     private func makeResendAvailableText() -> NSAttributedString {
         NSAttributedString(
-            string: "Отправить снова",
+            string: "sendAgain".localized,
             attributes: [
                 .foregroundColor: UIColor.accentPrimary,
                 .font: UIConstants.resendFont,

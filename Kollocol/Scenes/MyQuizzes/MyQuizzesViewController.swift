@@ -10,7 +10,7 @@ import UIKit
 final class MyQuizzesViewController: UIViewController {
     // MARK: - UI Components
     private let modeSegmentedControl: UISegmentedControl = {
-        let control = UISegmentedControl(items: ["Мои квизы", "Шаблоны"])
+        let control = UISegmentedControl(items: ["myQuizzesSegmentMyQuizzes".localized, "myQuizzesSegmentTemplates".localized])
         control.selectedSegmentIndex = 0
         control.backgroundColor = .backgroundSecondary
         control.layer.cornerRadius = 12
@@ -117,7 +117,7 @@ final class MyQuizzesViewController: UIViewController {
 
     private let searchPlaceholderPrefixLabel: UILabel = {
         let label = UILabel()
-        label.text = "Поиск"
+        label.text = "search".localized
         label.textColor = .textSecondary
         label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         return label
@@ -151,7 +151,7 @@ final class MyQuizzesViewController: UIViewController {
         button.layer.cornerRadius = 18
         button.setAttributedTitle(
             NSAttributedString(
-                string: "Создать",
+                string: "create".localized,
                 attributes: [
                     .foregroundColor: UIColor.textWhite,
                     .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
@@ -195,8 +195,8 @@ final class MyQuizzesViewController: UIViewController {
         static let createButtonHeight: CGFloat = 44
         static let searchPlaceholderAnimationDuration: TimeInterval = 0.5
         static let searchPlaceholderSuffixSpacing: CGFloat = 4
-        static let deleteTemplateAlertTitle = "Удаление шаблона"
-        static let deleteTemplateAlertMessage = "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
+        static let deleteTemplateAlertTitle = "myQuizzesDeleteTemplateTitle"
+        static let deleteTemplateAlertMessage = "myQuizzesDeleteTemplateMessage"
     }
 
     // MARK: - Properties
@@ -211,7 +211,7 @@ final class MyQuizzesViewController: UIViewController {
 
     private var contentContainerTopConstraint: NSLayoutConstraint?
     private var searchPlaceholderSuffixWidthConstraint: NSLayoutConstraint?
-    private var currentSearchPlaceholderSuffix = "квизов"
+    private var currentSearchPlaceholderSuffix = "searchSuffixQuizzes".localized
     private var isSearchPlaceholderAnimating = false
 
     // MARK: - Lifecycle
@@ -234,6 +234,7 @@ final class MyQuizzesViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
+        refreshLocalizedContent()
 
         if shouldRefreshTemplatesOnAppear {
             shouldRefreshTemplatesOnAppear = false
@@ -381,16 +382,36 @@ final class MyQuizzesViewController: UIViewController {
         searchTextField.addTarget(self, action: #selector(handleSearchTextChanged), for: .editingChanged)
     }
 
+    private func refreshLocalizedContent() {
+        modeSegmentedControl.setTitle("myQuizzesSegmentMyQuizzes".localized, forSegmentAt: 0)
+        modeSegmentedControl.setTitle("myQuizzesSegmentTemplates".localized, forSegmentAt: 1)
+
+        createTemplateButton.setAttributedTitle(
+            NSAttributedString(
+                string: "create".localized,
+                attributes: [
+                    .foregroundColor: UIColor.textWhite,
+                    .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
+                ]
+            ),
+            for: .normal
+        )
+
+        searchPlaceholderPrefixLabel.text = "search".localized
+        updateSearchPlaceholderSuffix(for: mode, animated: false)
+        updateSearchPlaceholderVisibility()
+    }
+
     private func configureCreateTemplateMenu() {
         let createFromScratchAction = UIAction(
-            title: "С нуля",
+            title: "myQuizzesCreateFromScratch".localized,
             image: UIImage(systemName: "pencil.and.ruler.fill")
         ) { [weak self] _ in
             self?.handleCreateTemplateFromScratchTapped()
         }
 
         let createWithAIAction = UIAction(
-            title: "При помощи ИИ",
+            title: "myQuizzesCreateWithAi".localized,
             image: UIImage(systemName: "wand.and.sparkles")
         ) { [weak self] _ in
             self?.handleCreateTemplateWithAITapped()
@@ -455,7 +476,7 @@ final class MyQuizzesViewController: UIViewController {
     }
 
     private func searchPlaceholderSuffix(for mode: MyQuizzesModels.Mode) -> String {
-        mode == .templates ? "шаблонов" : "квизов"
+        mode == .templates ? "searchSuffixTemplates".localized : "searchSuffixQuizzes".localized
     }
 
     private func widthForSearchPlaceholderSuffix(_ text: String) -> CGFloat {
@@ -635,19 +656,19 @@ final class MyQuizzesViewController: UIViewController {
         }
 
         return [
-            .header(title: "Провожу"),
+            .header(title: "myQuizzesHostingHeader".localized),
             activeItems.isEmpty
-            ? .empty(text: "Нет квизов, которые вы проводите")
+            ? .empty(text: "myQuizzesNoHostingQuizzes".localized)
             : .cards(items: activeItems, section: .active),
             .divider,
-            .header(title: "Ожидают оценивания"),
+            .header(title: "myQuizzesPendingReviewHeader".localized),
             pendingReviewItems.isEmpty
-            ? .empty(text: "Нет квизов, ожидающих оценки")
+            ? .empty(text: "myQuizzesNoPendingReviewQuizzes".localized)
             : .cards(items: pendingReviewItems, section: .pendingReview),
             .divider,
-            .header(title: "Оценены"),
+            .header(title: "myQuizzesReviewedHeader".localized),
             reviewedItems.isEmpty
-            ? .empty(text: "Нет квизов, которые вы оценили")
+            ? .empty(text: "myQuizzesNoReviewedQuizzes".localized)
             : .cards(items: reviewedItems, section: .reviewed)
         ]
     }
@@ -660,8 +681,8 @@ final class MyQuizzesViewController: UIViewController {
     private func makeTemplateDeleteMessage(templateTitle: String?) -> String {
         let normalizedTitle = templateTitle?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let displayTitle = normalizedTitle.isEmpty ? "без названия" : "«\(normalizedTitle)»"
-        return String(format: UIConstants.deleteTemplateAlertMessage, displayTitle)
+        let displayTitle = normalizedTitle.isEmpty ? "myQuizzesUntitledTemplate".localized : "«\(normalizedTitle)»"
+        return String(format: UIConstants.deleteTemplateAlertMessage.localized, displayTitle)
     }
 
     private func handleTemplateStartTap(_ item: QuizInstanceViewData) {
@@ -683,10 +704,10 @@ final class MyQuizzesViewController: UIViewController {
 
         let message = makeTemplateDeleteMessage(templateTitle: item.title)
         showConfirmationAlert(
-            title: UIConstants.deleteTemplateAlertTitle,
+            title: UIConstants.deleteTemplateAlertTitle.localized,
             message: message,
-            cancelTitle: "Отмена",
-            confirmTitle: "Удалить",
+            cancelTitle: "cancel".localized,
+            confirmTitle: "delete".localized,
             confirmStyle: .destructive
         ) { [weak self] in
             Task { [weak self] in
@@ -774,9 +795,9 @@ final class MyQuizzesViewController: UIViewController {
     private func handleCreateTemplateWithAITapped() {
         let inputViewController = InputBottomSheetViewController(
             content: InputBottomSheetContent(
-                title: "Создание шаблона",
-                placeholder: "Опишите, какой шаблон вы хотите создать",
-                buttonTitle: "Сгенерировать"
+                title: "myQuizzesTemplateGenerationTitle".localized,
+                placeholder: "myQuizzesTemplateGenerationPlaceholder".localized,
+                buttonTitle: "myQuizzesGenerateButton".localized
             )
         )
 
@@ -1000,21 +1021,21 @@ extension MyQuizzesViewController: UITableViewDelegate {
             guard let self else { return UIMenu() }
 
             let startAction = UIAction(
-                title: "Запустить",
+                title: "start".localized,
                 image: UIImage(systemName: "play.fill")
             ) { _ in
                 self.handleTemplateStartTap(item)
             }
 
             let editAction = UIAction(
-                title: "Изменить",
+                title: "edit".localized,
                 image: UIImage(systemName: "pencil")
             ) { _ in
                 self.handleTemplateEditTap(item)
             }
 
             let deleteAction = UIAction(
-                title: "Удалить",
+                title: "delete".localized,
                 image: UIImage(systemName: "trash.fill"),
                 attributes: .destructive
             ) { _ in

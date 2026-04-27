@@ -56,14 +56,14 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
         switch error {
         case .quizAlreadyStarted:
             await router.showQuizConnectionUnavailableBottomSheet(
-                description: "Квиз уже начался, подключение невозможно"
+                description: "quizConnectionUnavailableStarted".localized
             )
             await view?.resetCodeFields()
             return
 
         case .quizAlreadyFinished:
             await router.showQuizConnectionUnavailableBottomSheet(
-                description: "Квиз уже завершен, подключение невозможно"
+                description: "quizConnectionUnavailableFinished".localized
             )
             await view?.resetCodeFields()
             return
@@ -101,7 +101,7 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
         case .joinQuiz:
             if let quizParticipationError = error as? QuizParticipationServiceError,
                quizParticipationError == .invalidCode {
-                return "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
+                return "invalidQuizCodeError".localized
             }
             return nil
 

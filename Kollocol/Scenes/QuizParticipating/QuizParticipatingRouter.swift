@@ -34,7 +34,7 @@ final class QuizParticipatingRouter: QuizParticipatingPresenter, ServiceErrorHan
     }
 
     func presentServerError(message: String) async {
-        await router.showError(title: "Ошибка", message: message)
+        await router.showError(title: "errorTitle".localized, message: message)
     }
 
     func presentKickedFromQuiz(quizTitle: String?) async {

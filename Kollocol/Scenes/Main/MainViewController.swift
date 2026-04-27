@@ -130,6 +130,7 @@ final class MainViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        refreshLocalizedContent()
 
         if navigationItem.leftBarButtonItem == nil {
             navigationItem.leftBarButtonItem = profileLeftBarButtonItem
@@ -251,7 +252,7 @@ final class MainViewController: UIViewController {
             self?.joinButtonView.setEnabled(code?.count == 6)
         }
 
-        joinButtonView.configure(title: "Погнали!") { [weak self] in
+        joinButtonView.configure(title: "mainJoinButton".localized) { [weak self] in
             guard let self, let code = self.currentCode else { return }
 
             self.isJoinLoading = true
@@ -263,6 +264,12 @@ final class MainViewController: UIViewController {
                 await self.interactor.joinQuiz(code: code, skipAsyncConfirmation: false)
             }
         }
+    }
+
+    private func refreshLocalizedContent() {
+        configureActions()
+        rows = buildRows(participating: quizParticipatingInstances, hosting: quizHostingInstances)
+        tableView.reloadData()
     }
 
     private func configureTableView() {
@@ -290,14 +297,14 @@ final class MainViewController: UIViewController {
         hosting: [QuizInstanceViewData]
     ) -> [MainModels.Row] {
         [
-            .header(title: "Участвую"),
+            .header(title: "mainParticipatingHeader".localized),
             participating.isEmpty
-            ? .empty(text: "Нет квизов, в которых вы участвуете")
+            ? .empty(text: "mainNoParticipatingQuizzes".localized)
             : .cards(items: participating),
             .divider,
-            .header(title: "Провожу"),
+            .header(title: "mainHostingHeader".localized),
             hosting.isEmpty
-            ? .empty(text: "Нет квизов, которые вы проводите")
+            ? .empty(text: "mainNoHostingQuizzes".localized)
             : .cards(items: hosting)
         ]
     }

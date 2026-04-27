@@ -53,11 +53,11 @@ struct InfoBottomSheetContent {
         case .single(let action):
             return action.title
         case .double:
-            return "ОК"
+            return "ok".localized
         }
     }
 
-    init(title: String, description: String, buttonTitle: String = "ОК") {
+    init(title: String, description: String, buttonTitle: String = "ok".localized) {
         self.init(
             title: title,
             description: description,

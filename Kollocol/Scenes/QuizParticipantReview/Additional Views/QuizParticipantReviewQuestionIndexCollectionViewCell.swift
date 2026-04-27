@@ -60,7 +60,10 @@ final class QuizParticipantReviewQuestionIndexCollectionViewCell: UICollectionVi
     // MARK: - Methods
     func configure(with item: QuizParticipantReviewModels.QuestionSwitcherItemViewData) {
         numberLabel.text = "\(item.questionNumber)"
-        scoreLabel.text = "\(item.maxScore) б."
+        scoreLabel.text = String(
+            format: "questionScoreShortFormat".localized,
+            item.maxScore
+        )
 
         containerView.backgroundColor = item.hasFilledBackground ? .dividerPrimary : .clear
 

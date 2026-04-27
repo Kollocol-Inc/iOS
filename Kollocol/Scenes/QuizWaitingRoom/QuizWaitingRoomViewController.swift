@@ -49,7 +49,7 @@ final class QuizWaitingRoomViewController: UIViewController {
         button.backgroundColor = .accentPrimary
         button.setTitleColor(.textWhite, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        button.setTitle("Ожидаем начала...", for: .normal)
+        button.setTitle("waitingStart".localized, for: .normal)
         button.layer.cornerRadius = 18
         button.clipsToBounds = true
         button.isEnabled = false
@@ -71,7 +71,7 @@ final class QuizWaitingRoomViewController: UIViewController {
         button.backgroundColor = .accentPrimary
         button.setTitleColor(.textWhite, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        button.setTitle("Запустить квиз", for: .normal)
+        button.setTitle("startQuiz".localized, for: .normal)
         button.layer.cornerRadius = 18
         button.clipsToBounds = true
         button.setHeight(42)
@@ -83,7 +83,7 @@ final class QuizWaitingRoomViewController: UIViewController {
         button.backgroundColor = .backgroundRedSecondary
         button.setTitleColor(.textWhite, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        button.setTitle("Отменить квиз", for: .normal)
+        button.setTitle("cancelQuiz".localized, for: .normal)
         button.layer.cornerRadius = 18
         button.clipsToBounds = true
         button.setHeight(42)
@@ -116,11 +116,11 @@ final class QuizWaitingRoomViewController: UIViewController {
 
     // MARK: - Constants
     private enum Constants {
-        static let defaultNavigationTitle = "Квиз"
-        static let cancelQuizConfirmationTitle = "Подтверждение"
-        static let cancelQuizConfirmationDescription = "Вы уверены, что хотите отменить квиз %@? Это действие необратимо"
-        static let cancelQuizConfirmActionTitle = "Отменить"
-        static let cancelQuizCloseActionTitle = "Закрыть"
+        static let defaultNavigationTitle = "quizDefaultTitle".localized
+        static let cancelQuizConfirmationTitle = "confirmationTitle".localized
+        static let cancelQuizConfirmationDescription = "confirmCancelQuizFormat".localized
+        static let cancelQuizConfirmActionTitle = "cancelAction".localized
+        static let cancelQuizCloseActionTitle = "close".localized
     }
 
     // MARK: - Properties
@@ -357,7 +357,7 @@ final class QuizWaitingRoomViewController: UIViewController {
         startQuizButton.isEnabled = isEnabled
         startQuizButton.alpha = isEnabled ? 1 : 0.6
         startQuizButton.setTitle(
-            isEnabled ? "Запустить квиз" : "Недостаточно участников",
+            isEnabled ? "startQuiz".localized : "insufficientParticipants".localized,
             for: .normal
         )
     }

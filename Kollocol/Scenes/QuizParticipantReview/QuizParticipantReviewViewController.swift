@@ -83,7 +83,7 @@ final class QuizParticipantReviewViewController: UIViewController {
         button.setTitleColor(.buttonSecondary, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
         button.setImage(image, for: .normal)
-        button.setTitle("ИИ", for: .normal)
+        button.setTitle("ai".localized, for: .normal)
         button.semanticContentAttribute = .forceLeftToRight
         button.imageView?.contentMode = .scaleAspectFit
         button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
@@ -97,7 +97,7 @@ final class QuizParticipantReviewViewController: UIViewController {
         button.backgroundColor = .accentPrimary
         button.setTitleColor(.textWhite, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        button.setTitle("Оценить", for: .normal)
+        button.setTitle("grade".localized, for: .normal)
         button.layer.cornerRadius = 18
         button.clipsToBounds = true
         button.setHeight(42)
@@ -121,7 +121,7 @@ final class QuizParticipantReviewViewController: UIViewController {
         button.backgroundColor = .accentPrimary
         button.setTitleColor(.textWhite, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        button.setTitle("Назад", for: .normal)
+        button.setTitle("back".localized, for: .normal)
         button.setImage(
             UIImage(systemName: "chevron.left", withConfiguration: chevronConfiguration)?
                 .withTintColor(.textWhite, renderingMode: .alwaysOriginal),
@@ -144,7 +144,7 @@ final class QuizParticipantReviewViewController: UIViewController {
         button.backgroundColor = .accentPrimary
         button.setTitleColor(.textWhite, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        button.setTitle("Вперед", for: .normal)
+        button.setTitle("forward".localized, for: .normal)
         button.setImage(
             UIImage(systemName: "chevron.right", withConfiguration: chevronConfiguration)?
                 .withTintColor(.textWhite, renderingMode: .alwaysOriginal),
@@ -185,18 +185,18 @@ final class QuizParticipantReviewViewController: UIViewController {
 
     // MARK: - Constants
     private enum UIConstants {
-        static let defaultQuizTitle = "Квиз"
-        static let defaultParticipantName = "Участник"
+        static let defaultQuizTitle = "quizDefaultTitle".localized
+        static let defaultParticipantName = "participant".localized
         static let questionSwitcherRowHeight: CGFloat = 76
 
-        static let completionPendingTitle = "Внимание"
-        static let completionPendingDescription = "Осталось %@ вопросов, ожидающих оценки"
+        static let completionPendingTitle = "attentionTitle".localized
+        static let completionPendingDescription = "questionsRemainingForReviewFormat".localized
 
-        static let completionDoneTitle = "Квиз полностью проверен"
-        static let completionDoneDescription = "Все вопросы оценены"
+        static let completionDoneTitle = "quizFullyReviewedTitle".localized
+        static let completionDoneDescription = "allQuestionsReviewed".localized
 
-        static let aiReviewConfirmationTitle = "Подтверждение"
-        static let aiReviewConfirmationDescription = "Вы уверены, что хотите получить рекомендацию от ИИ?"
+        static let aiReviewConfirmationTitle = "confirmationTitle".localized
+        static let aiReviewConfirmationDescription = "confirmGetAiRecommendation".localized
     }
 
     // MARK: - Properties
@@ -205,7 +205,7 @@ final class QuizParticipantReviewViewController: UIViewController {
 
     private var rows: [QuizParticipantReviewModels.Row] = [
         .header(title: UIConstants.defaultQuizTitle),
-        .empty(text: "Загрузка...")
+        .empty(text: "loading".localized)
     ]
     private var selectedQuestionIndex = 0
     private var checkmarkState: QuizParticipantReviewModels.CheckmarkState = .pending(pendingOpenQuestionsCount: 0)
@@ -319,7 +319,7 @@ final class QuizParticipantReviewViewController: UIViewController {
             showInfoBottomSheet(
                 title: UIConstants.completionPendingTitle,
                 description: description,
-                buttonTitle: "ОК"
+                buttonTitle: "ok".localized
             )
             return
         }
@@ -327,7 +327,7 @@ final class QuizParticipantReviewViewController: UIViewController {
         showInfoBottomSheet(
             title: UIConstants.completionDoneTitle,
             description: UIConstants.completionDoneDescription,
-            buttonTitle: "ОК"
+            buttonTitle: "ok".localized
         )
     }
 
@@ -565,12 +565,12 @@ final class QuizParticipantReviewViewController: UIViewController {
             buttonsConfiguration: .double(
                 left: InfoBottomSheetAction(
                     identifier: .cancel,
-                    title: "Отмена",
+                    title: "cancel".localized,
                     style: .buttonSecondary
                 ),
                 right: InfoBottomSheetAction(
                     identifier: .confirm,
-                    title: "ОК",
+                    title: "ok".localized,
                     style: .accentPrimary
                 )
             )

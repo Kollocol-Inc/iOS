@@ -50,7 +50,7 @@ final class QuizWaitingRoomRouter: QuizWaitingRoomPresenter, ServiceErrorHandlin
     }
 
     func presentServerError(message: String) async {
-        await router.showError(title: "Ошибка", message: message)
+        await router.showError(title: "errorTitle".localized, message: message)
     }
 
     func presentKickParticipantConfirmation(participantName: String, participantEmail: String) async {

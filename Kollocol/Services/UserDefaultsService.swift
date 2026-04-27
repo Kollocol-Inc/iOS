@@ -13,6 +13,23 @@ enum AppThemePreference: String {
     case dark
 }
 
+enum AppLanguagePreference: String {
+    case system
+    case ru
+    case en
+
+    var localeIdentifier: String? {
+        switch self {
+        case .system:
+            return nil
+        case .ru:
+            return "ru"
+        case .en:
+            return "en"
+        }
+    }
+}
+
 // MARK: - UserDefaultsServiceImpl
 final class UserDefaultsServiceImpl: UserDefaultsService {
     private let defaults: UserDefaults
@@ -58,6 +75,18 @@ final class UserDefaultsServiceImpl: UserDefaultsService {
         }
         set { set(newValue.rawValue, for: .appThemePreference) }
     }
+
+    var appLanguagePreference: AppLanguagePreference {
+        get {
+            guard let rawValue: String = value(for: .appLanguagePreference),
+                  let preference = AppLanguagePreference(rawValue: rawValue)
+            else {
+                return .system
+            }
+            return preference
+        }
+        set { set(newValue.rawValue, for: .appLanguagePreference) }
+    }
 }
 
 // MARK: - UserDefaultsService
@@ -69,10 +98,12 @@ protocol UserDefaultsService: AnyObject {
 
     var isRegistered: Bool { get set }
     var appThemePreference: AppThemePreference { get set }
+    var appLanguagePreference: AppLanguagePreference { get set }
 }
 
 // MARK: - UserDefaultsKey
 enum UserDefaultsKey: String {
     case isRegistered
     case appThemePreference
+    case appLanguagePreference
 }

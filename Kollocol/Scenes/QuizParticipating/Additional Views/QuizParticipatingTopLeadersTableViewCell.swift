@@ -164,7 +164,7 @@ private final class PodiumParticipantView: UIView {
             .filter { $0.isEmpty == false }
             .joined(separator: " ")
 
-        nameLabel.text = participantName.isEmpty ? "Участник" : participantName
+        nameLabel.text = participantName.isEmpty ? "participant".localized : participantName
         scoreLabel.text = "\(leader.score)"
         verticalStackView.alpha = 1
     }

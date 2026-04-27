@@ -15,7 +15,7 @@ final class TemplateQuestionActionsTableViewCell: UITableViewCell {
         button.layer.cornerRadius = 18
         button.setAttributedTitle(
             NSAttributedString(
-                string: "Добавить вопрос",
+                string: "addQuestion".localized,
                 attributes: [
                     .foregroundColor: UIColor.textWhite,
                     .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
@@ -38,7 +38,7 @@ final class TemplateQuestionActionsTableViewCell: UITableViewCell {
         button.layer.borderColor = UIColor.buttonSecondary.cgColor
         button.setAttributedTitle(
             NSAttributedString(
-                string: "Дополнить с ИИ",
+                string: "supplementWithAi".localized,
                 attributes: [
                     .foregroundColor: UIColor.buttonSecondary,
                     .font: UIFont.systemFont(ofSize: 14, weight: .semibold)

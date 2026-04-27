@@ -13,7 +13,7 @@ protocol InfoBottomSheetPresenting: AnyObject {
 }
 
 extension InfoBottomSheetPresenting {
-    func showInfoBottomSheet(title: String, description: String, buttonTitle: String = "ОК") {
+    func showInfoBottomSheet(title: String, description: String, buttonTitle: String = "ok".localized) {
         showInfoBottomSheet(
             InfoBottomSheetContent(
                 title: title,
@@ -105,23 +105,26 @@ extension InfoBottomSheetPresenting {
         let normalizedQuizTitle = quizTitle?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let description: String
         if normalizedQuizTitle.isEmpty {
-            description = "Вы уверены, что хотите приступить к выполнению этого квиза?"
+            description = "confirmAsyncQuizStartGeneric".localized
         } else {
-            description = "Вы уверены, что хотите приступить к выполнению квиза \(normalizedQuizTitle)?"
+            description = String(
+                format: "confirmAsyncQuizStartByTitleFormat".localized,
+                normalizedQuizTitle
+            )
         }
 
         let content = InfoBottomSheetContent(
-            title: "Приступить к выполнению",
+            title: "startAsyncQuizTitle".localized,
             description: description,
             buttonsConfiguration: .double(
                 left: InfoBottomSheetAction(
                     identifier: .cancel,
-                    title: "Отмена",
+                    title: "cancel".localized,
                     style: .buttonSecondary
                 ),
                 right: InfoBottomSheetAction(
                     identifier: .confirm,
-                    title: "Приступить",
+                    title: "start".localized,
                     style: .accentPrimary
                 )
             )

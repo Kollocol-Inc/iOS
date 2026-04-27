@@ -14,8 +14,16 @@ final class ProfileNotificationToggleTableViewCell: UITableViewCell {
         stack.axis = .horizontal
         stack.alignment = .center
         stack.distribution = .fill
-        stack.spacing = 12
+        stack.spacing = 8
         return stack
+    }()
+
+    private let iconLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.textColor = .textPrimary
+        label.font = .systemFont(ofSize: 17, weight: .medium)
+        return label
     }()
 
     private let titleLabel: UILabel = {
@@ -34,6 +42,10 @@ final class ProfileNotificationToggleTableViewCell: UITableViewCell {
     }()
 
     // MARK: - Constants
+    private enum UIConstants {
+        static let iconSlotWidth: CGFloat = 34
+    }
+
     static let reuseIdentifier = "ProfileNotificationToggleTableViewCell"
 
     // MARK: - Properties
@@ -53,11 +65,18 @@ final class ProfileNotificationToggleTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         onToggleChanged = nil
+        iconLabel.attributedText = nil
     }
 
     // MARK: - Methods
-    func configure(title: String, isOn: Bool, isEnabled: Bool = true) {
+    func configure(
+        title: String,
+        leadingIconSystemName: String? = nil,
+        isOn: Bool,
+        isEnabled: Bool = true
+    ) {
         titleLabel.text = title
+        applyLeadingIcon(systemName: leadingIconSystemName)
         toggleSwitch.setOn(isOn, animated: false)
         toggleSwitch.isEnabled = isEnabled
     }
@@ -74,11 +93,33 @@ final class ProfileNotificationToggleTableViewCell: UITableViewCell {
         horizontalStackView.pinLeft(to: contentView.safeAreaLayoutGuide.leadingAnchor, 24)
         horizontalStackView.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
 
+        horizontalStackView.addArrangedSubview(iconLabel)
+        iconLabel.setWidth(UIConstants.iconSlotWidth)
         horizontalStackView.addArrangedSubview(titleLabel)
         horizontalStackView.addArrangedSubview(spacerView)
         horizontalStackView.addArrangedSubview(toggleSwitch)
 
         toggleSwitch.addTarget(self, action: #selector(handleToggleChanged), for: .valueChanged)
+    }
+
+    private func applyLeadingIcon(systemName: String?) {
+        guard let systemName else {
+            iconLabel.attributedText = nil
+            return
+        }
+
+        iconLabel.attributedText = makeIconAttachment(
+            systemName: systemName,
+            tintColor: .textPrimary
+        )
+    }
+
+    private func makeIconAttachment(systemName: String, tintColor: UIColor) -> NSAttributedString {
+        let attachment = NSTextAttachment()
+        let configuration = UIImage.SymbolConfiguration(pointSize: 17, weight: .medium)
+        attachment.image = UIImage(systemName: systemName, withConfiguration: configuration)?
+            .withTintColor(tintColor, renderingMode: .alwaysOriginal)
+        return NSAttributedString(attachment: attachment)
     }
 
     // MARK: - Actions

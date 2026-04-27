@@ -12,7 +12,7 @@ final class TextInputTableViewCell: UITableViewCell {
     private let titleTextField: StripedLoadingTextField = {
         let field = StripedLoadingTextField()
         field.attributedPlaceholder = NSAttributedString(
-            string: "Введите название",
+            string: "enterTitlePlaceholder".localized,
             attributes: [
                 .foregroundColor: UIColor.textSecondary,
                 .font: UIFont.systemFont(ofSize: 15, weight: .medium)

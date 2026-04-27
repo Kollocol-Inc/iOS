@@ -12,7 +12,7 @@ final class TemplateQuestionsSearchTableViewCell: UITableViewCell {
     private let searchTextField: UITextField = {
         let field = UITextField()
         field.attributedPlaceholder = NSAttributedString(
-            string: "Поиск вопросов",
+            string: "searchQuestions".localized,
             attributes: [
                 .foregroundColor: UIColor.textSecondary,
                 .font: UIFont.systemFont(ofSize: 15, weight: .medium)

@@ -15,7 +15,7 @@ final class QuizParticipantsOverviewReviewHeaderTableViewCell: UITableViewCell {
         label.numberOfLines = 1
         label.textAlignment = .left
         label.font = .systemFont(ofSize: 20, weight: .medium)
-        label.text = "Участники"
+        label.text = "participants".localized
         return label
     }()
 

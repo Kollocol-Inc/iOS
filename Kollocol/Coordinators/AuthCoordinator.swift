@@ -47,7 +47,8 @@ final class AuthCoordinator {
         case .start:
             let vc = StartAssembly.build(
                 router: self,
-                authService: services.authService
+                authService: services.authService,
+                udService: services.udService
             )
             navigationController.setViewControllers([vc], animated: true)
 

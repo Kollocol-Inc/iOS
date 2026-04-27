@@ -58,10 +58,10 @@ final class StartQuizViewController: UIViewController {
 
     // MARK: - Constants
     private enum UIConstants {
-        static let title = "Запуск квиза"
-        static let startButtonReadyTitle = "Запустить"
-        static let startButtonMissingNameTitle = "Укажите название"
-        static let startButtonInvalidDeadlineTitle = "Укажите корректный дедлайн"
+        static let title = "quizStartTitle".localized
+        static let startButtonReadyTitle = "start".localized
+        static let startButtonMissingNameTitle = "specifyTitle".localized
+        static let startButtonInvalidDeadlineTitle = "specifyValidDeadline".localized
     }
 
     // MARK: - Properties
@@ -193,12 +193,12 @@ final class StartQuizViewController: UIViewController {
 
     private func rebuildRows() {
         var newRows: [StartQuizModels.Row] = [
-            .header("Название"),
+            .header("title".localized),
             .nameInput
         ]
 
         if shouldShowDeadlineParameter {
-            newRows.append(.header("Параметры"))
+            newRows.append(.header("parameters".localized))
             newRows.append(.deadline)
         }
 
@@ -300,7 +300,7 @@ extension StartQuizViewController: UITableViewDataSource {
 
             cell.configure(
                 title: titleText,
-                placeholder: "Введите название",
+                placeholder: "enterTitlePlaceholder".localized,
                 isLoading: false
             )
             cell.onTextChanged = { [weak self] newText in

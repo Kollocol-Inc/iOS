@@ -90,7 +90,7 @@ final class QuizParticipatingParticipantTableViewCell: UITableViewCell {
             .filter { $0.isEmpty == false }
             .joined(separator: " ")
 
-        nameLabel.text = name.isEmpty ? "Участник" : name
+        nameLabel.text = name.isEmpty ? "participant".localized : name
 
         let email = participant.email?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         emailLabel.text = email

@@ -117,14 +117,14 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
         do {
             guard let instanceId = try await resolveCurrentInstanceID() else {
                 isCancelingQuiz = false
-                await presenter.presentServerError(message: "Не удалось отменить квиз")
+                await presenter.presentServerError(message: "failedCancelQuiz".localized)
                 return
             }
 
             try await quizService.deleteQuizInstance(by: instanceId)
 
             let cachedQuizTitle = await quizParticipationService.currentQuizTitle()
-            let resolvedQuizTitle = normalizedQuizTitle(quizTitle ?? cachedQuizTitle) ?? "Квиз"
+            let resolvedQuizTitle = normalizedQuizTitle(quizTitle ?? cachedQuizTitle) ?? "quizDefaultTitle".localized
 
             hasRequestedFlowClose = true
             eventsTask?.cancel()
@@ -146,7 +146,7 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
         }
 
         guard let participantEmail = normalizedParticipantEmail(participant) else {
-            await presenter.presentServerError(message: "Не удалось выгнать участника")
+            await presenter.presentServerError(message: "failedKickParticipant".localized)
             return
         }
 
@@ -341,7 +341,7 @@ actor QuizWaitingRoomLogic: QuizWaitingRoomInteractor {
             return email
         }
 
-        return "участника"
+        return "participantGenitive".localized
     }
 
     private func isKickedError(_ message: String) -> Bool {

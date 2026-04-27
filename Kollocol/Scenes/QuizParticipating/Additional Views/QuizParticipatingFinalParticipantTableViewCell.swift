@@ -80,7 +80,7 @@ final class QuizParticipatingFinalParticipantTableViewCell: UITableViewCell {
             .filter { $0.isEmpty == false }
             .joined(separator: " ")
 
-        nameLabel.text = participantName.isEmpty ? "Участник" : participantName
+        nameLabel.text = participantName.isEmpty ? "participant".localized : participantName
 
         let email = participant.email?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         emailLabel.text = email

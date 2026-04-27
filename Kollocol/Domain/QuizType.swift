@@ -15,17 +15,19 @@ enum QuizType: String {
 extension QuizType {
     var displayName: String {
         switch self {
-        case .sync:  return "Синхронный"
-        case .async: return "Асинхронный"
+        case .sync:
+            return "quizTypeSync".localized
+        case .async:
+            return "quizTypeAsync".localized
         }
     }
 
     var infoDescription: String {
         switch self {
         case .sync:
-            return "Все участники проходят квиз одновременно под контролем создателя"
+            return "quizTypeSyncInfo".localized
         case .async:
-            return "Участники могут проходить квиз в любое время до дедлайна"
+            return "quizTypeAsyncInfo".localized
         }
     }
 }

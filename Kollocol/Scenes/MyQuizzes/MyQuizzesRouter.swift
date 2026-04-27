@@ -69,12 +69,12 @@ final class MyQuizzesRouter: MyQuizzesPresenter, ServiceErrorHandling {
     func presentJoinQuizError(_ error: QuizParticipationServiceError) async {
         if error == .quizAlreadyFinished {
             await router.showQuizConnectionUnavailableBottomSheet(
-                description: "Квиз уже завершен, подключение невозможно"
+                description: "quizConnectionUnavailableFinished".localized
             )
             return
         }
 
-        let title = error == .invalidCode ? "Неверный код" : "Ошибка"
+        let title = error == .invalidCode ? "invalidCodeTitle".localized : "errorTitle".localized
         await presentServiceError(error, useCase: .joinQuiz, title: title)
     }
 
@@ -96,7 +96,7 @@ final class MyQuizzesRouter: MyQuizzesPresenter, ServiceErrorHandling {
         case .joinQuiz:
             if let quizParticipationError = error as? QuizParticipationServiceError,
                quizParticipationError == .invalidCode {
-                return "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
+                return "invalidQuizCodeError".localized
             }
             return nil
 

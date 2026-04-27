@@ -18,11 +18,11 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         var title: String {
             switch self {
             case .single:
-                return "Single"
+                return "questionTypeSingleShort".localized
             case .multi:
-                return "Multi"
+                return "questionTypeMultiShort".localized
             case .openEnded:
-                return "Open ended"
+                return "questionTypeOpenEndedShort".localized
             }
         }
 
@@ -76,10 +76,10 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
     // MARK: - Constants
     private enum UIConstants {
-        static let title = "Добавить вопрос"
+        static let title = "addQuestion".localized
         static let maxOptionsCount = 10
         static let minOptionsCount = 2
-        static let errorTitle = "Ошибка"
+        static let errorTitle = "errorTitle".localized
     }
 
     // MARK: - Properties
@@ -290,17 +290,17 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private func rebuildRows() {
         var newRows: [Row] = [
             .typePicker,
-            .header("Вопрос"),
+            .header("question".localized),
             .questionInput,
             .paraphraseControls,
-            .header("Параметры"),
+            .header("parameters".localized),
             .parameters,
             .divider
         ]
 
         switch mode {
         case .openEnded:
-            newRows.append(.header("Ответ (опционально)"))
+            newRows.append(.header("answerOptional".localized))
             newRows.append(.openAnswer)
 
         case .single, .multi:
@@ -615,7 +615,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
     private var validationErrorMessage: String? {
         let isQuestionFilled = questionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
         guard isQuestionFilled else {
-            return "Укажите текст вопроса"
+            return "specifyQuestionText".localized
         }
 
         switch mode {
@@ -623,23 +623,23 @@ final class AddQuestionBottomSheetViewController: UIViewController {
             break
         case .single, .multi:
             if options.count < UIConstants.minOptionsCount {
-                return "Недостаточно вариантов ответа"
+                return "insufficientAnswerOptions".localized
             }
 
             let hasEmptyOption = options.contains {
                 $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             }
             if hasEmptyOption {
-                return "Заполните все добавленные варианты ответа"
+                return "fillAllAnswerOptions".localized
             }
 
             let selectedCount = options.filter(\.isCorrect).count
             if selectedCount == 0 {
                 switch mode {
                 case .single:
-                    return "Укажите верный вариант ответа"
+                    return "specifyCorrectAnswerOption".localized
                 case .multi:
-                    return "Укажите хотя бы один верный ответ"
+                    return "specifyAtLeastOneCorrectAnswer".localized
                 case .openEnded:
                     break
                 }
@@ -732,10 +732,10 @@ final class AddQuestionBottomSheetViewController: UIViewController {
         guard let onParaphraseQuestionText else { return }
 
         showConfirmationAlert(
-            title: "Подтверждение",
-            message: "Вы уверены, что хотите перефразировать текст вопроса?",
-            cancelTitle: "Отмена",
-            confirmTitle: "Перефразировать",
+            title: "confirmationTitle".localized,
+            message: "confirmParaphraseQuestionText".localized,
+            cancelTitle: "cancel".localized,
+            confirmTitle: "paraphrase".localized,
             confirmStyle: .default
         ) { [weak self] in
             self?.startParaphrasingQuestionText(
@@ -796,7 +796,7 @@ final class AddQuestionBottomSheetViewController: UIViewController {
                     self.reloadQuestionInputAndParaphraseRows()
                     self.showAlert(
                         title: UIConstants.errorTitle,
-                        message: (error as? any UserFacingError)?.userMessage ?? "Что-то пошло не так"
+                        message: (error as? any UserFacingError)?.userMessage ?? "somethingWentWrong".localized
                     )
                 }
             }
@@ -864,10 +864,10 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
     private func presentParaphrasingInProgressAlert() {
         showConfirmationAlert(
-            title: "Внимание",
-            message: "Вы уверены, что хотите выйти? Генерация текста вопроса в процессе",
-            cancelTitle: "Отмена",
-            confirmTitle: "Выйти",
+            title: "attentionTitle".localized,
+            message: "confirmExitQuestionTextGenerationInProgress".localized,
+            cancelTitle: "cancel".localized,
+            confirmTitle: "exit".localized,
             confirmStyle: .destructive
         ) { [weak self] in
             self?.paraphraseTask?.cancel()
@@ -877,10 +877,10 @@ final class AddQuestionBottomSheetViewController: UIViewController {
 
     private func presentUnsavedChangesAlert() {
         showConfirmationAlert(
-            title: "Внимание",
-            message: "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно",
-            cancelTitle: "Отмена",
-            confirmTitle: "Выйти",
+            title: "attentionTitle".localized,
+            message: "confirmExitUnsavedChanges".localized,
+            cancelTitle: "cancel".localized,
+            confirmTitle: "exit".localized,
             confirmStyle: .destructive
         ) { [weak self] in
             self?.dismiss(animated: true)
@@ -965,7 +965,7 @@ extension AddQuestionBottomSheetViewController: UITableViewDataSource {
 
             cell.configure(
                 title: questionText,
-                placeholder: "Введите вопрос",
+                placeholder: "enterQuestionPlaceholder".localized,
                 isLoading: isQuestionTextParaphrasing
             )
             cell.onTextChanged = { [weak self] text in
@@ -1042,7 +1042,7 @@ extension AddQuestionBottomSheetViewController: UITableViewDataSource {
             }
 
             cell.configure(
-                title: "Ответы",
+                title: "answers".localized,
                 isAddButtonHidden: options.count >= UIConstants.maxOptionsCount
             )
             cell.onAddTap = { [weak self] in
@@ -1187,7 +1187,11 @@ private extension AddQuestionBottomSheetViewController {
 private final class AddQuestionTypePickerTableViewCell: UITableViewCell {
     // MARK: - UI Components
     private let segmentedControl: UISegmentedControl = {
-        let control = UISegmentedControl(items: ["Single", "Multi", "Open ended"])
+        let control = UISegmentedControl(items: [
+            "questionTypeSingleShort".localized,
+            "questionTypeMultiShort".localized,
+            "questionTypeOpenEndedShort".localized
+        ])
         control.selectedSegmentIndex = 0
         control.backgroundColor = .backgroundSecondary
         control.layer.cornerRadius = 12
@@ -1356,7 +1360,7 @@ private final class AddQuestionParaphraseControlsTableViewCell: UITableViewCell 
         setupButton(
             initialParaphraseButton,
             symbolName: "wand.and.sparkles.inverse",
-            title: "Перефразировать"
+            title: "paraphrase".localized
         )
         setupButton(
             historyBackwardButton,
@@ -1371,7 +1375,7 @@ private final class AddQuestionParaphraseControlsTableViewCell: UITableViewCell 
         setupButton(
             historyParaphraseButton,
             symbolName: "wand.and.sparkles.inverse",
-            title: "ИИ"
+            title: "ai".localized
         )
     }
 
@@ -1461,7 +1465,7 @@ private final class AddQuestionParametersTableViewCell: UITableViewCell {
     // MARK: - UI Components
     private let scoreTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Балл"
+        label.text = "score".localized
         label.textColor = .textSecondary
         label.font = UIFont.systemFont(ofSize: 17, weight: .medium)
         return label
@@ -1515,7 +1519,7 @@ private final class AddQuestionParametersTableViewCell: UITableViewCell {
 
     private let timeTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Время"
+        label.text = "time".localized
         label.textColor = .textSecondary
         label.font = UIFont.systemFont(ofSize: 17, weight: .medium)
         return label
@@ -1620,7 +1624,7 @@ private final class AddQuestionParametersTableViewCell: UITableViewCell {
     private func formatTime(_ totalSeconds: Int) -> String {
         let minutes = max(0, totalSeconds / 60)
         let seconds = max(0, totalSeconds % 60)
-        return String(format: "%02d м. %02d с.", minutes, seconds)
+        return String(format: "timeMinutesSecondsFormat".localized, minutes, seconds)
     }
 
     // MARK: - Actions
@@ -1676,7 +1680,7 @@ private final class AddQuestionTimePopoverViewController: UIViewController {
 
     private let doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Сохранить", for: .normal)
+        button.setTitle("save".localized, for: .normal)
         button.setTitleColor(.accentPrimary, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         return button
@@ -1763,9 +1767,9 @@ extension AddQuestionTimePopoverViewController: UIPickerViewDataSource {
 extension AddQuestionTimePopoverViewController: UIPickerViewDelegate {
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         if component == 0 {
-            return timeString(for: row, unit: "м")
+            return timeString(for: row, unit: "minuteShortSingle".localized)
         }
-        return timeString(for: row, unit: "с")
+        return timeString(for: row, unit: "secondShortSingle".localized)
     }
 
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
@@ -1885,7 +1889,7 @@ private final class AddQuestionOptionTableViewCell: UITableViewCell {
         field.font = UIFont.systemFont(ofSize: 17, weight: .medium)
         field.textColor = .textSecondary
         field.attributedPlaceholder = NSAttributedString(
-            string: "Введите ответ",
+            string: "enterAnswerPlaceholder".localized,
             attributes: [
                 .foregroundColor: UIColor.dividerPrimary,
                 .font: UIFont.systemFont(ofSize: 17, weight: .medium)
@@ -1992,7 +1996,7 @@ extension AddQuestionOptionTableViewCell: UIContextMenuInteractionDelegate {
             previewProvider: nil
         ) { [weak self] _ in
             let delete = UIAction(
-                title: "Удалить",
+                title: "delete".localized,
                 image: UIImage(systemName: "trash"),
                 attributes: .destructive
             ) { _ in

@@ -56,6 +56,11 @@ final class ProfileLogic: ProfileInteractor {
         await presenter.presentThemeOption(option)
     }
 
+    func fetchLanguageOption() async {
+        let option = ProfileModels.LanguageOption(languagePreference: udService.appLanguagePreference)
+        await presenter.presentLanguageOption(option)
+    }
+
     func updateUserProfile(name: String, surname: String) async {
         do {
             let user = try await userService.updateUserProfile(name: name, surname: surname)
@@ -110,6 +115,11 @@ final class ProfileLogic: ProfileInteractor {
     func updateThemeOption(_ option: ProfileModels.ThemeOption) async {
         udService.appThemePreference = option.themePreference
         await presenter.presentThemeOption(option)
+    }
+
+    func updateLanguageOption(_ option: ProfileModels.LanguageOption) async {
+        udService.appLanguagePreference = option.languagePreference
+        await presenter.presentLanguageOption(option)
     }
 
     func presentAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) async {

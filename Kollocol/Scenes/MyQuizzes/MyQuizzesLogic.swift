@@ -208,7 +208,7 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
         let hasAnyTemplates = allTemplates.isEmpty == false
 
         guard normalizedQuery.isEmpty == false else {
-            let emptyStateText = hasAnyTemplates ? nil : "Нет шаблонов, которые вы создали"
+            let emptyStateText = hasAnyTemplates ? nil : "myQuizzesNoCreatedTemplates".localized
             await presenter.presentTemplates(sortTemplates(allTemplates), emptyStateText: emptyStateText)
             return
         }
@@ -219,7 +219,7 @@ final class MyQuizzesLogic: MyQuizzesInteractor {
             return titleContainsQuery || descriptionContainsQuery
         }
 
-        let emptyStateText = filteredTemplates.isEmpty ? "Нет шаблонов с таким названием" : nil
+        let emptyStateText = filteredTemplates.isEmpty ? "myQuizzesNoTemplatesWithSuchName".localized : nil
         await presenter.presentTemplates(sortTemplates(filteredTemplates), emptyStateText: emptyStateText)
     }
 

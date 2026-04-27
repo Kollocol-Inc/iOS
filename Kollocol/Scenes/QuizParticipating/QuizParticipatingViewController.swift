@@ -53,7 +53,7 @@ final class QuizParticipatingViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
         button.layer.cornerRadius = 18
         button.clipsToBounds = true
-        button.setTitle("Ответить", for: .normal)
+        button.setTitle("answer".localized, for: .normal)
         button.setHeight(42)
         return button
     }()
@@ -71,7 +71,7 @@ final class QuizParticipatingViewController: UIViewController {
         label.textColor = .textPrimary
         label.textAlignment = .center
         label.numberOfLines = 2
-        label.text = "Ждем пока\nостальные ответят..."
+        label.text = "waitingOthersAnswering".localized
         return label
     }()
 
@@ -100,7 +100,7 @@ final class QuizParticipatingViewController: UIViewController {
         label.numberOfLines = 0
         label.isHidden = true
 
-        let text = "Квиз успешно пройден\nОжидайте получения оценки"
+        let text = "quizCompletedAwaitReview".localized
         let attributedText = NSMutableAttributedString(
             string: text,
             attributes: [
@@ -136,11 +136,11 @@ final class QuizParticipatingViewController: UIViewController {
 
     // MARK: - Constants
     private enum UIConstants {
-        static let defaultQuizTitle = "Квиз"
-        static let cancelQuizConfirmationTitle = "Подтверждение"
-        static let cancelQuizConfirmationDescription = "Вы уверены, что хотите отменить квиз %@? Это действие необратимо"
-        static let cancelQuizCloseActionTitle = "Закрыть"
-        static let cancelQuizConfirmActionTitle = "Отменить"
+        static let defaultQuizTitle = "quizDefaultTitle".localized
+        static let cancelQuizConfirmationTitle = "confirmationTitle".localized
+        static let cancelQuizConfirmationDescription = "confirmCancelQuizFormat".localized
+        static let cancelQuizCloseActionTitle = "close".localized
+        static let cancelQuizConfirmActionTitle = "cancelAction".localized
     }
 
     // MARK: - Properties
@@ -158,7 +158,7 @@ final class QuizParticipatingViewController: UIViewController {
         optionAnswerCounts: [:],
         waitingAnsweredCount: 0,
         waitingTotalParticipantsCount: 0,
-        bottomButtonTitle: "Ответить",
+        bottomButtonTitle: "answer".localized,
         isBottomButtonEnabled: false,
         isTimerVisible: true,
         topLeaders: [],
@@ -441,7 +441,7 @@ final class QuizParticipatingViewController: UIViewController {
                 return
             }
 
-            updatedRows.append(.header(title: "Таблица лидеров"))
+            updatedRows.append(.header(title: "leaderboard".localized))
             updatedRows.append(.topLeaders(state.topLeaders))
 
             let participantsCount = state.topLeaders.count + state.finalParticipants.count
@@ -456,7 +456,7 @@ final class QuizParticipatingViewController: UIViewController {
                 updatedRows.append(.divider)
                 updatedRows.append(
                     .participantsHeader(
-                        title: "Остальные участники",
+                        title: "otherParticipants".localized,
                         count: state.finalParticipants.count
                     )
                 )
@@ -521,7 +521,7 @@ final class QuizParticipatingViewController: UIViewController {
 
         let shouldShowParticipantsSection = state.isCreator || state.phase == .participantWaitingForCreator
         if shouldShowParticipantsSection {
-            let headerTitle = "Таблица лидеров"
+            let headerTitle = "leaderboard".localized
 
             if updatedRows.isEmpty == false {
                 updatedRows.append(.divider)

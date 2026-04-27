@@ -106,7 +106,7 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
             badgeLeadingToLoaderConstraint?.isActive = false
             badgeLabel.attributedText = makeBadgeAttributedText(
                 systemImageName: "checkmark",
-                text: "Верный ответ"
+                text: "correctAnswer".localized
             )
             showPlainAnswer(text: viewData.text)
 
@@ -117,7 +117,7 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
             badgeLeadingToLoaderConstraint?.isActive = false
             badgeLabel.attributedText = makeBadgeAttributedText(
                 systemImageName: "sparkles",
-                text: "ИИ"
+                text: "ai".localized
             )
             showPlainAnswer(text: viewData.text)
 
@@ -127,7 +127,7 @@ final class QuizParticipantReviewAnswerInfoTableViewCell: UITableViewCell {
             badgeLeadingConstraint?.isActive = false
             badgeLeadingToLoaderConstraint?.isActive = true
             badgeLabel.attributedText = nil
-            badgeLabel.text = "ИИ"
+            badgeLabel.text = "ai".localized
             showShimmeringAnswer(text: viewData.text)
         }
     }

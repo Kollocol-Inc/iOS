@@ -11,7 +11,7 @@ final class TemplateSettingsTableViewCell: UITableViewCell {
     // MARK: - UI Components
     private let quizTypeTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Тип квиза"
+        label.text = "quizType".localized
         label.textColor = .textSecondary
         label.font = UIFont.systemFont(ofSize: 17, weight: .medium)
         return label
@@ -39,7 +39,7 @@ final class TemplateSettingsTableViewCell: UITableViewCell {
 
     private let randomOrderTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Случайный порядок"
+        label.text = "randomOrder".localized
         label.textColor = .textSecondary
         label.font = UIFont.systemFont(ofSize: 17, weight: .medium)
         return label
@@ -218,9 +218,9 @@ final class TemplateSettingsTableViewCell: UITableViewCell {
     private func abbreviatedDisplayName(for quizType: QuizType) -> String {
         switch quizType {
         case .async:
-            return "Асинх."
+            return "quizTypeAsyncShort".localized
         case .sync:
-            return "Синх."
+            return "quizTypeSyncShort".localized
         }
     }
 

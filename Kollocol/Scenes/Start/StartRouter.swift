@@ -29,4 +29,8 @@ final class StartRouter: StartPresenter, ServiceErrorHandling {
         await presentServiceError(error)
         await view?.showError()
     }
+
+    func presentLanguageOption(_ option: StartModels.LanguageOption) async {
+        await view?.displayLanguageOption(option)
+    }
 }

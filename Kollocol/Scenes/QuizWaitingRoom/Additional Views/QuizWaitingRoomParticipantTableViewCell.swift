@@ -83,7 +83,7 @@ final class QuizWaitingRoomParticipantTableViewCell: UITableViewCell {
 
     private let currentUserLabel: UILabel = {
         let label = UILabel()
-        label.text = "Вы"
+        label.text = "you".localized
         label.textColor = .accentPrimary
         label.font = .systemFont(ofSize: 17, weight: .medium)
         label.textAlignment = .right
@@ -122,7 +122,7 @@ final class QuizWaitingRoomParticipantTableViewCell: UITableViewCell {
         self.onKickTap = onKickTap
 
         guard let participant else {
-            nameLabel.text = "Участник"
+            nameLabel.text = "participant".localized
             emailLabel.text = nil
             emailLabel.isHidden = true
             avatarImageView.image = UIImage(named: "avatarPlaceholder")
@@ -136,7 +136,7 @@ final class QuizWaitingRoomParticipantTableViewCell: UITableViewCell {
             .filter { $0.isEmpty == false }
             .joined(separator: " ")
 
-        nameLabel.text = name.isEmpty ? "Участник" : name
+        nameLabel.text = name.isEmpty ? "participant".localized : name
 
         let email = participant.email?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         emailLabel.text = email

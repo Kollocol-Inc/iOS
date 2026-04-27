@@ -29,7 +29,7 @@ final class StartViewController: UIViewController {
     
     private let emailLabel: UILabel = {
         let label = UILabel()
-        label.text = "Введите вашу почту"
+        label.text = "startEnterEmailTitle".localized
         label.textColor = .textPrimary
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
@@ -60,8 +60,6 @@ final class StartViewController: UIViewController {
     
     private let sendCodeButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setAttributedTitle(Constants.SendCodeButtonTitles.disabled, for: .disabled)
-        button.setAttributedTitle(Constants.SendCodeButtonTitles.active, for: .normal)
         button.tintColor = .textWhite
         button.backgroundColor = .accentPrimary
         button.layer.cornerRadius = 18
@@ -77,6 +75,14 @@ final class StartViewController: UIViewController {
         view.hidesWhenStopped = true
         return view
     }()
+
+    private lazy var languageBarButtonItem: UIBarButtonItem = {
+        let configuration = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+        let image = UIImage(systemName: "globe", withConfiguration: configuration)
+        let button = UIBarButtonItem(image: image, style: .plain, target: nil, action: nil)
+        button.tintColor = .accentPrimary
+        return button
+    }()
     
     // MARK: - Constants
     private let baseButtonBottomInset: Double = 30
@@ -85,6 +91,7 @@ final class StartViewController: UIViewController {
     
     // MARK: - Properties
     private var interactor: StartInteractor
+    private var selectedLanguageOption: StartModels.LanguageOption = .system
     
     private var sendCodeButtonBottomConstraint: NSLayoutConstraint?
     private var centralStackCenterYConstraint: NSLayoutConstraint?
@@ -106,11 +113,16 @@ final class StartViewController: UIViewController {
         enableKeyboardDismissOnBackgroundTap()
         configureUI()
         configureKeyboardObservers()
+
+        Task {
+            await interactor.fetchLanguageOption()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        configureNavigationBar()
         stopLoadingState()
         updateSendCodeButtonState()
     }
@@ -121,14 +133,45 @@ final class StartViewController: UIViewController {
         stopLoadingState()
         updateSendCodeButtonState()
     }
+
+    @MainActor
+    func displayLanguageOption(_ option: StartModels.LanguageOption) {
+        guard selectedLanguageOption != option else {
+            configureLanguageMenu()
+            return
+        }
+
+        selectedLanguageOption = option
+        applyLanguage()
+    }
     
     // MARK: - Private Methods
     private func configureUI() {
         view.setPrimaryBackground()
+        refreshLocalizedContent()
+        configureNavigationBar()
         configureConstraints()
         configureActions()
         configureEmailTextField()
-        self.navigationController?.isNavigationBarHidden = true
+    }
+
+    private func configureNavigationBar() {
+        navigationItem.rightBarButtonItem = languageBarButtonItem
+        navigationItem.title = ""
+        configureLanguageMenu()
+    }
+
+    private func configureLanguageMenu() {
+        let actions = StartModels.LanguageOption.allCases.map { option in
+            UIAction(
+                title: option.title,
+                state: option == selectedLanguageOption ? .on : .off
+            ) { [weak self] _ in
+                self?.handleLanguageChange(option)
+            }
+        }
+
+        languageBarButtonItem.menu = UIMenu(children: actions)
     }
     
     private func configureEmailTextField() {
@@ -193,8 +236,8 @@ final class StartViewController: UIViewController {
     }
 
     private func stopLoadingState() {
-        sendCodeButton.setAttributedTitle(Constants.SendCodeButtonTitles.active, for: .normal)
-        sendCodeButton.setAttributedTitle(Constants.SendCodeButtonTitles.disabled, for: .disabled)
+        sendCodeButton.setAttributedTitle(makeSendCodeButtonTitle(isEnabledState: true), for: .normal)
+        sendCodeButton.setAttributedTitle(makeSendCodeButtonTitle(isEnabledState: false), for: .disabled)
         sendCodeLoader.stopAnimating()
         emailTextField.stopAnimating()
     }
@@ -206,6 +249,51 @@ final class StartViewController: UIViewController {
             sendCodeButton.isEnabled = isValid
             sendCodeButton.alpha = isValid ? 1 : 0.6
             sendCodeButton.layoutIfNeeded()
+        }
+    }
+
+    private func makeSendCodeButtonTitle(isEnabledState: Bool) -> NSAttributedString {
+        let title = isEnabledState ? "sendCode".localized : "invalidEmailFormat".localized
+        return NSAttributedString(
+            string: title,
+            attributes: [
+                .foregroundColor: UIColor.textWhite,
+                .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
+            ]
+        )
+    }
+
+    private func applyLanguage() {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .forEach { window in
+                UIView.transition(
+                    with: window,
+                    duration: 0.25,
+                    options: [.transitionCrossDissolve, .allowAnimatedContent]
+                ) { [weak self] in
+                    guard let self else { return }
+                    self.refreshLocalizedContent()
+                    window.layoutIfNeeded()
+                }
+            }
+    }
+
+    private func refreshLocalizedContent() {
+        emailLabel.text = "startEnterEmailTitle".localized
+        if sendCodeLoader.isAnimating == false {
+            sendCodeButton.setAttributedTitle(makeSendCodeButtonTitle(isEnabledState: true), for: .normal)
+            sendCodeButton.setAttributedTitle(makeSendCodeButtonTitle(isEnabledState: false), for: .disabled)
+        }
+        configureLanguageMenu()
+    }
+
+    private func handleLanguageChange(_ option: StartModels.LanguageOption) {
+        guard selectedLanguageOption != option else { return }
+
+        Task { [weak self] in
+            await self?.interactor.updateLanguageOption(option)
         }
     }
     
@@ -248,26 +336,6 @@ final class StartViewController: UIViewController {
         let lift = max(0, safeAreaBottom - keyboardTop)
 
         applyKeyboardLayout(lift: lift, duration: change.duration, options: change.options)
-    }
-}
-
-private enum Constants {
-    enum SendCodeButtonTitles {
-        static let disabled = NSAttributedString(
-            string: "Неверный формат почты",
-            attributes: [
-                .foregroundColor: UIColor.textWhite,
-                .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
-            ]
-        )
-
-        static let active = NSAttributedString(
-            string: "Отправить код",
-            attributes: [
-                .foregroundColor: UIColor.textWhite,
-                .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
-            ]
-        )
     }
 }
 

@@ -13,6 +13,7 @@ enum ProfileModels {
         case notificationToggle(type: NotificationToggleType)
         case notificationDeadline
         case theme
+        case language
         case divider
     }
 
@@ -24,11 +25,11 @@ enum ProfileModels {
         var title: String {
             switch self {
             case .newQuiz:
-                return "Новый квиз"
+                return "newQuiz".localized
             case .quizResults:
-                return "Результаты квиза"
+                return "quizResults".localized
             case .groupInvites:
-                return "Приглашение в группу"
+                return "groupInvitation".localized
             }
         }
     }
@@ -44,17 +45,17 @@ enum ProfileModels {
         var title: String {
             switch self {
             case .never:
-                return "Никогда"
+                return "never".localized
             case .oneHour:
-                return "За час"
+                return "oneHourBefore".localized
             case .threeHours:
-                return "За 3 часа"
+                return "threeHoursBefore".localized
             case .sixHours:
-                return "За 6 часов"
+                return "sixHoursBefore".localized
             case .twelveHours:
-                return "За 12 часов"
+                return "twelveHoursBefore".localized
             case .oneDay:
-                return "За сутки"
+                return "oneDayBefore".localized
             }
         }
     }
@@ -67,11 +68,11 @@ enum ProfileModels {
         var title: String {
             switch self {
             case .system:
-                return "Системная"
+                return "systemTheme".localized
             case .light:
-                return "Светлая"
+                return "lightTheme".localized
             case .dark:
-                return "Темная"
+                return "darkTheme".localized
             }
         }
 
@@ -105,6 +106,45 @@ enum ProfileModels {
                 self = .light
             case .dark:
                 self = .dark
+            }
+        }
+    }
+
+    enum LanguageOption: String, CaseIterable {
+        case system
+        case russian
+        case english
+
+        var title: String {
+            switch self {
+            case .system:
+                return "systemLanguage".localized
+            case .russian:
+                return "russianLanguage".localized
+            case .english:
+                return "English"
+            }
+        }
+
+        var languagePreference: AppLanguagePreference {
+            switch self {
+            case .system:
+                return .system
+            case .russian:
+                return .ru
+            case .english:
+                return .en
+            }
+        }
+
+        init(languagePreference: AppLanguagePreference) {
+            switch languagePreference {
+            case .system:
+                self = .system
+            case .ru:
+                self = .russian
+            case .en:
+                self = .english
             }
         }
     }

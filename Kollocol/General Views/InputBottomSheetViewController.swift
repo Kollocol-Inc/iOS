@@ -332,10 +332,10 @@ final class InputBottomSheetViewController: UIViewController {
 
     private func handleDismissAttemptWhileGenerating() {
         showConfirmationAlert(
-            title: "Внимание",
-            message: "Генерация шаблона в процессе. Вы уверены, что хотите выйти?",
-            cancelTitle: "Отмена",
-            confirmTitle: "Выйти",
+            title: "attentionTitle".localized,
+            message: "inputBottomSheetExitWhileGeneratingMessage".localized,
+            cancelTitle: "cancel".localized,
+            confirmTitle: "exit".localized,
             confirmStyle: .destructive
         ) { [weak self] in
             guard let self else { return }
@@ -346,10 +346,10 @@ final class InputBottomSheetViewController: UIViewController {
 
     private func handleDismissAttemptWithUnsavedChanges() {
         showConfirmationAlert(
-            title: "Внимание",
-            message: "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно",
-            cancelTitle: "Отмена",
-            confirmTitle: "Выйти",
+            title: "attentionTitle".localized,
+            message: "inputBottomSheetExitWithUnsavedChangesMessage".localized,
+            cancelTitle: "cancel".localized,
+            confirmTitle: "exit".localized,
             confirmStyle: .destructive
         ) { [weak self] in
             self?.dismiss(animated: true)

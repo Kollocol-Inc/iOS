@@ -16,9 +16,9 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         field.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         field.layer.cornerRadius = 18
         field.attributedPlaceholder = NSAttributedString(
-            string: "Поиск участников",
+            string: "searchParticipants".localized,
             attributes: [
-                .foregroundColor: UIColor.textPrimary,
+                .foregroundColor: UIColor.textSecondary,
                 .font: UIFont.systemFont(ofSize: 15, weight: .medium)
             ]
         )
@@ -88,7 +88,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
         button.layer.cornerRadius = 18
         button.clipsToBounds = true
-        button.setTitle("Отменить квиз", for: .normal)
+        button.setTitle("cancelQuiz".localized, for: .normal)
         button.setHeight(42)
         return button
     }()
@@ -100,26 +100,26 @@ final class QuizParticipantsOverviewViewController: UIViewController {
         static let searchToTableSpacing: CGFloat = 16
         static let singleEmptyStateTopInset: CGFloat = 8
 
-        static let emptyParticipantsMessage = "Нет участников"
-        static let emptyFinishedParticipantsMessage = "Нет участников, прошедших квиз"
-        static let emptyNotStartedParticipantsMessage = "Нет участников, которые не приступили к прохождению"
+        static let emptyParticipantsMessage = "noParticipants".localized
+        static let emptyFinishedParticipantsMessage = "noFinishedParticipants".localized
+        static let emptyNotStartedParticipantsMessage = "noNotStartedParticipants".localized
 
-        static let passedTitle = "Прошли"
-        static let notStartedTitle = "Не приступили"
+        static let passedTitle = "passed".localized
+        static let notStartedTitle = "notStarted".localized
 
-        static let publishUnavailableTitle = "С прискорбием сообщаем..."
-        static let publishUnavailableAsyncDescription = "Опубликовать результаты можно после конца дедлайна"
-        static let publishUnavailableReviewDescription = "Для публикации результатов необходимо оценить всех участников"
+        static let publishUnavailableTitle = "withRegretTitle".localized
+        static let publishUnavailableAsyncDescription = "publishUnavailableAsyncDescription".localized
+        static let publishUnavailableReviewDescription = "publishUnavailableReviewDescription".localized
 
-        static let publishConfirmTitle = "Внимание"
-        static let publishConfirmDescription = "Вы уверены, что хотите опубликовать результаты? Все участники получат уведомление. Это действие необратимо"
-        static let publishConfirmActionTitle = "Опубликовать"
-        static let cancelActionTitle = "Отмена"
+        static let publishConfirmTitle = "attentionTitle".localized
+        static let publishConfirmDescription = "confirmPublishResults".localized
+        static let publishConfirmActionTitle = "publish".localized
+        static let cancelActionTitle = "cancel".localized
 
-        static let cancelQuizConfirmationTitle = "Подтверждение"
-        static let cancelQuizConfirmationDescription = "Вы уверены, что хотите отменить квиз %@? Это действие необратимо"
-        static let cancelQuizCloseActionTitle = "Закрыть"
-        static let cancelQuizConfirmActionTitle = "Отменить"
+        static let cancelQuizConfirmationTitle = "confirmationTitle".localized
+        static let cancelQuizConfirmationDescription = "confirmCancelQuizFormat".localized
+        static let cancelQuizCloseActionTitle = "close".localized
+        static let cancelQuizConfirmActionTitle = "cancelAction".localized
     }
 
     // MARK: - Properties
@@ -293,7 +293,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
     private func configureNavigationBar() {
         let titleLabel = UILabel()
         let normalizedTitle = initialData.quizTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        titleLabel.text = normalizedTitle.isEmpty ? "Квиз" : normalizedTitle
+        titleLabel.text = normalizedTitle.isEmpty ? "quizDefaultTitle".localized : normalizedTitle
         titleLabel.textColor = .textSecondary
         titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
         navigationItem.titleView = titleLabel
@@ -447,7 +447,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
 
         var result: [QuizParticipantsOverviewModels.Row] = [
             .reviewHeader(
-                title: "Участники",
+                title: "participants".localized,
                 totalCount: filteredParticipants.count,
                 reviewedCount: reviewedCount
             )
@@ -590,7 +590,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
             .filter { $0.isEmpty == false }
             .joined(separator: " ")
 
-        return fullName.isEmpty ? "Участник" : fullName
+        return fullName.isEmpty ? "participant".localized : fullName
     }
 
     private func handlePublishResultsTap() {
@@ -599,7 +599,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
             showInfoBottomSheet(
                 title: UIConstants.publishUnavailableTitle,
                 description: UIConstants.publishUnavailableAsyncDescription,
-                buttonTitle: "ОК"
+                buttonTitle: "ok".localized
             )
 
         case .review:
@@ -607,7 +607,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
                 showInfoBottomSheet(
                     title: UIConstants.publishUnavailableTitle,
                     description: UIConstants.publishUnavailableReviewDescription,
-                    buttonTitle: "ОК"
+                    buttonTitle: "ok".localized
                 )
                 return
             }
@@ -658,7 +658,7 @@ final class QuizParticipantsOverviewViewController: UIViewController {
     @objc
     private func handleCancelQuizTap() {
         let normalizedTitle = initialData.quizTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        let resolvedQuizTitle = normalizedTitle.isEmpty ? "Квиз" : normalizedTitle
+        let resolvedQuizTitle = normalizedTitle.isEmpty ? "quizDefaultTitle".localized : normalizedTitle
         let description = UIConstants.cancelQuizConfirmationDescription.replacingOccurrences(
             of: "%@",
             with: resolvedQuizTitle

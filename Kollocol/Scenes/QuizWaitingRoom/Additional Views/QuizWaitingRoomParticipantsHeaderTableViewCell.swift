@@ -15,7 +15,7 @@ final class QuizWaitingRoomParticipantsHeaderTableViewCell: UITableViewCell {
         label.numberOfLines = 1
         label.textAlignment = .left
         label.font = .systemFont(ofSize: 20, weight: .medium)
-        label.text = "Участники"
+        label.text = "participants".localized
         return label
     }()
 
@@ -42,7 +42,7 @@ final class QuizWaitingRoomParticipantsHeaderTableViewCell: UITableViewCell {
 
     // MARK: - Methods
     func configure(count: Int) {
-        configure(title: "Участники", count: count)
+        configure(title: "participants".localized, count: count)
     }
 
     func configure(title: String, count: Int) {

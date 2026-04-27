@@ -11,10 +11,15 @@ enum StartAssembly {
     @MainActor
     static func build(
         router: AuthRouting,
-        authService: AuthService
+        authService: AuthService,
+        udService: UserDefaultsService
     ) -> UIViewController {
         let presenter = StartRouter(router: router)
-        let interactor = StartLogic(presenter: presenter, authService: authService)
+        let interactor = StartLogic(
+            presenter: presenter,
+            authService: authService,
+            udService: udService
+        )
         let view = StartViewController(interactor: interactor)
         presenter.view = view
         

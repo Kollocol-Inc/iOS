@@ -43,9 +43,9 @@ final class VerifyCodeRouter: VerifyCodePresenter, ServiceErrorHandling {
 
         switch useCase {
         case .verifyCodeSubmit:
-            return "Слишком много попыток ввода кода. Попробуйте еще раз через несколько минут"
+            return "verifyCodeTooManyAttemptsError".localized
         case .verifyCodeResend:
-            return "Код уже отправлялся недавно. Попробуйте запросить его повторно чуть позже"
+            return "verifyCodeResendTooSoonError".localized
         default:
             return nil
         }

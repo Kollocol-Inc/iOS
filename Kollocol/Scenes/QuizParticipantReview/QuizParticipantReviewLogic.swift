@@ -226,7 +226,7 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
             return QuizParticipantReviewModels.ViewData(
                 rows: [
                     .header(title: normalizedQuizTitle(from: nil)),
-                    .empty(text: "Нет данных по ответам")
+                    .empty(text: "noAnswersData".localized)
                 ],
                 selectedQuestionIndex: 0,
                 checkmarkState: .complete,
@@ -251,7 +251,7 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
             return QuizParticipantReviewModels.ViewData(
                 rows: [
                     .header(title: normalizedQuizTitle(from: details.instance?.title)),
-                    .empty(text: "Нет вопросов")
+                    .empty(text: "noQuestions".localized)
                 ],
                 selectedQuestionIndex: 0,
                 checkmarkState: .complete,
@@ -644,12 +644,12 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
         }
 
         let initialTitle = normalizedString(initialData.quizTitle)
-        return initialTitle.isEmpty ? "Квиз" : initialTitle
+        return initialTitle.isEmpty ? "quizDefaultTitle".localized : initialTitle
     }
 
     private func normalizedQuestionText(_ text: String?) -> String {
         let normalizedText = normalizedString(text)
-        return normalizedText.isEmpty ? "Вопрос без текста" : normalizedText
+        return normalizedText.isEmpty ? "questionWithoutText".localized : normalizedText
     }
 
     private func openCorrectAnswerText(_ correctAnswer: QuestionCorrectAnswer?) -> String? {
@@ -670,7 +670,7 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
 
         switch state {
         case .loading:
-            return .init(badge: .aiLoading, text: "Думаю...")
+            return .init(badge: .aiLoading, text: "aiThinking".localized)
 
         case .ready(let suggestion):
             return .init(
@@ -682,9 +682,13 @@ actor QuizParticipantReviewLogic: QuizParticipantReviewInteractor {
 
     private func aiReviewText(from suggestion: QuizAnswerReviewSuggestion) -> String {
         let feedback = normalizedString(suggestion.feedback)
-        let normalizedFeedback = feedback.isEmpty ? "Комментарий отсутствует" : feedback
+        let normalizedFeedback = feedback.isEmpty ? "feedbackMissing".localized : feedback
         let suggestedScore = suggestion.suggestedScore ?? 0
-        return "\(normalizedFeedback)\nРекомендуемый балл — \(suggestedScore)"
+        let recommendedScoreText = String(
+            format: "aiRecommendedScoreFormat".localized,
+            suggestedScore
+        )
+        return "\(normalizedFeedback)\n\(recommendedScoreText)"
     }
 
     private func makeBottomControlsViewData(

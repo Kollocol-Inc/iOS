@@ -8,12 +8,7 @@
 import Foundation
 
 extension String {
-    /// Интерпретирует строку как секунды и возвращает "ч./м./с." формат.
-    /// Примеры:
-    /// "180" -> "3 м."
-    /// "200" -> "3 м. 20 с."
-    /// "45"  -> "45 с."
-    /// "10000" -> "2 ч. 46 м. 40 с."
+    /// Interprets string as seconds and returns localized short HMS format.
     func asHmsFromSeconds() -> String? {
         guard let totalSeconds = Int(self.trimmingCharacters(in: .whitespacesAndNewlines)),
               totalSeconds >= 0
@@ -26,19 +21,19 @@ extension String {
         var parts: [String] = []
 
         if hours > 0 {
-            parts.append("\(hours) ч.")
+            parts.append("\(hours) \("timeHourShort".localized)")
         }
 
         if minutes > 0 || hours > 0 {
             if minutes > 0 {
-                parts.append("\(minutes) м.")
+                parts.append("\(minutes) \("timeMinuteShort".localized)")
             } else if hours > 0 && seconds > 0 {
-                parts.append("0 м.")
+                parts.append("0 \("timeMinuteShort".localized)")
             }
         }
 
         if seconds > 0 || parts.isEmpty {
-            parts.append("\(seconds) с.")
+            parts.append("\(seconds) \("timeSecondShort".localized)")
         }
 
         return parts.joined(separator: " ")

@@ -42,6 +42,10 @@ final class ProfileRouter: ProfilePresenter, ServiceErrorHandling {
         await view?.displayThemeOption(option)
     }
 
+    func presentLanguageOption(_ option: ProfileModels.LanguageOption) async {
+        await view?.displayLanguageOption(option)
+    }
+
     func presentProfileUpdateError(_ error: UserServiceError) async {
         await presentServiceError(error, useCase: .generic)
     }
@@ -72,9 +76,9 @@ final class ProfileRouter: ProfilePresenter, ServiceErrorHandling {
         switch useCase {
         case .avatarUpload:
             if userServiceError == .badRequest {
-                return "Выбранная фотография слишком большая, выберите другую"
+                return "avatarUploadTooLargeError".localized
             }
-            return "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
+            return "avatarUploadGenericError".localized
 
         default:
             return nil
