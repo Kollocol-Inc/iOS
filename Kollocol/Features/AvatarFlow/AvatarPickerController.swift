@@ -37,6 +37,7 @@ final class AvatarPickerController: NSObject {
         presentingViewController: UIViewController,
         interactor: any AvatarFlowInteracting,
         initialAvatar: UIImage? = nil,
+        initialAvatarURL: String? = nil,
         onProcessingChanged: @escaping @MainActor (Bool) -> Void,
         onAvatarChanged: @escaping @MainActor (AvatarPayload) -> Void,
         onCameraAccessDenied: @escaping @MainActor () -> Void = {}
@@ -49,7 +50,11 @@ final class AvatarPickerController: NSObject {
         self.onCameraAccessDenied = onCameraAccessDenied
         super.init()
 
-        avatarView.setAvatar(initialAvatar)
+        if let initialAvatar {
+            avatarView.setAvatar(initialAvatar)
+        } else {
+            avatarView.setAvatar(url: initialAvatarURL)
+        }
         updateMenu()
     }
 

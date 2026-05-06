@@ -8,11 +8,13 @@
 import Foundation
 
 protocol StartQuizInteractor: Actor {
+    func fetchOwnedGroups() async
     func handleBackTap() async
     func startQuiz(formData: StartQuizModels.FormData) async
 }
 
 protocol StartQuizPresenter {
+    func presentOwnedGroups(_ groups: [Group]) async
     func presentStartQuizLoading(_ isLoading: Bool) async
     func presentStartQuizSuccess() async
     func presentStartSyncQuizSuccess(accessCode: String) async

@@ -181,15 +181,19 @@ struct ProfileLogicTests {
     }
 
     @Test
-    func fetchAndUpdateThemeAndLanguageOptions() async {
+    func fetchAndUpdateThemeAndLanguageOptions() async throws {
         let presenter = ProfilePresenterSpy()
         let userDefaults = ProfileUserDefaultsServiceMock()
+        let userService = ProfileUserServiceMock()
+        let currentUser = try makeUserDTO(id: "language-sync")
+        await userService.setUserProfileResult(currentUser)
+        await userService.setUpdateUserProfileResult(currentUser)
         userDefaults.appThemePreference = .dark
         userDefaults.appLanguagePreference = .en
 
         let logic = ProfileLogic(
             presenter: presenter,
-            userService: ProfileUserServiceMock(),
+            userService: userService,
             sessionManager: makeSessionManager().manager,
             udService: userDefaults
         )
@@ -203,6 +207,32 @@ struct ProfileLogicTests {
         #expect(userDefaults.appLanguagePreference == .ru)
         #expect(await presenter.themeOptions() == [.dark, .light])
         #expect(await presenter.languageOptions() == [.english, .russian])
+        #expect(await userService.updateUserProfileCallsCount() == 1)
+    }
+
+    @Test
+    func updateLanguageOptionSynchronizesProfileWithoutChangingNameAndSurname() async throws {
+        let presenter = ProfilePresenterSpy()
+        let userService = ProfileUserServiceMock()
+        let user = try makeUserDTO(id: "user-sync")
+        await userService.setUserProfileResult(user)
+        await userService.setUpdateUserProfileResult(user)
+
+        let logic = ProfileLogic(
+            presenter: presenter,
+            userService: userService,
+            sessionManager: makeSessionManager().manager,
+            udService: ProfileUserDefaultsServiceMock()
+        )
+
+        await logic.fetchUserProfile()
+        await logic.updateLanguageOption(.english)
+
+        let request = await userService.lastUpdateUserProfileRequest()
+        #expect(request?.name == "First")
+        #expect(request?.surname == "Last")
+        #expect(await userService.getUserProfileCallsCount() == 1)
+        #expect(await userService.updateUserProfileCallsCount() == 1)
     }
 
     @Test
@@ -328,10 +358,14 @@ private actor ProfilePresenterSpy: ProfilePresenter {
 private actor ProfileUserServiceMock: UserService {
     private var userProfileResult: UserDTO?
     private var userProfileError: UserServiceError?
+    private var userProfileCalls = 0
     private var notificationsResult: NotificationsSettingsDTO?
     private var notificationsError: UserServiceError?
     private var updateNotificationsResult: NotificationsSettingsDTO?
     private var updateNotificationsError: UserServiceError?
+    private var updateUserProfileResult: UserDTO?
+    private var updateUserProfileError: UserServiceError?
+    private var updateUserProfileRequestsStorage: [(name: String, surname: String)] = []
     private var updateNotificationsRequestsStorage: [
         (deadlineReminder: String, groupInvites: Bool, newQuizzes: Bool, quizResults: Bool)
     ] = []
@@ -349,6 +383,14 @@ private actor ProfileUserServiceMock: UserService {
 
     func setNotificationsResult(_ dto: NotificationsSettingsDTO) {
         notificationsResult = dto
+    }
+
+    func setUpdateUserProfileResult(_ user: UserDTO) {
+        updateUserProfileResult = user
+    }
+
+    func setUpdateUserProfileError(_ error: UserServiceError?) {
+        updateUserProfileError = error
     }
 
     func setNotificationsError(_ error: UserServiceError?) {
@@ -375,6 +417,18 @@ private actor ProfileUserServiceMock: UserService {
         uploadCalls
     }
 
+    func getUserProfileCallsCount() -> Int {
+        userProfileCalls
+    }
+
+    func updateUserProfileCallsCount() -> Int {
+        updateUserProfileRequestsStorage.count
+    }
+
+    func lastUpdateUserProfileRequest() -> (name: String, surname: String)? {
+        updateUserProfileRequestsStorage.last
+    }
+
     func lastUpdateNotificationsRequest() -> (
         deadlineReminder: String,
         groupInvites: Bool,
@@ -385,6 +439,7 @@ private actor ProfileUserServiceMock: UserService {
     }
 
     func getUserProfile() async throws -> UserDTO {
+        userProfileCalls += 1
         if let userProfileError {
             throw userProfileError
         }
@@ -395,6 +450,20 @@ private actor ProfileUserServiceMock: UserService {
     }
 
     func updateUserProfile(name: String, surname: String) async throws -> UserDTO {
+        updateUserProfileRequestsStorage.append((name: name, surname: surname))
+
+        if let updateUserProfileError {
+            throw updateUserProfileError
+        }
+
+        if let updateUserProfileResult {
+            return updateUserProfileResult
+        }
+
+        if let userProfileResult {
+            return userProfileResult
+        }
+
         throw UserServiceError.unknown
     }
 

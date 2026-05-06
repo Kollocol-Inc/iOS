@@ -21,6 +21,10 @@ final class StartQuizRouter: StartQuizPresenter, ServiceErrorHandling {
     }
 
     // MARK: - Methods
+    func presentOwnedGroups(_ groups: [Group]) async {
+        await view?.displayOwnedGroups(groups.map { $0.toGroupOptionViewData() })
+    }
+
     func presentStartQuizLoading(_ isLoading: Bool) async {
         await view?.displayStartQuizLoading(isLoading)
     }
@@ -43,5 +47,15 @@ final class StartQuizRouter: StartQuizPresenter, ServiceErrorHandling {
 
     func presentCloseScreen() async {
         await router.dismissStartQuizScreen()
+    }
+}
+
+private extension Group {
+    func toGroupOptionViewData() -> StartQuizModels.GroupOption {
+        let normalizedTitle = name?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return StartQuizModels.GroupOption(
+            id: id ?? "",
+            title: (normalizedTitle?.isEmpty == false ? normalizedTitle : nil) ?? "untitled".localized
+        )
     }
 }

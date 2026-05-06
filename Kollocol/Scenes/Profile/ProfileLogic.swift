@@ -16,6 +16,7 @@ final class ProfileLogic: ProfileInteractor {
 
     // MARK: - Properties
     private var notificationsSettings = ProfileModels.NotificationsSettings.default
+    private var currentUserProfile: UserDTO?
 
     // MARK: - Lifecycle
     init(
@@ -34,6 +35,7 @@ final class ProfileLogic: ProfileInteractor {
     func fetchUserProfile() async {
         do {
             let user = try await userService.getUserProfile()
+            currentUserProfile = user
             await presenter.presentUserProfile(user)
         } catch {
             await presenter.presentServiceError(UserServiceError.wrap(error))
@@ -64,6 +66,7 @@ final class ProfileLogic: ProfileInteractor {
     func updateUserProfile(name: String, surname: String) async {
         do {
             let user = try await userService.updateUserProfile(name: name, surname: surname)
+            currentUserProfile = user
             await presenter.presentUserProfile(user)
         } catch {
             await presenter.presentProfileUpdateError(UserServiceError.wrap(error))
@@ -120,6 +123,7 @@ final class ProfileLogic: ProfileInteractor {
     func updateLanguageOption(_ option: ProfileModels.LanguageOption) async {
         udService.appLanguagePreference = option.languagePreference
         await presenter.presentLanguageOption(option)
+        await synchronizeLanguagePreferenceWithBackend()
     }
 
     func presentAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) async {
@@ -158,6 +162,31 @@ final class ProfileLogic: ProfileInteractor {
             await presenter.presentNotificationsSettings(previousSettings)
             await presenter.presentServiceError(UserServiceError.wrap(error))
         }
+    }
+
+    private func synchronizeLanguagePreferenceWithBackend() async {
+        do {
+            let profile = try await loadCurrentUserProfile()
+            let firstName = profile.firstName ?? ""
+            let lastName = profile.lastName ?? ""
+
+            currentUserProfile = try await userService.updateUserProfile(
+                name: firstName,
+                surname: lastName
+            )
+        } catch {
+            await presenter.presentServiceError(UserServiceError.wrap(error))
+        }
+    }
+
+    private func loadCurrentUserProfile() async throws -> UserDTO {
+        if let currentUserProfile {
+            return currentUserProfile
+        }
+
+        let user = try await userService.getUserProfile()
+        currentUserProfile = user
+        return user
     }
 
     private func performLogout() async {

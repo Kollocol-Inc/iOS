@@ -51,6 +51,38 @@ struct APIClientTests {
     }
 
     @Test
+    func requestAppliesBaseHeadersProviderHeaders() async throws {
+        let context = makeNetworkTestContext()
+        context.enqueueJSON(statusCode: 200, json: #"{"value":"ok"}"#)
+
+        let headersProvider = BaseHeadersProviderStub(headers: [
+            "X-Accept-Language": "ru",
+            "X-Platform": "ios"
+        ])
+
+        _ = try await context.makeAPIClient(baseHeadersProvider: headersProvider).request(ValueEndpoint())
+
+        let request = try #require(context.recordedRequests().first)
+        #expect(request.value(forHTTPHeaderField: "X-Accept-Language") == "ru")
+        #expect(request.value(forHTTPHeaderField: "X-Platform") == "ios")
+    }
+
+    @Test
+    func requestEndpointHeadersOverrideBaseHeaders() async throws {
+        let context = makeNetworkTestContext()
+        context.enqueueJSON(statusCode: 200, json: #"{"value":"ok"}"#)
+
+        let headersProvider = BaseHeadersProviderStub(headers: ["X-Accept-Language": "ru"])
+
+        _ = try await context.makeAPIClient(baseHeadersProvider: headersProvider).request(
+            ValueEndpoint(headers: ["X-Accept-Language": "en"])
+        )
+
+        let request = try #require(context.recordedRequests().first)
+        #expect(request.value(forHTTPHeaderField: "X-Accept-Language") == "en")
+    }
+
+    @Test
     func requestReturnsEmptyResponseForEmptyBody() async throws {
         let context = makeNetworkTestContext()
         context.enqueue(statusCode: 204, data: Data())
@@ -268,6 +300,18 @@ private actor APIClientInterceptorSpy: RequestInterceptor {
 
     func forcedLogoutCallsCount() -> Int {
         forcedLogoutCalls
+    }
+}
+
+private struct BaseHeadersProviderStub: BaseHeadersProvider {
+    let headersStorage: [String: String]
+
+    init(headers: [String: String]) {
+        headersStorage = headers
+    }
+
+    func headers() -> [String: String] {
+        headersStorage
     }
 }
 

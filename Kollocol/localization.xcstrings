@@ -1,3593 +1,4205 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "attentionTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Attention"
+  "sourceLanguage" : "en",
+  "strings" : {
+    "addQuestion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add question"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Внимание"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить вопрос"
           }
         }
       }
     },
-    "avatarUploadGenericError": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "An error occurred while uploading the avatar. Choose another one or try again later"
+    "ai" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ИИ"
           }
         }
       }
     },
-    "avatarUploadTooLargeError": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The selected photo is too large. Please choose another one"
+    "aiCompletionValidationDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To supplement with AI, specify quiz title or add at least one question"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выбранная фотография слишком большая, выберите другую"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для дополнения с ИИ необходимо указать название квиза или добавить хотя бы один вопрос"
           }
         }
       }
     },
-    "cameraAccessDeniedDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The app has no access to camera. Open Settings, grant permissions, return and try again"
+    "aiRecommendedScoreFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended score — %d"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "У приложения нет доступа к камере. Перейдите в настройки и выдайте соответствующие разрешения, после чего вернитесь обратно и попробуйте снова"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рекомендуемый балл — %d"
           }
         }
       }
     },
-    "cancel": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
+    "aiThinking" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thinking..."
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отмена"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Думаю..."
           }
         }
       }
     },
-    "darkTheme": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dark"
+    "allQuestionsReviewed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All questions are reviewed"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Темная"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все вопросы оценены"
           }
         }
       }
     },
-    "deadline": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Deadline"
+    "answer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Answer"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Дедлайн"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ответить"
           }
         }
       }
     },
-    "deletePhoto": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Delete Photo"
+    "answerOptional" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Answer (optional)"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Удалить фото"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ответ (опционально)"
           }
         }
       }
     },
-    "editNameOrSurname": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Edit first or last name"
+    "answers" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Answers"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Изменить имя или фамилию"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ответы"
           }
         }
       }
     },
-    "firstNamePlaceholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "First name"
+    "attentionTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attention"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Имя"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Внимание"
           }
         }
       }
     },
-    "gallery": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gallery"
+    "avatarDeleteConfirmationMessage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete the photo? This action cannot be undone"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Галерея"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите удалить фото? Отменить это действие невозможно"
           }
         }
       }
     },
-    "groupInvitation": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Group invitation"
+    "avatarTooLargeError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The selected photo is too large, choose another one"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Приглашение в группу"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбранная фотография слишком большая, выберите другую"
           }
         }
       }
     },
-    "lastNamePlaceholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Last name"
+    "avatarUploadFailedError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An error occurred while uploading avatar, choose another one or try later"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Фамилия"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
           }
         }
       }
     },
-    "lightTheme": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Light"
+    "avatarUploadGenericError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An error occurred while uploading the avatar. Choose another one or try again later"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Светлая"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
           }
         }
       }
     },
-    "never": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Never"
+    "avatarUploadTooLargeError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The selected photo is too large. Please choose another one"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Никогда"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбранная фотография слишком большая, выберите другую"
           }
         }
       }
     },
-    "newQuiz": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New quiz"
+    "back" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Новый квиз"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назад"
           }
         }
       }
     },
-    "notificationsHeader": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Notifications"
+    "cameraAccessDeniedDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app has no access to camera. Open Settings, grant permissions, return and try again"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Уведомления"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У приложения нет доступа к камере. Перейдите в настройки и выдайте соответствующие разрешения, после чего вернитесь обратно и попробуйте снова"
           }
         }
       }
     },
-    "ok": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OK"
+    "cancel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ОК"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отмена"
           }
         }
       }
     },
-    "oneDayBefore": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1 day before"
+    "cancelAction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "За сутки"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить"
           }
         }
       }
     },
-    "oneHourBefore": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1 hour before"
+    "cancelQuiz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel quiz"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "За час"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить квиз"
           }
         }
       }
     },
-    "profilePhoto": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profile photo"
+    "cancelRegistration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel registration"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Фото профиля"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить регистрацию"
           }
         }
       }
     },
-    "profileTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profile"
+    "cancelRegistrationDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If registration is canceled, you will be redirected to start screen"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Профиль"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "При отмене регистрации вы будете направлены на начальный экран"
           }
         }
       }
     },
-    "quizResults": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quiz results"
+    "close" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Результаты квиза"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть"
           }
         }
       }
     },
-    "settingsHeader": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Settings"
+    "confirm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Настройки"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подтвердить"
           }
         }
       }
     },
-    "sixHoursBefore": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "6 hours before"
+    "confirmAppendGeneratedQuestions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to supplement template with generated questions?"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "За 6 часов"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите дополнить шаблон сгенерированными вопросами?"
           }
         }
       }
     },
-    "systemTheme": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "System"
+    "confirmAsyncQuizStartByTitleFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to start solving quiz %@?"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Системная"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите приступить к выполнению квиза %@?"
           }
         }
       }
     },
-    "takePhoto": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Take photo"
+    "confirmAsyncQuizStartGeneric" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to start solving this quiz?"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Сделать фото"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите приступить к выполнению этого квиза?"
           }
         }
       }
     },
-    "theme": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Theme"
+    "confirmationTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmation"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Тема"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подтверждение"
           }
         }
       }
     },
-    "threeHoursBefore": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "3 hours before"
+    "confirmBackUnsavedChanges" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to go back? All changes will be permanently lost"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "За 3 часа"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите вернуться назад? Все изменения будут утеряны безвозвратно"
           }
         }
       }
     },
-    "twelveHoursBefore": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "12 hours before"
+    "confirmCancelQuizFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to cancel quiz %@? This action cannot be undone"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "За 12 часов"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите отменить квиз %@? Это действие необратимо"
           }
         }
       }
     },
-    "update": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Update"
+    "confirmDeleteQuestion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete the question?"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Обновить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите удалить вопрос?"
           }
         }
       }
     },
-    "language": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Language"
+    "confirmDeleteTemplateFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete template %@? This action cannot be undone"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Язык"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
           }
         }
       }
     },
-    "systemLanguage": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "System"
+    "confirmExitQuestionsGenerationInProgress" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to exit? Question generation is in progress"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Системный"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите выйти? Генерация вопросов в процессе"
           }
         }
       }
     },
-    "russianLanguage": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Russian"
+    "confirmExitQuestionTextGenerationInProgress" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to exit? Question text generation is in progress"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Русский"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите выйти? Генерация текста вопроса в процессе"
           }
         }
       }
     },
-    "englishLanguage": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "English"
+    "confirmExitUnsavedChanges" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to exit? All changes will be permanently lost"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Английский"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно"
           }
         }
       }
     },
-    "create": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Create"
+    "confirmGetAiRecommendation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to get AI recommendation?"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Создать"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите получить рекомендацию от ИИ?"
           }
         }
       }
     },
-    "delete": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Delete"
+    "confirmParaphraseQuestionText" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to paraphrase the question text?"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Удалить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите перефразировать текст вопроса?"
           }
         }
       }
     },
-    "edit": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Edit"
+    "confirmPublishResults" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to publish results? All participants will receive a notification. This action cannot be undone"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Изменить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите опубликовать результаты? Все участники получат уведомление. Это действие необратимо"
           }
         }
       }
     },
-    "errorTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Error"
+    "correctAnswer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correct answer"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ошибка"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Верный ответ"
           }
         }
       }
     },
-    "invalidCodeTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invalid code"
+    "create" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Неверный код"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создать"
           }
         }
       }
     },
-    "invalidQuizCodeError": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This code does not exist or was entered incorrectly. Please try again"
+    "darkTheme" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Темная"
           }
         }
       }
     },
-    "mainHostingHeader": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hosting"
+    "deadline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deadline"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Провожу"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дедлайн"
           }
         }
       }
     },
-    "mainJoinButton": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Let's go!"
+    "delete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Погнали!"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить"
           }
         }
       }
     },
-    "mainNoHostingQuizzes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "There are no quizzes you host"
+    "deleteGroup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete group"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет квизов, которые вы проводите"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить группу"
           }
         }
       }
     },
-    "mainNoParticipatingQuizzes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "There are no quizzes you participate in"
+    "deletePhoto" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Photo"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет квизов, в которых вы участвуете"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить фото"
           }
         }
       }
     },
-    "mainParticipatingHeader": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Participating"
+    "deleteQuestionTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Question deletion"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Участвую"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаление вопроса"
           }
         }
       }
     },
-    "myQuizzesCreateFromScratch": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "From scratch"
+    "deleteTemplateTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template deletion"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "С нуля"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаление шаблона"
           }
         }
       }
     },
-    "myQuizzesCreateWithAi": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "With AI"
+    "description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "При помощи ИИ"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Описание"
           }
         }
       }
     },
-    "myQuizzesGenerateButton": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Generate"
+    "edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Сгенерировать"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить"
           }
         }
       }
     },
-    "myQuizzesHostingHeader": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hosting"
+    "editNameOrSurname" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit first or last name"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Провожу"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить имя или фамилию"
           }
         }
       }
     },
-    "myQuizzesNoCreatedTemplates": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "There are no templates you created"
+    "englishLanguage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет шаблонов, которые вы создали"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Английский"
           }
         }
       }
     },
-    "myQuizzesNoHostingQuizzes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "There are no quizzes you host"
+    "enterAnswerPlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter answer"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет квизов, которые вы проводите"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите ответ"
           }
         }
       }
     },
-    "myQuizzesNoPendingReviewQuizzes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "There are no quizzes pending review"
+    "enterDescriptionPlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter description"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет квизов, ожидающих оценки"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите описание"
           }
         }
       }
     },
-    "myQuizzesNoReviewedQuizzes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "There are no quizzes you reviewed"
+    "enterQuestionPlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter question"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет квизов, которые вы оценили"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите вопрос"
           }
         }
       }
     },
-    "myQuizzesNoTemplatesWithSuchName": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "There are no templates with this name"
+    "enterTitlePlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter title"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет шаблонов с таким названием"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите название"
           }
         }
       }
     },
-    "myQuizzesPendingReviewHeader": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pending review"
+    "errorTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ожидают оценивания"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка"
           }
         }
       }
     },
-    "myQuizzesReviewedHeader": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reviewed"
+    "exit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exit"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Оценены"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти"
           }
         }
       }
     },
-    "myQuizzesSegmentMyQuizzes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "My Quizzes"
+    "failedCancelQuiz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to cancel quiz"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Мои квизы"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось отменить квиз"
           }
         }
       }
     },
-    "myQuizzesSegmentTemplates": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Templates"
+    "failedKickParticipant" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to kick participant"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Шаблоны"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось выгнать участника"
           }
         }
       }
     },
-    "myQuizzesTemplateGenerationPlaceholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Describe the template you want to create"
+    "failedResolveTemplateForUpdate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to resolve template for update"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Опишите, какой шаблон вы хотите создать"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось определить шаблон для обновления"
           }
         }
       }
     },
-    "myQuizzesTemplateGenerationTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Template creation"
+    "feedbackMissing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No feedback provided"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Создание шаблона"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Комментарий отсутствует"
           }
         }
       }
     },
-    "myQuizzesUntitledTemplate": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "untitled"
+    "fillAllAnswerOptions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill all added answer options"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "без названия"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заполните все добавленные варианты ответа"
           }
         }
       }
     },
-    "quizConnectionUnavailableFinished": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The quiz has already finished, unable to join"
+    "firstNamePlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First name"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Квиз уже завершен, подключение невозможно"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя"
           }
         }
       }
     },
-    "quizConnectionUnavailableStarted": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The quiz has already started, unable to join"
+    "forward" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forward"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Квиз уже начался, подключение невозможно"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вперед"
           }
         }
       }
     },
-    "quizTypeAsync": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Asynchronous"
+    "gallery" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gallery"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Асинхронный"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Галерея"
           }
         }
       }
     },
-    "quizTypeAsyncInfo": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Participants can take the quiz anytime before the deadline"
+    "grade" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grade"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Участники могут проходить квиз в любое время до дедлайна"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оценить"
           }
         }
       }
     },
-    "quizTypeSync": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Synchronous"
+    "group" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Синхронный"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Группа"
           }
         }
       }
     },
-    "quizTypeSyncInfo": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "All participants take the quiz simultaneously under the host's control"
+    "groupInvitation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group invitation"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Все участники проходят квиз одновременно под контролем создателя"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приглашение в группу"
           }
         }
       }
     },
-    "search": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search"
+    "groupKickParticipantConfirmationFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to kick %@?"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Поиск"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите выгнать %@?"
           }
         }
       }
     },
-    "searchSuffixQuizzes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "quizzes"
+    "groupDeleteConfirmationFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete group %@? This action cannot be undone"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "квизов"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите удалить группу %@? Это действие необратимо"
           }
         }
       }
     },
-    "searchSuffixTemplates": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "templates"
+    "groupLeaveConfirmationFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to leave group %@?"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "шаблонов"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите покинуть группу %@?"
           }
         }
       }
     },
-    "start": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Start"
+    "groupServiceErrorBadRequest" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client request error"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Запустить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка на стороне клиента"
           }
         }
       }
     },
-    "timeHourShort": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "h."
+    "groupServiceErrorForbidden" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don't have permission to perform this action"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ч."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недостаточно прав для выполнения действия"
           }
         }
       }
     },
-    "timeMinuteShort": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "m."
+    "groupServiceErrorNotFound" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group not found"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "м."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Группа не найдена"
           }
         }
       }
     },
-    "timeSecondShort": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "s."
+    "groupServiceErrorOffline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No internet connection"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "с."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет интернета"
           }
         }
       }
     },
-    "exit": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exit"
+    "groupServiceErrorServer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server error. We are waking up devops..."
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выйти"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка на стороне сервера. Идем будить девопса..."
           }
         }
       }
     },
-    "inputBottomSheetExitWhileGeneratingMessage": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Template generation is in progress. Are you sure you want to exit?"
+    "groupServiceErrorUnauthorized" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authorization error. Please sign in again"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Генерация шаблона в процессе. Вы уверены, что хотите выйти?"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка авторизации. Выполните вход снова"
           }
         }
       }
     },
-    "inputBottomSheetExitWithUnsavedChangesMessage": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to exit? All changes will be permanently lost"
+    "groupsNoGroupsWithSuchName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no groups with this name"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет групп с таким названием"
           }
         }
       }
     },
-    "myQuizzesDeleteTemplateTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Template deletion"
+    "groupsNoInvitedParticipants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No invited participants"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Удаление шаблона"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет приглашенных участников"
           }
         }
       }
     },
-    "myQuizzesDeleteTemplateMessage": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to delete template %@? This action cannot be undone"
+    "groupsNoMemberGroups" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You are not a member of any groups"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы не состоите ни в одной группе"
           }
         }
       }
     },
-    "timeZeroSeconds": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "0 s."
+    "groupsNoOwnerGroups" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don't manage any groups"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "0 с."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы не управляете ни одной группой"
           }
         }
       }
     },
-    "quizTypeAsyncShort": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Async"
+    "groupsCreationTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group creation"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Асинх."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создание группы"
           }
         }
       }
     },
-    "score": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Score"
+    "groupsInvited" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invited"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Балл"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приглашены"
           }
         }
       }
     },
-    "verifyCodeSentToPrefix": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your code was sent to\\n"
+    "groupsEditingTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group editing"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ваш код был отправлен на\\n"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редактирование группы"
           }
         }
       }
     },
-    "yourPlacePrefix": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your place: "
+    "groupsParticipantsInfoDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can also add new participants after creating the group"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ваше место: "
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы также сможете добавить новых участников после создания группы"
           }
         }
       }
     },
-    "startEnterEmailTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter your email"
+    "groupsEnterEmailPlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter email"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Введите вашу почту"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите почту"
           }
         }
       }
     },
-    "enterQuestionPlaceholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter question"
+    "groupsSearchPlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search groups"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Введите вопрос"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск групп"
           }
         }
       }
     },
-    "verifyCodeEnterTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter code"
+    "groupsSegmentMember" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Member"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Введите код"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Состою"
           }
         }
       }
     },
-    "enterTitlePlaceholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter title"
+    "groupsSegmentOwner" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Введите название"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управляю"
           }
         }
       }
     },
-    "enterAnswerPlaceholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter answer"
+    "groupsTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groups"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Введите ответ"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Группы"
           }
         }
       }
     },
-    "correctAnswer": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Correct answer"
+    "invite" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Верный ответ"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пригласить"
           }
         }
       }
     },
-    "question": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Question"
+    "inviteParticipants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite participants"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вопрос"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пригласить участников"
           }
         }
       }
     },
-    "questionWithoutText": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Question without text"
+    "inviteParticipantsTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite participants"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вопрос без текста"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пригласить участников"
           }
         }
       }
     },
-    "forward": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Forward"
+    "kick" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kick"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вперед"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выгнать"
           }
         }
       }
     },
-    "time": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Time"
+    "inputBottomSheetExitWhileGeneratingMessage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template generation is in progress. Are you sure you want to exit?"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Время"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Генерация шаблона в процессе. Вы уверены, что хотите выйти?"
           }
         }
       }
     },
-    "allQuestionsReviewed": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "All questions are reviewed"
+    "inputBottomSheetExitWithUnsavedChangesMessage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to exit? All changes will be permanently lost"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Все вопросы оценены"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно"
           }
         }
       }
     },
-    "you": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "You"
+    "insufficientAnswerOptions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not enough answer options"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недостаточно вариантов ответа"
           }
         }
       }
     },
-    "confirmBackUnsavedChanges": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to go back? All changes will be permanently lost"
+    "insufficientParticipants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not enough participants"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите вернуться назад? Все изменения будут утеряны безвозвратно"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недостаточно участников"
           }
         }
       }
     },
-    "confirmExitUnsavedChanges": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to exit? All changes will be permanently lost"
+    "insufficientQuestions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not enough questions"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите выйти? Все изменения будут утеряны безвозвратно"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недостаточно вопросов"
           }
         }
       }
     },
-    "confirmExitQuestionsGenerationInProgress": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to exit? Question generation is in progress"
+    "invalidCodeTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid code"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите выйти? Генерация вопросов в процессе"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неверный код"
           }
         }
       }
     },
-    "confirmExitQuestionTextGenerationInProgress": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to exit? Question text generation is in progress"
+    "invalidEmailFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email format"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите выйти? Генерация текста вопроса в процессе"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неверный формат почты"
           }
         }
       }
     },
-    "confirmAppendGeneratedQuestions": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to supplement template with generated questions?"
+    "invalidQuizCodeError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This code does not exist or was entered incorrectly. Please try again"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите дополнить шаблон сгенерированными вопросами?"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Такой код не существует или Вы ввели код неверно. Попробуйте еще раз"
           }
         }
       }
     },
-    "confirmPublishResults": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to publish results? All participants will receive a notification. This action cannot be undone"
+    "language" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите опубликовать результаты? Все участники получат уведомление. Это действие необратимо"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык"
           }
         }
       }
     },
-    "confirmCancelQuizFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to cancel quiz %@? This action cannot be undone"
+    "lastNamePlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last name"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите отменить квиз %@? Это действие необратимо"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фамилия"
           }
         }
       }
     },
-    "confirmParaphraseQuestionText": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to paraphrase the question text?"
+    "leave" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите перефразировать текст вопроса?"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Покинуть"
           }
         }
       }
     },
-    "confirmGetAiRecommendation": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to get AI recommendation?"
+    "leaveGroup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave group"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите получить рекомендацию от ИИ?"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Покинуть группу"
           }
         }
       }
     },
-    "confirmDeleteQuestion": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to delete the question?"
+    "leaderboard" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaderboard"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите удалить вопрос?"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Таблица лидеров"
           }
         }
       }
     },
-    "confirmDeleteTemplateFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to delete template %@? This action cannot be undone"
+    "lightTheme" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Светлая"
           }
         }
       }
     },
-    "avatarTooLargeError": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The selected photo is too large, choose another one"
+    "loading" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading..."
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выбранная фотография слишком большая, выберите другую"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка..."
           }
         }
       }
     },
-    "aiCompletionValidationDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "To supplement with AI, specify quiz title or add at least one question"
+    "mainHostingHeader" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hosting"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Для дополнения с ИИ необходимо указать название квиза или добавить хотя бы один вопрос"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Провожу"
           }
         }
       }
     },
-    "publishUnavailableReviewDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "To publish results, all participants must be reviewed"
+    "mainJoinButton" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let's go!"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Для публикации результатов необходимо оценить всех участников"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Погнали!"
           }
         }
       }
     },
-    "addQuestion": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add question"
+    "mainNoHostingQuizzes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no quizzes you host"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Добавить вопрос"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет квизов, которые вы проводите"
           }
         }
       }
     },
-    "supplementWithAi": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Supplement with AI"
+    "mainNoParticipatingQuizzes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no quizzes you participate in"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Дополнить с ИИ"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет квизов, в которых вы участвуете"
           }
         }
       }
     },
-    "aiThinking": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thinking..."
+    "mainParticipatingHeader" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Participating"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Думаю..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Участвую"
           }
         }
       }
     },
-    "waitingOthersAnswering": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Waiting while\\nothers answer..."
+    "minuteShortSingle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "m"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ждем пока\\nостальные ответят..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "м"
           }
         }
       }
     },
-    "loading": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loading..."
+    "myQuizzesCreateFromScratch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From scratch"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Загрузка..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "С нуля"
           }
         }
       }
     },
-    "close": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Close"
+    "myQuizzesCreateWithAi" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With AI"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Закрыть"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "При помощи ИИ"
           }
         }
       }
     },
-    "fillAllAnswerOptions": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fill all added answer options"
+    "myQuizzesDeleteTemplateMessage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete template %@? This action cannot be undone"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Заполните все добавленные варианты ответа"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы уверены, что хотите удалить шаблон %@? Это действие необратимо"
           }
         }
       }
     },
-    "quizStartTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quiz launch"
+    "myQuizzesDeleteTemplateTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template deletion"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Запуск квиза"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаление шаблона"
           }
         }
       }
     },
-    "startQuiz": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Start quiz"
+    "myQuizzesGenerateButton" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generate"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Запустить квиз"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сгенерировать"
           }
         }
       }
     },
-    "register": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Register"
+    "myQuizzesHostingHeader" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hosting"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Зарегистрироваться"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Провожу"
           }
         }
       }
     },
-    "ai": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "AI"
+    "myQuizzesNoCreatedTemplates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no templates you created"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ИИ"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет шаблонов, которые вы создали"
           }
         }
       }
     },
-    "templateEditingTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Template editing"
+    "myQuizzesNoHostingQuizzes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no quizzes you host"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Изменение шаблона"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет квизов, которые вы проводите"
           }
         }
       }
     },
-    "quizDefaultTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quiz"
+    "myQuizzesNoPendingReviewQuizzes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no quizzes pending review"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Квиз"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет квизов, ожидающих оценки"
           }
         }
       }
     },
-    "quizFullyReviewedTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quiz is fully reviewed"
+    "myQuizzesNoReviewedQuizzes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no quizzes you reviewed"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Квиз полностью проверен"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет квизов, которые вы оценили"
           }
         }
       }
     },
-    "quizCompletedAwaitReview": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quiz completed successfully\\nWait for review result"
+    "myQuizzesNoTemplatesWithSuchName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no templates with this name"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Квиз успешно пройден\\nОжидайте получения оценки"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет шаблонов с таким названием"
           }
         }
       }
     },
-    "verifyCodeResendTooSoonError": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Code was already sent recently. Try requesting it again a little later"
+    "myQuizzesPendingReviewHeader" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pending review"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Код уже отправлялся недавно. Попробуйте запросить его повторно чуть позже"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ожидают оценивания"
           }
         }
       }
     },
-    "feedbackMissing": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No feedback provided"
+    "myQuizzesReviewedHeader" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reviewed"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Комментарий отсутствует"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оценены"
           }
         }
       }
     },
-    "back": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Back"
+    "myQuizzesSegmentMyQuizzes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Quizzes"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Назад"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мои квизы"
           }
         }
       }
     },
-    "title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Title"
+    "myQuizzesSegmentTemplates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Templates"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Название"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Шаблоны"
           }
         }
       }
     },
-    "notStarted": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not started"
+    "myQuizzesTemplateGenerationPlaceholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describe the template you want to create"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не приступили"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Опишите, какой шаблон вы хотите создать"
           }
         }
       }
     },
-    "failedKickParticipant": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to kick participant"
+    "myQuizzesTemplateGenerationTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template creation"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось выгнать участника"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создание шаблона"
           }
         }
       }
     },
-    "failedResolveTemplateForUpdate": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to resolve template for update"
+    "myQuizzesUntitledTemplate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "untitled"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось определить шаблон для обновления"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "без названия"
           }
         }
       }
     },
-    "failedCancelQuiz": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to cancel quiz"
+    "never" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось отменить квиз"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Никогда"
           }
         }
       }
     },
-    "invalidEmailFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invalid email format"
+    "newQuiz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New quiz"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Неверный формат почты"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый квиз"
           }
         }
       }
     },
-    "insufficientAnswerOptions": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not enough answer options"
+    "nextQuestion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next question"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Недостаточно вариантов ответа"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Следующий вопрос"
           }
         }
       }
     },
-    "insufficientQuestions": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not enough questions"
+    "noAnswersData" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No answer data"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Недостаточно вопросов"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет данных по ответам"
           }
         }
       }
     },
-    "insufficientParticipants": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not enough participants"
+    "noFinishedParticipants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No participants who completed quiz"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Недостаточно участников"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет участников, прошедших квиз"
           }
         }
       }
     },
-    "noQuestions": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No questions"
+    "noNotStartedParticipants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No participants who have not started"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет вопросов"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет участников, которые не приступили к прохождению"
           }
         }
       }
     },
-    "noQuestionsContainingText": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No questions containing this text"
+    "noParticipants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No participants"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет вопросов, содержащих такой текст"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет участников"
           }
         }
       }
     },
-    "noAnswersData": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No answer data"
+    "noQuestions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No questions"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет данных по ответам"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет вопросов"
           }
         }
       }
     },
-    "noParticipants": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No participants"
+    "noQuestionsContainingText" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No questions containing this text"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет участников"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет вопросов, содержащих такой текст"
           }
         }
       }
     },
-    "noNotStartedParticipants": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No participants who have not started"
+    "notificationsHeader" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет участников, которые не приступили к прохождению"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уведомления"
           }
         }
       }
     },
-    "noFinishedParticipants": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No participants who completed quiz"
+    "notStarted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not started"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет участников, прошедших квиз"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не приступили"
           }
         }
       }
     },
-    "waitingStart": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Waiting for start..."
+    "ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ожидаем начала..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ОК"
           }
         }
       }
     },
-    "waitingAllParticipantsAnswers": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Waiting for answers from all participants"
+    "oneDayBefore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 day before"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ожидаем ответа всех участников"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "За сутки"
           }
         }
       }
     },
-    "waitingNextQuestion": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Waiting for next question"
+    "oneHourBefore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 hour before"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ожидаем следующего вопроса"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "За час"
           }
         }
       }
     },
-    "publish": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Publish"
+    "otherParticipants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other participants"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Опубликовать"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Остальные участники"
           }
         }
       }
     },
-    "publishUnavailableAsyncDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Results can be published after deadline ends"
+    "parameters" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parameters"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Опубликовать результаты можно после конца дедлайна"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Параметры"
           }
         }
       }
     },
-    "questionsRemainingForReviewFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Questions remaining for review: %@"
+    "paraphrase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paraphrase"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Осталось вопросов, ожидающих оценки: %@"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перефразировать"
           }
         }
       }
     },
-    "otherParticipants": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Other participants"
+    "participant" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Participant"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Остальные участники"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Участник"
           }
         }
       }
     },
-    "stay": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stay"
+    "participantGenitive" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "participant"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Остаться"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "участника"
           }
         }
       }
     },
-    "answerOptional": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Answer (optional)"
+    "participants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Participants"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ответ (опционально)"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Участники"
           }
         }
       }
     },
-    "answer": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Answer"
+    "passed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passed"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ответить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прошли"
           }
         }
       }
     },
-    "answers": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Answers"
+    "profilePhoto" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile photo"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ответы"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фото профиля"
           }
         }
       }
     },
-    "cancelAction": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
+    "profileTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отменить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Профиль"
           }
         }
       }
     },
-    "cancelQuiz": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel quiz"
+    "publish" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Publish"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отменить квиз"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Опубликовать"
           }
         }
       }
     },
-    "cancelRegistration": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel registration"
+    "publishUnavailableAsyncDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Results can be published after deadline ends"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отменить регистрацию"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Опубликовать результаты можно после конца дедлайна"
           }
         }
       }
     },
-    "sendCode": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Send code"
+    "publishUnavailableReviewDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To publish results, all participants must be reviewed"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отправить код"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для публикации результатов необходимо оценить всех участников"
           }
         }
       }
     },
-    "sendAgain": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Send again"
+    "question" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Question"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отправить снова"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вопрос"
           }
         }
       }
     },
-    "grade": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Grade"
+    "questionScoreShortFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d pts."
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Оценить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d б."
           }
         }
       }
     },
-    "registrationFailedError": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Registration failed. Try again or come back later"
+    "questionsRemainingForReviewFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questions remaining for review: %@"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ошибка при регистрации. Попробуйте еще раз или вернитесь позже"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Осталось вопросов, ожидающих оценки: %@"
           }
         }
       }
     },
-    "parameters": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Parameters"
+    "questionTypeMultiShort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multi"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Параметры"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multi"
           }
         }
       }
     },
-    "paraphrase": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Paraphrase"
+    "questionTypeMultiUppercase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MULTI"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Перефразировать"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MULTI"
           }
         }
       }
     },
-    "confirm": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirm"
+    "questionTypeOpenEndedShort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open ended"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Подтвердить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open ended"
           }
         }
       }
     },
-    "confirmationTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirmation"
+    "questionTypeOpenEndedUppercase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OPEN ENDED"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Подтверждение"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OPEN ENDED"
           }
         }
       }
     },
-    "searchQuestions": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search questions"
+    "questionTypeSingleShort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Single"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Поиск вопросов"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Single"
           }
         }
       }
     },
-    "searchParticipants": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search participants"
+    "questionTypeSingleUppercase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SINGLE"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Поиск участников"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SINGLE"
           }
         }
       }
     },
-    "cancelRegistrationDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "If registration is canceled, you will be redirected to start screen"
+    "questionWithoutText" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Question without text"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "При отмене регистрации вы будете направлены на начальный экран"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вопрос без текста"
           }
         }
       }
     },
-    "avatarUploadFailedError": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "An error occurred while uploading avatar, choose another one or try later"
+    "quizCompletedAwaitReview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiz completed successfully\\nWait for review result"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Произошла ошибка при загрузке аватара, выберите другую или попробуйте позже"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Квиз успешно пройден\\nОжидайте получения оценки"
           }
         }
       }
     },
-    "passed": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Passed"
+    "quizConnectionUnavailableFinished" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The quiz has already finished, unable to join"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Прошли"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Квиз уже завершен, подключение невозможно"
           }
         }
       }
     },
-    "registrationTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Registration"
+    "quizConnectionUnavailableStarted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The quiz has already started, unable to join"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Регистрация"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Квиз уже начался, подключение невозможно"
           }
         }
       }
     },
-    "withRegretTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "We regret to inform you..."
+    "quizDefaultTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiz"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "С прискорбием сообщаем..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Квиз"
           }
         }
       }
     },
-    "quizTypeSyncShort": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sync"
+    "quizFullyReviewedTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiz is fully reviewed"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Синх."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Квиз полностью проверен"
           }
         }
       }
     },
-    "nextQuestion": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Next question"
+    "quizResults" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiz results"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Следующий вопрос"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Результаты квиза"
           }
         }
       }
     },
-    "verifyCodeTooManyAttemptsError": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Too many code entry attempts. Try again in a few minutes"
+    "quizStartTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiz launch"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Слишком много попыток ввода кода. Попробуйте еще раз через несколько минут"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запуск квиза"
           }
         }
       }
     },
-    "randomOrder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Random order"
+    "quizType" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiz type"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Случайный порядок"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тип квиза"
           }
         }
       }
     },
-    "templateCreationTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Template creation"
+    "quizTypeAsync" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asynchronous"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Создание шаблона"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Асинхронный"
           }
         }
       }
     },
-    "save": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save"
+    "quizTypeAsyncInfo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Participants can take the quiz anytime before the deadline"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Сохранить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Участники могут проходить квиз в любое время до дедлайна"
           }
         }
       }
     },
-    "leaderboard": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Leaderboard"
+    "quizTypeAsyncShort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Async"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Таблица лидеров"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Асинх."
           }
         }
       }
     },
-    "quizType": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quiz type"
+    "quizTypeSync" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronous"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Тип квиза"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Синхронный"
           }
         }
       }
     },
-    "deleteQuestionTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Question deletion"
+    "quizTypeSyncInfo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All participants take the quiz simultaneously under the host's control"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Удаление вопроса"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все участники проходят квиз одновременно под контролем создателя"
           }
         }
       }
     },
-    "deleteTemplateTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Template deletion"
+    "quizTypeSyncShort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Удаление шаблона"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Синх."
           }
         }
       }
     },
-    "specifyCorrectAnswerOption": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Specify correct answer option"
+    "randomOrder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Random order"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите верный вариант ответа"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Случайный порядок"
           }
         }
       }
     },
-    "specifyNameAndSurname": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Specify first and last name"
+    "register" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Register"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите имя и фамилию"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зарегистрироваться"
           }
         }
       }
     },
-    "specifyValidDeadline": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Specify valid deadline"
+    "registrationFailedError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration failed. Try again or come back later"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите корректный дедлайн"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка при регистрации. Попробуйте еще раз или вернитесь позже"
           }
         }
       }
     },
-    "specifyTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Specify title"
+    "registrationTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите название"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Регистрация"
           }
         }
       }
     },
-    "specifyTemplateTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Specify template title"
+    "russianLanguage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Russian"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите название шаблона"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Русский"
           }
         }
       }
     },
-    "specifyQuestionText": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Specify question text"
+    "save" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите текст вопроса"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить"
           }
         }
       }
     },
-    "specifyAtLeastOneCorrectAnswer": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Specify at least one correct answer"
+    "score" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Score"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите хотя бы один верный ответ"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Балл"
           }
         }
       }
     },
-    "participant": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Participant"
+    "search" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Участник"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск"
           }
         }
       }
     },
-    "participants": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Participants"
+    "select" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Участники"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать"
           }
         }
       }
     },
-    "somethingWentWrong": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Something went wrong"
+    "searchParticipants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search participants"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Что-то пошло не так"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск участников"
           }
         }
       }
     },
-    "untitled": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "untitled"
+    "searchQuestions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search questions"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "без названия"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск вопросов"
           }
         }
       }
     },
-    "minuteShortSingle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "m"
+    "searchSuffixQuizzes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "quizzes"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "м"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "квизов"
           }
         }
       }
     },
-    "secondShortSingle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "s"
+    "searchSuffixTemplates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "templates"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "с"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "шаблонов"
           }
         }
       }
     },
-    "participantGenitive": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "participant"
+    "secondShortSingle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "s"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "участника"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "с"
           }
         }
       }
     },
-    "timeMinutesSecondsFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02d m. %02d s."
+    "sendAgain" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send again"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02d м. %02d с."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отправить снова"
           }
         }
       }
     },
-    "verifyCodeResendCountdownFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Send again in %@ s"
+    "sendCode" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send code"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отправить снова %@ с"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отправить код"
           }
         }
       }
     },
-    "questionScoreShortFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%d pts."
+    "settingsHeader" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%d б."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки"
           }
         }
       }
     },
-    "templateQuestionsSummaryScoreTimeFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%d pts. • %@ "
+    "sixHoursBefore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 hours before"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%d б. • %@ "
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "За 6 часов"
           }
         }
       }
     },
-    "questionTypeSingleShort": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Single"
+    "somethingWentWrong" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something went wrong"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Один"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Что-то пошло не так"
           }
         }
       }
     },
-    "questionTypeMultiShort": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Multi"
+    "specifyAtLeastOneCorrectAnswer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Specify at least one correct answer"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Несколько"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укажите хотя бы один верный ответ"
           }
         }
       }
     },
-    "questionTypeOpenEndedShort": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open ended"
+    "specifyCorrectAnswerOption" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Specify correct answer option"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Открытый"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укажите верный вариант ответа"
           }
         }
       }
     },
-    "questionTypeSingleUppercase": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SINGLE"
+    "specifyNameAndSurname" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Specify first and last name"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ОДИН"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укажите имя и фамилию"
           }
         }
       }
     },
-    "questionTypeMultiUppercase": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MULTI"
+    "specifyQuestionText" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Specify question text"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "НЕСКОЛЬКО"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укажите текст вопроса"
           }
         }
       }
     },
-    "questionTypeOpenEndedUppercase": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OPEN ENDED"
+    "specifyTemplateTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Specify template title"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ОТКРЫТЫЙ"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укажите название шаблона"
           }
         }
       }
     },
-    "aiRecommendedScoreFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Recommended score — %d"
+    "specifyTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Specify title"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Рекомендуемый балл — %d"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укажите название"
           }
         }
       }
     },
-    "startAsyncQuizTitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Start solving"
+    "specifyValidDeadline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Specify valid deadline"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Приступить к выполнению"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укажите корректный дедлайн"
           }
         }
       }
     },
-    "confirmAsyncQuizStartGeneric": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to start solving this quiz?"
+    "start" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите приступить к выполнению этого квиза?"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запустить"
           }
         }
       }
     },
-    "confirmAsyncQuizStartByTitleFormat": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Are you sure you want to start solving quiz %@?"
+    "startAsyncQuizTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start solving"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вы уверены, что хотите приступить к выполнению квиза %@?"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приступить к выполнению"
+          }
+        }
+      }
+    },
+    "startEnterEmailTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your email"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите вашу почту"
+          }
+        }
+      }
+    },
+    "startQuiz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start quiz"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запустить квиз"
+          }
+        }
+      }
+    },
+    "startQuizGroupInfoDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The quiz will be assigned to all members of the selected group"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Квиз будет назначен всем участникам выбранной группы"
+          }
+        }
+      }
+    },
+    "stay" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stay"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Остаться"
+          }
+        }
+      }
+    },
+    "supplementWithAi" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supplement with AI"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дополнить с ИИ"
+          }
+        }
+      }
+    },
+    "systemLanguage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Системный"
+          }
+        }
+      }
+    },
+    "systemTheme" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Системная"
+          }
+        }
+      }
+    },
+    "takePhoto" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take photo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сделать фото"
+          }
+        }
+      }
+    },
+    "templateCreationTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template creation"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создание шаблона"
+          }
+        }
+      }
+    },
+    "templateEditingTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template editing"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменение шаблона"
+          }
+        }
+      }
+    },
+    "templateQuestionsSummaryScoreTimeFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d pts. • %@ "
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d б. • %@ "
+          }
+        }
+      }
+    },
+    "theme" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theme"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тема"
+          }
+        }
+      }
+    },
+    "threeHoursBefore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 hours before"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "За 3 часа"
+          }
+        }
+      }
+    },
+    "time" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Время"
+          }
+        }
+      }
+    },
+    "timeHourShort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "h."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ч."
+          }
+        }
+      }
+    },
+    "timeMinuteShort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "m."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "м."
+          }
+        }
+      }
+    },
+    "timeMinutesSecondsFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02d m. %02d s."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%02d м. %02d с."
+          }
+        }
+      }
+    },
+    "timeSecondShort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "s."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "с."
+          }
+        }
+      }
+    },
+    "timeZeroSeconds" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 s."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 с."
+          }
+        }
+      }
+    },
+    "title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название"
+          }
+        }
+      }
+    },
+    "twelveHoursBefore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12 hours before"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "За 12 часов"
+          }
+        }
+      }
+    },
+    "untitled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "untitled"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "без названия"
+          }
+        }
+      }
+    },
+    "update" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить"
+          }
+        }
+      }
+    },
+    "verifyCodeEnterTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter code"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите код"
+          }
+        }
+      }
+    },
+    "verifyCodeResendCountdownFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send again in %@ s"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отправить снова %@ с"
+          }
+        }
+      }
+    },
+    "verifyCodeResendTooSoonError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Code was already sent recently. Try requesting it again a little later"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Код уже отправлялся недавно. Попробуйте запросить его повторно чуть позже"
+          }
+        }
+      }
+    },
+    "verifyCodeSentToPrefix" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your code was sent to\\n"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваш код был отправлен на\\n"
+          }
+        }
+      }
+    },
+    "verifyCodeTooManyAttemptsError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too many code entry attempts. Try again in a few minutes"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Слишком много попыток ввода кода. Попробуйте еще раз через несколько минут"
+          }
+        }
+      }
+    },
+    "waitingAllParticipantsAnswers" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for answers from all participants"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ожидаем ответа всех участников"
+          }
+        }
+      }
+    },
+    "waitingNextQuestion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for next question"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ожидаем следующего вопроса"
+          }
+        }
+      }
+    },
+    "waitingOthersAnswering" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting while\\nothers answer..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ждем пока\\nостальные ответят..."
+          }
+        }
+      }
+    },
+    "waitingStart" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for start..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ожидаем начала..."
+          }
+        }
+      }
+    },
+    "withoutGroup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without group"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без группы"
+          }
+        }
+      }
+    },
+    "withRegretTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We regret to inform you..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "С прискорбием сообщаем..."
+          }
+        }
+      }
+    },
+    "you" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы"
+          }
+        }
+      }
+    },
+    "yourPlacePrefix" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your place: "
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваше место: "
           }
         }
       }
     }
   },
-  "version": "1.1"
+  "version" : "1.1"
 }

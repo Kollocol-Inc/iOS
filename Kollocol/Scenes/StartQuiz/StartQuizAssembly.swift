@@ -12,19 +12,23 @@ enum StartQuizAssembly {
     static func build(
         router: StartQuizRouting,
         template: QuizTemplate,
+        groupId: String? = nil,
         quizService: QuizService,
+        groupService: GroupService,
         quizParticipationService: QuizParticipationService
     ) -> UIViewController {
         let presenter = StartQuizRouter(router: router)
         let interactor = StartQuizLogic(
             presenter: presenter,
             quizService: quizService,
+            groupService: groupService,
             quizParticipationService: quizParticipationService,
             template: template
         )
         let view = StartQuizViewController(
             interactor: interactor,
             initialData: .init(
+                groupId: groupId,
                 title: template.title ?? "",
                 quizType: template.quizType
             )

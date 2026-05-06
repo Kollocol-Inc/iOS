@@ -48,6 +48,7 @@ final class AvatarPickerView: UIView {
 
     // MARK: - Properties
     private var isAvatarSet: Bool = false
+    private var placeholderImage: UIImage? = .avatarPlaceholder
 
     // MARK: - Lifecycle
     override init(frame: CGRect) {
@@ -72,12 +73,29 @@ final class AvatarPickerView: UIView {
             avatarImageView.image = image
         } else {
             isAvatarSet = false
-            avatarImageView.image = .avatarPlaceholder
+            avatarImageView.image = placeholderImage
         }
+    }
+
+    func setAvatar(url: String?) {
+        let normalizedURL = url?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let normalizedURL, normalizedURL.isEmpty == false else {
+            setAvatar(nil)
+            return
+        }
+
+        isAvatarSet = true
+        avatarImageView.setImage(url: normalizedURL, placeholder: placeholderImage)
     }
 
     func hasAvatar() -> Bool {
         isAvatarSet
+    }
+
+    func setPlaceholderImage(_ image: UIImage?) {
+        placeholderImage = image
+        guard isAvatarSet == false else { return }
+        avatarImageView.image = image
     }
 
     // MARK: - Private Methods

@@ -11,6 +11,7 @@ actor StartQuizLogic: StartQuizInteractor {
     // MARK: - Properties
     private let presenter: StartQuizPresenter
     private let quizService: QuizService
+    private let groupService: GroupService
     private let quizParticipationService: QuizParticipationService
     private let template: QuizTemplate
 
@@ -18,16 +19,27 @@ actor StartQuizLogic: StartQuizInteractor {
     init(
         presenter: StartQuizPresenter,
         quizService: QuizService,
+        groupService: GroupService,
         quizParticipationService: QuizParticipationService,
         template: QuizTemplate
     ) {
         self.presenter = presenter
         self.quizService = quizService
+        self.groupService = groupService
         self.quizParticipationService = quizParticipationService
         self.template = template
     }
 
     // MARK: - Methods
+    func fetchOwnedGroups() async {
+        do {
+            let groups = try await groupService.getGroups(filter: .created)
+            await presenter.presentOwnedGroups(groups)
+        } catch {
+            await presenter.presentServiceError(QuizServiceError.wrap(error))
+        }
+    }
+
     func handleBackTap() async {
         await presenter.presentCloseScreen()
     }
@@ -68,6 +80,14 @@ actor StartQuizLogic: StartQuizInteractor {
 
     // MARK: - Private Methods
     private func makeCreateInstanceRequest(from formData: StartQuizModels.FormData) -> CreateInstanceRequest {
+        let normalizedGroupId = formData.groupId?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let groupId: String? = {
+            guard let normalizedGroupId, normalizedGroupId.isEmpty == false else {
+                return nil
+            }
+            return normalizedGroupId
+        }()
+
         let normalizedTitle = formData.title?.trimmingCharacters(in: .whitespacesAndNewlines)
         let title: String? = {
             guard let normalizedTitle, normalizedTitle.isEmpty == false else {
@@ -87,7 +107,7 @@ actor StartQuizLogic: StartQuizInteractor {
 
         return CreateInstanceRequest(
             deadline: deadline,
-            groupId: nil,
+            groupId: groupId,
             templateId: template.id,
             title: title
         )

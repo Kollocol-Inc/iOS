@@ -13,11 +13,15 @@ struct NetworkTestContext {
     let baseURL: URL
     let session: URLSession
 
-    func makeAPIClient(interceptor: RequestInterceptor? = nil) -> APIClient {
+    func makeAPIClient(
+        interceptor: RequestInterceptor? = nil,
+        baseHeadersProvider: BaseHeadersProvider? = nil
+    ) -> APIClient {
         APIClient(
             baseURL: baseURL,
             session: session,
             interceptor: interceptor,
+            baseHeadersProvider: baseHeadersProvider,
             logger: { _ in }
         )
     }

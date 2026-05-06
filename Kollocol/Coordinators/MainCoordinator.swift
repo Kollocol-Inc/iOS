@@ -63,6 +63,7 @@ final class MainCoordinator {
     private var myQuizzesNavController: UINavigationController?
     private var profileNavController: UINavigationController?
     private var quizWaitingRoomCoordinator: QuizWaitingRoomCoordinator?
+    private weak var startQuizSheetNavigationController: UINavigationController?
 
     private static let logDateFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
@@ -111,7 +112,11 @@ final class MainCoordinator {
         )
         mainNavController = mainNav
 
-        let groupsVC = GroupsAssembly.build(router: self)
+        let groupsVC = GroupsAssembly.build(
+            router: self,
+            groupService: services.groupService,
+            userService: services.userService
+        )
         let groupsNav = makeTabNavigationController(
             root: groupsVC,
             tab: .groups
@@ -383,7 +388,22 @@ extension MainCoordinator: MainRouting {
 
 // MARK: - MyQuizzesRouting
 extension MainCoordinator: GroupsRouting {
+    func routeToGroupPreview(initialData: GroupPreviewModels.InitialData) {
+        guard let groupsNavController else { return }
 
+        let viewController = GroupPreviewAssembly.build(
+            router: self,
+            initialData: initialData,
+            groupService: services.groupService,
+            userService: services.userService
+        )
+        viewController.hidesBottomBarWhenPushed = true
+        groupsNavController.pushViewController(viewController, animated: true)
+    }
+
+    func dismissGroupPreviewScreen() {
+        groupsNavController?.popViewController(animated: true)
+    }
 }
 
 // MARK: - MyQuizzesRouting
@@ -437,10 +457,19 @@ extension MainCoordinator: MyQuizzesRouting {
             router: self,
             template: template,
             quizService: services.quizService,
+            groupService: services.groupService,
             quizParticipationService: services.quizParticipationService
         )
-        viewController.hidesBottomBarWhenPushed = true
-        myQuizzesNavController.pushViewController(viewController, animated: true)
+        let sheetNavigationController = UINavigationController(rootViewController: viewController)
+        sheetNavigationController.modalPresentationStyle = .pageSheet
+        if let sheet = sheetNavigationController.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 24
+        }
+
+        startQuizSheetNavigationController = sheetNavigationController
+        myQuizzesNavController.present(sheetNavigationController, animated: true)
     }
 
     func routeToQuizWaitingRoomFromMyQuizzes(accessCode: String) async {
@@ -524,6 +553,19 @@ extension MainCoordinator: TemplateCreatingRouting {
 // MARK: - StartQuizRouting
 extension MainCoordinator: StartQuizRouting {
     func dismissStartQuizScreen() {
+        if let sheetNavigationController = startQuizSheetNavigationController {
+            sheetNavigationController.dismiss(animated: true) { [weak self] in
+                self?.startQuizSheetNavigationController = nil
+            }
+            return
+        }
+
+        if let presentedSheet = myQuizzesNavController?.presentedViewController as? UINavigationController,
+           presentedSheet.topViewController is StartQuizViewController {
+            presentedSheet.dismiss(animated: true)
+            return
+        }
+
         myQuizzesNavController?.popViewController(animated: true)
     }
 
@@ -531,12 +573,25 @@ extension MainCoordinator: StartQuizRouting {
         guard let myQuizzesNavController else { return }
         logQuizFlow("routeToQuizWaitingRoomFromStartQuiz called. accessCode=\(accessCode), destination=waitingRoom")
 
+        let routeToWaitingRoom = { [weak self] in
+            guard let self else { return }
+            self.startQuizWaitingRoom(
+                on: myQuizzesNavController,
+                accessCode: accessCode,
+                startDestination: .waitingRoom
+            )
+        }
+
+        if let sheetNavigationController = startQuizSheetNavigationController {
+            sheetNavigationController.dismiss(animated: true) { [weak self] in
+                self?.startQuizSheetNavigationController = nil
+                routeToWaitingRoom()
+            }
+            return
+        }
+
         myQuizzesNavController.popViewController(animated: false)
-        startQuizWaitingRoom(
-            on: myQuizzesNavController,
-            accessCode: accessCode,
-            startDestination: .waitingRoom
-        )
+        routeToWaitingRoom()
     }
 }
 
@@ -559,8 +614,9 @@ protocol MainRouting: ErrorMessageDisplaying {
 }
 
 @MainActor
-protocol GroupsRouting: AnyObject {
-
+protocol GroupsRouting: ErrorMessageDisplaying {
+    func routeToGroupPreview(initialData: GroupPreviewModels.InitialData)
+    func dismissGroupPreviewScreen()
 }
 
 @MainActor

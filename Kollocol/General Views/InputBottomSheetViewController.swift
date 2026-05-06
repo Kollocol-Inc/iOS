@@ -52,6 +52,18 @@ final class InputBottomSheetViewController: UIViewController {
         return label
     }()
 
+    private let bottomIslandView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .backgroundSecondary
+        view.layer.cornerRadius = 28
+        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        view.clipsToBounds = false
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowRadius = 20
+        view.layer.shadowOpacity = 0.2
+        return view
+    }()
+
     private let generateButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = .accentPrimary
@@ -65,10 +77,15 @@ final class InputBottomSheetViewController: UIViewController {
         static let horizontalInset: CGFloat = 12
         static let topInset: CGFloat = 16
         static let titleToInputSpacing: CGFloat = 16
-        static let inputToButtonSpacing: CGFloat = 16
+        static let contentToIslandSpacing: CGFloat = 16
         static let bottomInset: CGFloat = 0
         static let minTextViewHeight: CGFloat = 88
         static let maxTextViewHeight: CGFloat = 220
+        static let generateButtonHeight: CGFloat = 44
+        static let buttonVerticalInset: CGFloat = 12
+        static let buttonBottomInset: CGFloat = 12
+        static let keyboardButtonBottomInset: CGFloat = 8
+        static let keyboardCornerCoverInset: CGFloat = 16
     }
 
     // MARK: - Properties
@@ -78,8 +95,10 @@ final class InputBottomSheetViewController: UIViewController {
     private let content: InputBottomSheetContent
     private var promptTextViewHeightConstraint: NSLayoutConstraint?
     private var contentBottomConstraint: NSLayoutConstraint?
+    private var bottomIslandBottomConstraint: NSLayoutConstraint?
+    private var generateButtonBottomConstraint: NSLayoutConstraint?
     private var lastMeasuredHeight: CGFloat = 0
-    private var keyboardBottomInset: CGFloat = 0
+    private var keyboardBottomOffset: CGFloat = 0
     private var isGenerating = false
 
     // MARK: - Lifecycle
@@ -130,10 +149,16 @@ final class InputBottomSheetViewController: UIViewController {
             verticalFittingPriority: .fittingSizeLevel
         )
 
+        let islandHeight = UIConstants.generateButtonHeight
+            + UIConstants.buttonVerticalInset
+            + currentGenerateButtonBottomInset()
+        let islandLift = currentBottomIslandLift()
         let measuredHeight = fittingSize.height
             + UIConstants.topInset
+            + UIConstants.contentToIslandSpacing
+            + islandHeight
+            + islandLift
             + UIConstants.bottomInset
-            + keyboardBottomInset
         return min(measuredHeight, maximumDetentValue)
     }
 
@@ -195,17 +220,10 @@ final class InputBottomSheetViewController: UIViewController {
         contentStackView.pinTop(to: view.topAnchor, UIConstants.topInset)
         contentStackView.pinLeft(to: view.leadingAnchor, UIConstants.horizontalInset)
         contentStackView.pinRight(to: view.trailingAnchor, UIConstants.horizontalInset)
-        contentBottomConstraint = contentStackView.pinBottom(
-            to: view.safeAreaLayoutGuide.bottomAnchor,
-            UIConstants.bottomInset,
-            .lsOE
-        )
 
         contentStackView.addArrangedSubview(titleLabel)
         contentStackView.setCustomSpacing(UIConstants.titleToInputSpacing, after: titleLabel)
         contentStackView.addArrangedSubview(promptTextView)
-        contentStackView.setCustomSpacing(UIConstants.inputToButtonSpacing, after: promptTextView)
-        contentStackView.addArrangedSubview(generateButton)
 
         promptTextViewHeightConstraint = promptTextView.setHeight(UIConstants.minTextViewHeight)
         promptTextView.delegate = self
@@ -214,6 +232,25 @@ final class InputBottomSheetViewController: UIViewController {
         placeholderLabel.pinTop(to: promptTextView.topAnchor, 12)
         placeholderLabel.pinLeft(to: promptTextView.leadingAnchor, 14)
         placeholderLabel.pinRight(to: promptTextView.trailingAnchor, 14)
+
+        view.addSubview(bottomIslandView)
+        bottomIslandView.pinLeft(to: view.leadingAnchor)
+        bottomIslandView.pinRight(to: view.trailingAnchor)
+        bottomIslandBottomConstraint = bottomIslandView.pinBottom(to: view.bottomAnchor)
+
+        bottomIslandView.addSubview(generateButton)
+        generateButton.pinTop(to: bottomIslandView.topAnchor, UIConstants.buttonVerticalInset)
+        generateButton.pinLeft(to: bottomIslandView.leadingAnchor, UIConstants.horizontalInset)
+        generateButton.pinRight(to: bottomIslandView.trailingAnchor, UIConstants.horizontalInset)
+        generateButtonBottomConstraint = generateButton.pinBottom(to: bottomIslandView.bottomAnchor)
+
+        contentBottomConstraint = contentStackView.pinBottom(
+            to: bottomIslandView.topAnchor,
+            UIConstants.contentToIslandSpacing,
+            .lsOE
+        )
+
+        updateGenerateButtonBottomInset()
     }
 
     private func configureActions() {
@@ -279,15 +316,44 @@ final class InputBottomSheetViewController: UIViewController {
         }
     }
 
+    private var isKeyboardVisible: Bool {
+        keyboardBottomOffset > 0.5
+    }
+
+    private func keyboardCornerCoverInset(for overlap: CGFloat) -> CGFloat {
+        min(UIConstants.keyboardCornerCoverInset, overlap)
+    }
+
+    private func currentGenerateButtonBottomInset() -> CGFloat {
+        if isKeyboardVisible {
+            let cornerCoverInset = keyboardCornerCoverInset(for: keyboardBottomOffset)
+            return UIConstants.keyboardButtonBottomInset + cornerCoverInset
+        }
+
+        return view.safeAreaInsets.bottom + UIConstants.buttonBottomInset
+    }
+
+    private func currentBottomIslandLift() -> CGFloat {
+        guard isKeyboardVisible else { return 0 }
+
+        let cornerCoverInset = keyboardCornerCoverInset(for: keyboardBottomOffset)
+        return max(0, keyboardBottomOffset - cornerCoverInset)
+    }
+
+    private func updateGenerateButtonBottomInset() {
+        generateButtonBottomConstraint?.constant = -currentGenerateButtonBottomInset()
+    }
+
     private func applyKeyboardInset(
-        _ bottomInset: CGFloat,
+        _ keyboardOverlap: CGFloat,
         duration: Double,
         options: UIView.AnimationOptions
     ) {
-        keyboardBottomInset = max(0, bottomInset)
+        keyboardBottomOffset = max(0, keyboardOverlap)
+        bottomIslandBottomConstraint?.constant = -currentBottomIslandLift()
+        updateGenerateButtonBottomInset()
 
         UIView.animate(withDuration: duration, delay: 0, options: options) {
-            self.contentBottomConstraint?.constant = -1 * self.keyboardBottomInset
             self.view.layoutIfNeeded()
         } completion: { _ in
             self.scrollFirstResponderAboveKeyboard()
@@ -296,7 +362,7 @@ final class InputBottomSheetViewController: UIViewController {
     }
 
     private func scrollFirstResponderAboveKeyboard() {
-        guard keyboardBottomInset > 0 else {
+        guard keyboardBottomOffset > 0 else {
             contentStackView.transform = .identity
             return
         }
@@ -307,7 +373,12 @@ final class InputBottomSheetViewController: UIViewController {
         }
 
         let responderFrame = firstResponder.convert(firstResponder.bounds, to: view)
-        let visibleBounds = view.bounds.insetBy(dx: 0, dy: keyboardBottomInset)
+        let visibleBounds = CGRect(
+            x: view.bounds.minX,
+            y: view.bounds.minY,
+            width: view.bounds.width,
+            height: max(0, bottomIslandView.frame.minY - view.bounds.minY)
+        )
         let requiredOffset = max(0, responderFrame.maxY - visibleBounds.maxY + 12)
         contentStackView.transform = CGAffineTransform(translationX: 0, y: -requiredOffset)
     }
@@ -361,11 +432,9 @@ final class InputBottomSheetViewController: UIViewController {
         guard let change = KeyboardChange(notification) else { return }
 
         let keyboardFrame = view.convert(change.endFrame, from: nil)
-        let keyboardTop = keyboardFrame.minY
-        let safeAreaBottom = view.safeAreaLayoutGuide.layoutFrame.maxY
-        let lift = max(0, safeAreaBottom - keyboardTop)
+        let overlap = max(0, view.bounds.maxY - keyboardFrame.minY)
 
-        applyKeyboardInset(lift, duration: change.duration, options: change.options)
+        applyKeyboardInset(overlap, duration: change.duration, options: change.options)
     }
 
     // MARK: - Actions

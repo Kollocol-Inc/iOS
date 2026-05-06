@@ -19,12 +19,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let baseURL = URL(string: "http://130.193.58.223:8080")!
 
+        let udService = UserDefaultsServiceImpl()
+        let baseHeadersProvider = BaseHeadersProviderImpl(udService: udService)
         let tokenStore = KeychainTokenStore(service: "Kollocol.AuthTokens")
 
         let apiNoAuth = APIClient(
             baseURL: baseURL,
             session: .shared,
-            interceptor: nil
+            interceptor: nil,
+            baseHeadersProvider: baseHeadersProvider
         )
 
         let refresher = RefreshClient(api: apiNoAuth)
@@ -45,17 +48,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let api = APIClient(
             baseURL: baseURL,
             session: .shared,
-            interceptor: authInterceptor
+            interceptor: authInterceptor,
+            baseHeadersProvider: baseHeadersProvider
         )
 
-        let udService = UserDefaultsServiceImpl()
         let authService = AuthServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
         let userService = UserServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
+        let groupService = GroupServiceImpl(api: api)
         let quizService = QuizServiceImpl(api: api)
         let mlService = MLServiceImpl(api: api)
         let quizParticipationService = QuizParticipationServiceImpl(
             baseURL: baseURL,
-            sessionManager: sessionManager
+            sessionManager: sessionManager,
+            baseHeadersProvider: baseHeadersProvider
         )
 
         let services = Services(
@@ -64,6 +69,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             tokenStore: tokenStore,
             udService: udService,
             userService: userService,
+            groupService: groupService,
             quizService: quizService,
             mlService: mlService,
             quizParticipationService: quizParticipationService

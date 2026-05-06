@@ -17,6 +17,7 @@ final class APIClient {
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
     private let interceptor: RequestInterceptor?
+    private let baseHeadersProvider: BaseHeadersProvider?
     private let logger: (@Sendable (String) -> Void)?
 
     init(
@@ -25,6 +26,7 @@ final class APIClient {
         decoder: JSONDecoder = JSONDecoder(),
         encoder: JSONEncoder = JSONEncoder(),
         interceptor: RequestInterceptor? = nil,
+        baseHeadersProvider: BaseHeadersProvider? = nil,
         logger: (@Sendable (String) -> Void)? = nil
     ) {
         self.baseURL = baseURL
@@ -32,6 +34,7 @@ final class APIClient {
         self.decoder = decoder
         self.encoder = encoder
         self.interceptor = interceptor
+        self.baseHeadersProvider = baseHeadersProvider
         #if DEBUG
         self.logger = logger ?? { Swift.print($0) }
         #else
@@ -107,6 +110,7 @@ final class APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = endpoint.method.rawValue
 
+        baseHeadersProvider?.headers().forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         endpoint.headers.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
 
         if let multipart = endpoint.multipart {

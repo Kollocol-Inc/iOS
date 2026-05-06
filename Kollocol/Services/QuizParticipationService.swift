@@ -51,6 +51,7 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
     private let baseURL: URL
     private let session: URLSession
     private let sessionManager: SessionManager
+    private let baseHeadersProvider: BaseHeadersProvider?
     private let configuration: QuizParticipationWebSocketConfiguration
     private let logger: @Sendable (String) -> Void
     private static let logDateFormatter: ISO8601DateFormatter = {
@@ -78,12 +79,14 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
         baseURL: URL,
         sessionManager: SessionManager,
         session: URLSession = .shared,
+        baseHeadersProvider: BaseHeadersProvider? = nil,
         configuration: QuizParticipationWebSocketConfiguration = .default,
         logger: @escaping @Sendable (String) -> Void = { Swift.print($0) }
     ) {
         self.baseURL = baseURL
         self.sessionManager = sessionManager
         self.session = session
+        self.baseHeadersProvider = baseHeadersProvider
         self.configuration = configuration
         self.logger = logger
     }
@@ -466,7 +469,9 @@ actor QuizParticipationServiceImpl: QuizParticipationService {
 
         let url = try makeWebSocketURL(token: token, accessCode: accessCode)
         logDebug("websocket request URL prepared: \(maskedURLDescription(url))")
-        return URLRequest(url: url)
+        var request = URLRequest(url: url)
+        baseHeadersProvider?.headers().forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
+        return request
     }
 
     private func makeWebSocketURL(token: String, accessCode: String) throws -> URL {

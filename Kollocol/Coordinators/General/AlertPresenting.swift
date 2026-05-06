@@ -110,6 +110,29 @@ extension QuizServiceError: UserFacingError {
     }
 }
 
+extension GroupServiceError: UserFacingError {
+    var userMessage: String {
+        switch self {
+        case .badRequest:
+            return "groupServiceErrorBadRequest".localized
+        case .offline:
+            return "groupServiceErrorOffline".localized
+        case .server:
+            return "groupServiceErrorServer".localized
+        case .unauthorized:
+            return "groupServiceErrorUnauthorized".localized
+        case .forbidden:
+            return "groupServiceErrorForbidden".localized
+        case .notFound:
+            return "groupServiceErrorNotFound".localized
+        case .conflict:
+            return "groupServiceErrorBadRequest".localized
+        case .unknown:
+            return "somethingWentWrong".localized
+        }
+    }
+}
+
 extension QuizParticipationServiceError: UserFacingError {
     var userMessage: String {
         switch self {
