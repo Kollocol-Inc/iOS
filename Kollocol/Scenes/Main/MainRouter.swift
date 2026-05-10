@@ -35,12 +35,20 @@ final class MainRouter: MainPresenter, ServiceErrorHandling {
         await view?.displayQuizzes(participating: participatingViewData, hosting: hostingViewData)
     }
 
+    func presentNotificationsBadge(unreadCount: Int) async {
+        await view?.displayNotificationsBadge(unreadCount: unreadCount)
+    }
+
     func presentServiceError(_ error: any UserFacingError) async {
         await presentServiceError(error, useCase: .generic)
     }
 
     func presentProfileScreen() async {
         await router.routeToProfileScreen()
+    }
+
+    func presentNotificationsScreen() async {
+        await router.routeToNotificationsScreen()
     }
 
     func presentQuizParticipantsOverview(_ initialData: QuizParticipantsOverviewModels.InitialData) async {

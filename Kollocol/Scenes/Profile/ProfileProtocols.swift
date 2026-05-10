@@ -22,6 +22,7 @@ protocol ProfileInteractor {
     func updateThemeOption(_ option: ProfileModels.ThemeOption) async
     func updateLanguageOption(_ option: ProfileModels.LanguageOption) async
     func presentAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) async
+    func deleteUserAccount() async
     func logout() async
 }
 

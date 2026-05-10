@@ -98,6 +98,7 @@ final class MainViewController: UIViewController {
     private var rows: [MainModels.Row] = []
     private var isProfileShimmerAnimating = false
     private var profileLeftBarButtonItem: UIBarButtonItem?
+    private var notificationsBarButtonItem: UIBarButtonItem?
 
     private lazy var profileShimmerViews: [ShimmerView] = [
         avatarShimmerView,
@@ -139,7 +140,8 @@ final class MainViewController: UIViewController {
         Task {
             async let userProfileTask: Void = interactor.fetchUserProfile()
             async let quizzesTask: Void = interactor.fetchQuizzes()
-            _ = await (userProfileTask, quizzesTask)
+            async let notificationsBadgeTask: Void = interactor.fetchNotificationsBadge()
+            _ = await (userProfileTask, quizzesTask, notificationsBadgeTask)
         }
     }
 
@@ -178,6 +180,18 @@ final class MainViewController: UIViewController {
         quizHostingInstances = hosting
         rows = buildRows(participating: quizParticipatingInstances, hosting: quizHostingInstances)
         tableView.reloadData()
+    }
+
+    @MainActor
+    func displayNotificationsBadge(unreadCount: Int) {
+        guard unreadCount > 0 else {
+            notificationsBarButtonItem?.badge = nil
+            return
+        }
+
+        var badge = UIBarButtonItem.Badge.count(unreadCount)
+        badge.backgroundColor = .backgroundRedSecondary
+        notificationsBarButtonItem?.badge = badge
     }
 
     @MainActor
@@ -285,8 +299,9 @@ final class MainViewController: UIViewController {
     private func reloadMainContent() async {
         async let userProfileTask: Void = interactor.fetchUserProfile()
         async let quizzesTask: Void = interactor.fetchQuizzes()
+        async let notificationsBadgeTask: Void = interactor.fetchNotificationsBadge()
 
-        _ = await (userProfileTask, quizzesTask)
+        _ = await (userProfileTask, quizzesTask, notificationsBadgeTask)
         await MainActor.run {
             refreshControl.endRefreshing()
         }
@@ -330,21 +345,21 @@ final class MainViewController: UIViewController {
         // right button
         let redirectToNotificationsScreenAction = UIAction { [weak self] _ in
             Task { [weak self] in
-                // TODO: route to notifications screen
+                await self?.interactor.routeToNotificationsScreen()
             }
         }
 
-        navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(
-                image: UIImage(
-                    systemName: "bell.fill"
-                )?.withTintColor(
-                    .accentPrimary,
-                    renderingMode: .alwaysOriginal
-                ),
-                primaryAction: redirectToNotificationsScreenAction
-            )
-        ]
+        let notificationsBarButtonItem = UIBarButtonItem(
+            image: UIImage(
+                systemName: "bell.fill"
+            )?.withTintColor(
+                .accentPrimary,
+                renderingMode: .alwaysOriginal
+            ),
+            primaryAction: redirectToNotificationsScreenAction
+        )
+        self.notificationsBarButtonItem = notificationsBarButtonItem
+        navigationItem.rightBarButtonItems = [notificationsBarButtonItem]
     }
 
     private func configureLeftBarButton() {

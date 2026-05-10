@@ -154,6 +154,19 @@ struct UserServiceImplTests {
         #expect(request.httpMethod == "DELETE")
         #expect(request.url?.path == "/users/me/avatar/delete")
     }
+
+    @Test
+    func deleteUserAccountUsesDeleteEndpoint() async throws {
+        let context = makeNetworkTestContext()
+        context.enqueue(statusCode: 204, data: Data())
+
+        let service = makeUserService(context: context)
+        try await service.deleteUserAccount()
+
+        let request = try #require(context.recordedRequests().first)
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/users/me")
+    }
 }
 
 private actor UserServiceTokenStoreMock: TokenStoring {

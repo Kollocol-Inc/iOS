@@ -97,6 +97,14 @@ actor UserServiceImpl: UserService {
         }
     }
 
+    func deleteUserAccount() async throws {
+        do {
+            _ = try await api.request(DeleteUserAccountEndpoint())
+        } catch {
+            throw UserServiceError.wrap(error)
+        }
+    }
+
 }
 
 // MARK: - UserServiceError
@@ -113,6 +121,7 @@ protocol UserService: Actor {
     ) async throws -> NotificationsSettingsDTO
     func register(name: String, surname: String) async throws
     func deleteAvatar() async throws
+    func deleteUserAccount() async throws
 }
 
 // MARK: - UserServiceError

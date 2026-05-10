@@ -16,6 +16,7 @@ struct StartQuizLogicTests {
         let logic = StartQuizLogic(
             presenter: presenter,
             quizService: StartQuizQuizServiceMock(),
+            groupService: StartQuizGroupServiceMock(),
             quizParticipationService: StartQuizParticipationServiceMock(),
             template: makeTemplate(quizType: .sync)
         )
@@ -32,12 +33,13 @@ struct StartQuizLogicTests {
         let logic = StartQuizLogic(
             presenter: presenter,
             quizService: quizService,
+            groupService: StartQuizGroupServiceMock(),
             quizParticipationService: StartQuizParticipationServiceMock(),
             template: makeTemplate(quizType: .async)
         )
         let deadline = Date(timeIntervalSince1970: 1_800_000_000)
 
-        await logic.startQuiz(formData: .init(title: "  Async Quiz  ", deadline: deadline))
+        await logic.startQuiz(formData: .init(groupId: nil, title: "  Async Quiz  ", deadline: deadline))
 
         #expect(await presenter.loadingStates() == [true, false])
         #expect(await presenter.startQuizSuccessCallsCount() == 1)
@@ -57,11 +59,12 @@ struct StartQuizLogicTests {
         let logic = StartQuizLogic(
             presenter: presenter,
             quizService: quizService,
+            groupService: StartQuizGroupServiceMock(),
             quizParticipationService: StartQuizParticipationServiceMock(),
             template: makeTemplate(quizType: .sync)
         )
 
-        await logic.startQuiz(formData: .init(title: " Sync ", deadline: Date()))
+        await logic.startQuiz(formData: .init(groupId: nil, title: " Sync ", deadline: Date()))
 
         #expect(await presenter.loadingStates() == [true, false])
         let serviceErrors = await presenter.serviceErrors()
@@ -79,11 +82,12 @@ struct StartQuizLogicTests {
         let logic = StartQuizLogic(
             presenter: presenter,
             quizService: quizService,
+            groupService: StartQuizGroupServiceMock(),
             quizParticipationService: participationService,
             template: makeTemplate(quizType: .sync)
         )
 
-        await logic.startQuiz(formData: .init(title: "  ", deadline: Date()))
+        await logic.startQuiz(formData: .init(groupId: nil, title: "  ", deadline: Date()))
 
         #expect(await presenter.loadingStates() == [true, false])
         #expect(await participationService.connectRequests() == ["CODE42"])
@@ -104,11 +108,12 @@ struct StartQuizLogicTests {
         let logic = StartQuizLogic(
             presenter: presenter,
             quizService: quizService,
+            groupService: StartQuizGroupServiceMock(),
             quizParticipationService: participationService,
             template: makeTemplate(quizType: .sync)
         )
 
-        await logic.startQuiz(formData: .init(title: "Quiz", deadline: nil))
+        await logic.startQuiz(formData: .init(groupId: nil, title: "Quiz", deadline: nil))
 
         let errors = await presenter.joinQuizErrors()
         #expect(errors.count == 1)
@@ -124,11 +129,12 @@ struct StartQuizLogicTests {
         let logic = StartQuizLogic(
             presenter: presenter,
             quizService: quizService,
+            groupService: StartQuizGroupServiceMock(),
             quizParticipationService: StartQuizParticipationServiceMock(),
             template: makeTemplate(quizType: .async)
         )
 
-        await logic.startQuiz(formData: .init(title: "Quiz", deadline: nil))
+        await logic.startQuiz(formData: .init(groupId: nil, title: "Quiz", deadline: nil))
 
         let serviceErrors = await presenter.serviceErrors()
         #expect(serviceErrors.count == 1)
@@ -144,6 +150,9 @@ private actor StartQuizPresenterSpy: StartQuizPresenter {
     private var serviceErrorsStorage: [QuizServiceError] = []
     private var joinQuizErrorsStorage: [QuizParticipationServiceError] = []
     private var closeScreenCalls = 0
+
+    func presentOwnedGroups(_ groups: [Group]) async {
+    }
 
     func presentStartQuizLoading(_ isLoading: Bool) async {
         loadingStatesStorage.append(isLoading)
@@ -350,6 +359,51 @@ private actor StartQuizParticipationServiceMock: QuizParticipationService {
     }
 
     func sendCommand<Payload: Encodable>(type: String, payload: Payload?) async throws {
+    }
+}
+
+private actor StartQuizGroupServiceMock: GroupService {
+    func getGroups() async throws -> [Group] {
+        []
+    }
+
+    func getGroups(filter: GroupFilter?) async throws -> [Group] {
+        []
+    }
+
+    func createGroup(_ request: CreateGroupRequest) async throws -> Group {
+        throw GroupServiceError.unknown
+    }
+
+    func getGroup(by groupId: String) async throws -> GroupWithMembers {
+        throw GroupServiceError.unknown
+    }
+
+    func updateGroup(by groupId: String, _ request: UpdateGroupRequest) async throws -> Group {
+        throw GroupServiceError.unknown
+    }
+
+    func deleteGroup(by groupId: String) async throws {
+    }
+
+    func uploadGroupAvatar(data: Data) async throws -> String? {
+        nil
+    }
+
+    func acceptGroupInvitation(by groupId: String) async throws -> Group {
+        throw GroupServiceError.unknown
+    }
+
+    func declineGroupInvitation(by groupId: String) async throws {
+    }
+
+    func inviteMembers(to groupId: String, request: InviteGroupMembersRequest) async throws {
+    }
+
+    func kickMembers(from groupId: String, request: KickGroupMembersRequest) async throws {
+    }
+
+    func leaveGroup(by groupId: String) async throws {
     }
 }
 

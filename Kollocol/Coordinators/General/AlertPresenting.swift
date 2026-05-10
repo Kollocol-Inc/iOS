@@ -133,6 +133,25 @@ extension GroupServiceError: UserFacingError {
     }
 }
 
+extension NotificationsServiceError: UserFacingError {
+    var userMessage: String {
+        switch self {
+        case .badRequest:
+            return "groupServiceErrorBadRequest".localized
+        case .tooManyRequests:
+            return "tooManyRequestsError".localized
+        case .offline:
+            return "groupServiceErrorOffline".localized
+        case .server:
+            return "groupServiceErrorServer".localized
+        case .unauthorized:
+            return "groupServiceErrorUnauthorized".localized
+        case .unknown:
+            return "somethingWentWrong".localized
+        }
+    }
+}
+
 extension QuizParticipationServiceError: UserFacingError {
     var userMessage: String {
         switch self {
@@ -205,11 +224,11 @@ extension ServiceErrorHandling {
     func presentServiceError(
         _ error: Error,
         useCase: ServiceErrorUseCase = .generic,
-        title: String = "Ошибка"
+        title: String = "errorTitle".localized
     ) async {
         let message = overrideMessage(for: error, useCase: useCase)
             ?? (error as? any UserFacingError)?.userMessage
-            ?? "Что-то пошло не так"
+            ?? "somethingWentWrong".localized
 
         errorDisplayer.showError(title: title, message: message)
     }

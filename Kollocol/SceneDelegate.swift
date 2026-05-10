@@ -54,6 +54,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let authService = AuthServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
         let userService = UserServiceImpl(api: api, tokenStore: tokenStore, udService: udService)
+        let notificationsService = NotificationsServiceImpl(api: api)
         let groupService = GroupServiceImpl(api: api)
         let quizService = QuizServiceImpl(api: api)
         let mlService = MLServiceImpl(api: api)
@@ -69,6 +70,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             tokenStore: tokenStore,
             udService: udService,
             userService: userService,
+            notificationsService: notificationsService,
             groupService: groupService,
             quizService: quizService,
             mlService: mlService,

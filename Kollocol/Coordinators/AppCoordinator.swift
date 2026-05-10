@@ -74,6 +74,7 @@ struct Services {
     let tokenStore: any TokenStoring
     let udService: UserDefaultsService
     let userService: UserService
+    let notificationsService: NotificationsService
     let groupService: GroupService
     let quizService: QuizService
     let mlService: MLService

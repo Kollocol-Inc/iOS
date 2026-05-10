@@ -193,6 +193,9 @@ private actor RegistrationUserServiceMock: UserService {
 
     func deleteAvatar() async throws {
     }
+
+    func deleteUserAccount() async throws {
+    }
 }
 
 private actor TokenStoreMock: TokenStoring {

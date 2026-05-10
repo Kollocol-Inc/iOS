@@ -136,6 +136,7 @@ final class ProfileViewController: UIViewController {
         static let themeTransitionDuration: TimeInterval = 0.4
         static let languageTransitionDuration: TimeInterval = 0.25
         static let settingsRowHeight: CGFloat = 44
+        static let dangerZoneButtonRowHeight: CGFloat = 50
     }
 
     // MARK: - Properties
@@ -160,7 +161,9 @@ final class ProfileViewController: UIViewController {
         .header("settingsHeader"),
         .theme,
         .divider,
-        .language
+        .language,
+        .header("profileDangerZoneTitle"),
+        .dangerZoneDeleteAccount
     ]
 
     private lazy var profileShimmerViews: [ShimmerView] = [
@@ -367,6 +370,10 @@ final class ProfileViewController: UIViewController {
             DividerTableViewCell.self,
             forCellReuseIdentifier: DividerTableViewCell.reuseIdentifier
         )
+        tableView.register(
+            ProfileDangerZoneButtonTableViewCell.self,
+            forCellReuseIdentifier: ProfileDangerZoneButtonTableViewCell.reuseIdentifier
+        )
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = UITableView.automaticDimension
@@ -540,6 +547,33 @@ final class ProfileViewController: UIViewController {
 
         Task { [weak self] in
             await self?.interactor.deleteAvatar()
+        }
+    }
+
+    private func presentDeleteAccountConfirmationSheet() {
+        let content = InfoBottomSheetContent(
+            title: "confirmationTitle".localized,
+            description: "profileDeleteAccountConfirmationDescription".localized,
+            buttonsConfiguration: .double(
+                left: InfoBottomSheetAction(
+                    identifier: .cancel,
+                    title: "cancel".localized,
+                    style: .buttonSecondary
+                ),
+                right: InfoBottomSheetAction(
+                    identifier: .confirm,
+                    title: "delete".localized,
+                    style: .backgroundRedSecondary
+                )
+            )
+        )
+
+        showInfoBottomSheet(content) { [weak self] action in
+            guard action == .confirm else { return }
+
+            Task { [weak self] in
+                await self?.interactor.deleteUserAccount()
+            }
         }
     }
 
@@ -951,6 +985,19 @@ extension ProfileViewController: UITableViewDataSource {
                 self?.handleLanguageChange(option)
             }
             return cell
+
+        case .dangerZoneDeleteAccount:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: ProfileDangerZoneButtonTableViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? ProfileDangerZoneButtonTableViewCell else {
+                return UITableViewCell()
+            }
+
+            cell.configure(title: "profileDeleteAccountButtonTitle".localized) { [weak self] in
+                self?.presentDeleteAccountConfirmationSheet()
+            }
+            return cell
         }
     }
 }
@@ -963,6 +1010,8 @@ extension ProfileViewController: UITableViewDelegate {
             return 1
         case .notificationToggle, .notificationDeadline, .theme, .language:
             return UIConstants.settingsRowHeight
+        case .dangerZoneDeleteAccount:
+            return UIConstants.dangerZoneButtonRowHeight
         default:
             return UITableView.automaticDimension
         }
@@ -974,6 +1023,8 @@ extension ProfileViewController: UITableViewDelegate {
             return 1
         case .notificationToggle, .notificationDeadline, .theme, .language:
             return UIConstants.settingsRowHeight
+        case .dangerZoneDeleteAccount:
+            return UIConstants.dangerZoneButtonRowHeight
         default:
             return 44
         }

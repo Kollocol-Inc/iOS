@@ -9,12 +9,18 @@ import UIKit
 
 final class MainLogic: MainInteractor {
     // MARK: - Constants
+    private enum NotificationsPagination {
+        static let limit = 100
+        static let offset = 0
+    }
+
+    // MARK: - Properties
     private let presenter: MainPresenter
     private let userService: UserService
     private let quizService: QuizService
+    private let notificationsService: NotificationsService
     private let quizParticipationService: QuizParticipationService
 
-    // MARK: - Properties
     var participatingInstances: [ParticipatingInstance] = []
     var hostingInstances: [QuizInstance] = []
 
@@ -23,11 +29,13 @@ final class MainLogic: MainInteractor {
         presenter: MainPresenter,
         userService: UserService,
         quizService: QuizService,
+        notificationsService: NotificationsService,
         quizParticipationService: QuizParticipationService
     ) {
         self.presenter = presenter
         self.userService = userService
         self.quizService = quizService
+        self.notificationsService = notificationsService
         self.quizParticipationService = quizParticipationService
     }
 
@@ -58,8 +66,34 @@ final class MainLogic: MainInteractor {
         }
     }
 
+    func fetchNotificationsBadge() async {
+        do {
+            let response = try await notificationsService.getNotifications(
+                GetUserNotificationsRequest(
+                    limit: NotificationsPagination.limit,
+                    offset: NotificationsPagination.offset
+                )
+            )
+
+            let unreadCount = response.notifications.reduce(into: 0) { count, notification in
+                if notification.isRead ?? false {
+                    return
+                }
+                count += 1
+            }
+
+            await presenter.presentNotificationsBadge(unreadCount: unreadCount)
+        } catch {
+            await presenter.presentNotificationsBadge(unreadCount: 0)
+        }
+    }
+
     func routeToProfileScreen() async {
         await presenter.presentProfileScreen()
+    }
+
+    func routeToNotificationsScreen() async {
+        await presenter.presentNotificationsScreen()
     }
 
     func joinQuiz(code: String, skipAsyncConfirmation: Bool) async {

@@ -104,6 +104,7 @@ final class MainCoordinator {
             router: self,
             userService: services.userService,
             quizService: services.quizService,
+            notificationsService: services.notificationsService,
             quizParticipationService: services.quizParticipationService
         )
         let mainNav = makeTabNavigationController(
@@ -316,6 +317,30 @@ extension MainCoordinator: MainRouting {
         tabBarController.selectedIndex = 3
     }
 
+    func routeToNotificationsScreen() {
+        guard let mainNavController else { return }
+
+        if let sourceViewController = mainNavController.topViewController {
+            sourceViewController.navigationItem.backButtonDisplayMode = .minimal
+            let backItem = UIBarButtonItem(
+                title: "",
+                style: .plain,
+                target: nil,
+                action: nil
+            )
+            backItem.hidesSharedBackground = true
+            sourceViewController.navigationItem.backBarButtonItem = backItem
+        }
+
+        let viewController = NotificationsAssembly.build(
+            router: self,
+            notificationsService: services.notificationsService,
+            groupService: services.groupService
+        )
+        viewController.hidesBottomBarWhenPushed = true
+        mainNavController.pushViewController(viewController, animated: true)
+    }
+
     func routeToQuizWaitingRoom(accessCode: String) async {
         guard let mainNavController else { return }
         prepareMainLeftBarButtonForPushTransition()
@@ -506,14 +531,30 @@ extension MainCoordinator: MyQuizzesRouting {
 // MARK: - ProfileRouting
 extension MainCoordinator: ProfileRouting {
     func showLogoutConfirmation(onConfirm: @escaping @MainActor () -> Void) {
-        showConfirmationAlert(
-            title: "Выход из аккаунта",
-            message: "Вы уверены, что хотите выйти из аккаунта?",
-            cancelTitle: "Отмена",
-            confirmTitle: "Выход",
-            confirmStyle: .destructive,
-            onConfirm: onConfirm
+        let content = InfoBottomSheetContent(
+            title: "profileLogoutConfirmationTitle".localized,
+            description: "profileLogoutConfirmationDescription".localized,
+            buttonsConfiguration: .double(
+                left: InfoBottomSheetAction(
+                    identifier: .cancel,
+                    title: "cancel".localized,
+                    style: .buttonSecondary
+                ),
+                right: InfoBottomSheetAction(
+                    identifier: .confirm,
+                    title: "profileLogoutConfirmationButtonTitle".localized,
+                    style: .backgroundRedSecondary
+                )
+            )
         )
+
+        showInfoBottomSheet(content) { action in
+            guard action == .confirm else { return }
+
+            Task { @MainActor in
+                onConfirm()
+            }
+        }
     }
 
     func showAvatarCrop(image: UIImage, onFinish: @escaping @MainActor (UIImage?) -> Void) {
@@ -598,6 +639,7 @@ extension MainCoordinator: StartQuizRouting {
 @MainActor
 protocol MainRouting: ErrorMessageDisplaying {
     func routeToProfileScreen()
+    func routeToNotificationsScreen()
     func routeToQuizWaitingRoom(accessCode: String) async
     func routeToQuizParticipantsOverviewFromMain(initialData: QuizParticipantsOverviewModels.InitialData)
     func showQuizTypeInfoBottomSheet(title: String, description: String)

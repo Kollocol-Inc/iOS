@@ -14,6 +14,7 @@ enum ProfileModels {
         case notificationDeadline
         case theme
         case language
+        case dangerZoneDeleteAccount
         case divider
     }
 

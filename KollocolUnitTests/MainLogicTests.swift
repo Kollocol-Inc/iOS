@@ -21,6 +21,7 @@ struct MainLogicTests {
             presenter: presenter,
             userService: userService,
             quizService: MainQuizServiceMock(),
+            notificationsService: MainNotificationsServiceMock(),
             quizParticipationService: MainQuizParticipationServiceMock()
         )
 
@@ -47,6 +48,7 @@ struct MainLogicTests {
             presenter: presenter,
             userService: MainUserServiceMock(),
             quizService: quizService,
+            notificationsService: MainNotificationsServiceMock(),
             quizParticipationService: MainQuizParticipationServiceMock()
         )
 
@@ -58,6 +60,80 @@ struct MainLogicTests {
         #expect(await presenter.lastParticipatingCount() == 1)
         #expect(await presenter.lastHostingCount() == 1)
         #expect(await presenter.quizServiceErrors().isEmpty)
+    }
+
+    @Test
+    func fetchNotificationsBadgeSuccessPresentsUnreadCount() async {
+        let presenter = MainPresenterSpy()
+        let notificationsService = MainNotificationsServiceMock()
+        await notificationsService.setNotificationsResult(
+            UserNotificationsPage(
+                notifications: [
+                    UserNotification(
+                        content: nil,
+                        createdAt: nil,
+                        groupId: nil,
+                        id: "1",
+                        isRead: false,
+                        title: nil,
+                        type: .unknown,
+                        userId: nil
+                    ),
+                    UserNotification(
+                        content: nil,
+                        createdAt: nil,
+                        groupId: nil,
+                        id: "2",
+                        isRead: true,
+                        title: nil,
+                        type: .unknown,
+                        userId: nil
+                    ),
+                    UserNotification(
+                        content: nil,
+                        createdAt: nil,
+                        groupId: nil,
+                        id: "3",
+                        isRead: nil,
+                        title: nil,
+                        type: .unknown,
+                        userId: nil
+                    )
+                ],
+                total: 3
+            )
+        )
+
+        let logic = MainLogic(
+            presenter: presenter,
+            userService: MainUserServiceMock(),
+            quizService: MainQuizServiceMock(),
+            notificationsService: notificationsService,
+            quizParticipationService: MainQuizParticipationServiceMock()
+        )
+
+        await logic.fetchNotificationsBadge()
+
+        #expect(await presenter.notificationsBadgeCounts() == [2])
+    }
+
+    @Test
+    func fetchNotificationsBadgeFailurePresentsZeroCount() async {
+        let presenter = MainPresenterSpy()
+        let notificationsService = MainNotificationsServiceMock()
+        await notificationsService.setNotificationsError(.server)
+
+        let logic = MainLogic(
+            presenter: presenter,
+            userService: MainUserServiceMock(),
+            quizService: MainQuizServiceMock(),
+            notificationsService: notificationsService,
+            quizParticipationService: MainQuizParticipationServiceMock()
+        )
+
+        await logic.fetchNotificationsBadge()
+
+        #expect(await presenter.notificationsBadgeCounts() == [0])
     }
 
     @Test
@@ -78,6 +154,7 @@ struct MainLogicTests {
             presenter: presenter,
             userService: MainUserServiceMock(),
             quizService: MainQuizServiceMock(),
+            notificationsService: MainNotificationsServiceMock(),
             quizParticipationService: participationService
         )
 
@@ -108,6 +185,7 @@ struct MainLogicTests {
             presenter: presenter,
             userService: MainUserServiceMock(),
             quizService: MainQuizServiceMock(),
+            notificationsService: MainNotificationsServiceMock(),
             quizParticipationService: participationService
         )
 
@@ -128,6 +206,7 @@ struct MainLogicTests {
             presenter: presenter,
             userService: MainUserServiceMock(),
             quizService: MainQuizServiceMock(),
+            notificationsService: MainNotificationsServiceMock(),
             quizParticipationService: participationService
         )
 
@@ -146,6 +225,7 @@ struct MainLogicTests {
             presenter: presenter,
             userService: MainUserServiceMock(),
             quizService: MainQuizServiceMock(),
+            notificationsService: MainNotificationsServiceMock(),
             quizParticipationService: MainQuizParticipationServiceMock()
         )
         logic.hostingInstances = [
@@ -179,6 +259,7 @@ struct MainLogicTests {
             presenter: presenter,
             userService: MainUserServiceMock(),
             quizService: MainQuizServiceMock(),
+            notificationsService: MainNotificationsServiceMock(),
             quizParticipationService: MainQuizParticipationServiceMock()
         )
 
@@ -207,6 +288,7 @@ struct MainLogicTests {
             presenter: presenter,
             userService: MainUserServiceMock(),
             quizService: MainQuizServiceMock(),
+            notificationsService: MainNotificationsServiceMock(),
             quizParticipationService: MainQuizParticipationServiceMock()
         )
 
@@ -235,13 +317,16 @@ struct MainLogicTests {
             presenter: presenter,
             userService: MainUserServiceMock(),
             quizService: MainQuizServiceMock(),
+            notificationsService: MainNotificationsServiceMock(),
             quizParticipationService: MainQuizParticipationServiceMock()
         )
 
         await logic.routeToProfileScreen()
+        await logic.routeToNotificationsScreen()
         await logic.handleQuizTypeTap(.async)
 
         #expect(await presenter.profileScreenCallsCount() == 1)
+        #expect(await presenter.notificationsScreenCallsCount() == 1)
         #expect(await presenter.quizTypeInfoRequests() == [.async])
     }
 }
@@ -249,9 +334,11 @@ struct MainLogicTests {
 private actor MainPresenterSpy: MainPresenter {
     private var userProfilesStorage: [UserDTO] = []
     private var quizzesPayloadsStorage: [(participating: [QuizInstance], hosting: [QuizInstance])] = []
+    private var notificationsBadgeCountsStorage: [Int] = []
     private var userServiceErrorsStorage: [UserServiceError] = []
     private var quizServiceErrorsStorage: [QuizServiceError] = []
     private var profileScreenCalls = 0
+    private var notificationsScreenCalls = 0
     private var participantsOverviewPayloadsStorage: [QuizParticipantsOverviewModels.InitialData] = []
     private var joinSuccessCodesStorage: [String] = []
     private var joinErrorsStorage: [QuizParticipationServiceError] = []
@@ -267,6 +354,10 @@ private actor MainPresenterSpy: MainPresenter {
         quizzesPayloadsStorage.append((participating, hosting))
     }
 
+    func presentNotificationsBadge(unreadCount: Int) async {
+        notificationsBadgeCountsStorage.append(unreadCount)
+    }
+
     func presentServiceError(_ error: any UserFacingError) async {
         if let userError = error as? UserServiceError {
             userServiceErrorsStorage.append(userError)
@@ -280,6 +371,10 @@ private actor MainPresenterSpy: MainPresenter {
 
     func presentProfileScreen() async {
         profileScreenCalls += 1
+    }
+
+    func presentNotificationsScreen() async {
+        notificationsScreenCalls += 1
     }
 
     func presentQuizParticipantsOverview(_ initialData: QuizParticipantsOverviewModels.InitialData) async {
@@ -322,6 +417,10 @@ private actor MainPresenterSpy: MainPresenter {
         quizzesPayloadsStorage.last?.hosting.count ?? 0
     }
 
+    func notificationsBadgeCounts() -> [Int] {
+        notificationsBadgeCountsStorage
+    }
+
     func userServiceErrors() -> [UserServiceError] {
         userServiceErrorsStorage
     }
@@ -332,6 +431,10 @@ private actor MainPresenterSpy: MainPresenter {
 
     func profileScreenCallsCount() -> Int {
         profileScreenCalls
+    }
+
+    func notificationsScreenCallsCount() -> Int {
+        notificationsScreenCalls
     }
 
     func participantsOverviewPayloads() -> [QuizParticipantsOverviewModels.InitialData] {
@@ -423,6 +526,35 @@ private actor MainUserServiceMock: UserService {
     }
 
     func deleteAvatar() async throws {
+    }
+
+    func deleteUserAccount() async throws {
+    }
+}
+
+private actor MainNotificationsServiceMock: NotificationsService {
+    private var notificationsResult = UserNotificationsPage(notifications: [], total: nil)
+    private var notificationsError: NotificationsServiceError?
+
+    func setNotificationsResult(_ value: UserNotificationsPage) {
+        notificationsResult = value
+    }
+
+    func setNotificationsError(_ value: NotificationsServiceError?) {
+        notificationsError = value
+    }
+
+    func getNotifications(_ request: GetUserNotificationsRequest) async throws -> UserNotificationsPage {
+        if let notificationsError {
+            throw notificationsError
+        }
+        return notificationsResult
+    }
+
+    func deleteNotifications(_ request: NotificationIDsRequest) async throws {
+    }
+
+    func markNotificationsAsRead(_ request: NotificationIDsRequest) async throws {
     }
 }
 

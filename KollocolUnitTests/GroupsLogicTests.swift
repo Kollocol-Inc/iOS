@@ -156,4 +156,5 @@ private actor UserServiceMock: UserService {
 
     func register(name: String, surname: String) async throws {}
     func deleteAvatar() async throws {}
+    func deleteUserAccount() async throws {}
 }

@@ -130,6 +130,16 @@ final class ProfileLogic: ProfileInteractor {
         await presenter.presentAvatarCrop(image: image, onFinish: onFinish)
     }
 
+    func deleteUserAccount() async {
+        do {
+            try await userService.deleteUserAccount()
+            udService.isRegistered = false
+            await sessionManager.forcedLogout()
+        } catch {
+            await presenter.presentServiceError(UserServiceError.wrap(error))
+        }
+    }
+
     func logout() async {
         await presenter.presentLogoutConfirmation { [weak self] in
             Task { [weak self] in

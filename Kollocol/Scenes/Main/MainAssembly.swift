@@ -13,6 +13,7 @@ enum MainAssembly {
         router: MainRouting,
         userService: UserService,
         quizService: QuizService,
+        notificationsService: NotificationsService,
         quizParticipationService: QuizParticipationService
     ) -> UIViewController {
         let presenter = MainRouter(router: router)
@@ -20,6 +21,7 @@ enum MainAssembly {
             presenter: presenter,
             userService: userService,
             quizService: quizService,
+            notificationsService: notificationsService,
             quizParticipationService: quizParticipationService
         )
         let view = MainViewController(interactor: interactor)

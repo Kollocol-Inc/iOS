@@ -511,6 +511,9 @@ private actor ProfileUserServiceMock: UserService {
             throw deleteAvatarError
         }
     }
+
+    func deleteUserAccount() async throws {
+    }
 }
 
 private final class ProfileUserDefaultsServiceMock: UserDefaultsService {
