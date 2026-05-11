@@ -75,6 +75,7 @@ enum QuizParticipatingModels {
         let bottomButtonTitle: String
         let isBottomButtonEnabled: Bool
         let isTimerVisible: Bool
+        let isSensitiveQuestionContentProtectionEnabled: Bool
         let topLeaders: [FinalTopLeaderViewData]
         let personalResult: PersonalResultViewData?
         let finalParticipants: [FinalParticipantRowViewData]

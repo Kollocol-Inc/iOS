@@ -9,6 +9,8 @@ import UIKit
 
 final class QuizParticipatingQuestionTextTableViewCell: UITableViewCell {
     // MARK: - UI Components
+    private let protectedQuestionContainer = ScreenshotProtectedContainerView()
+
     private let questionLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 20, weight: .medium)
@@ -32,9 +34,25 @@ final class QuizParticipatingQuestionTextTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        questionLabel.alpha = 1
+        protectedQuestionContainer.setSecureRenderingEnabled(false)
+    }
+
     // MARK: - Methods
-    func configure(text: String) {
+    func configure(
+        text: String,
+        isSensitiveTextHidden: Bool = false,
+        isScreenshotProtectionEnabled: Bool = false
+    ) {
         questionLabel.text = text
+        protectedQuestionContainer.setSecureRenderingEnabled(isScreenshotProtectionEnabled)
+        setSensitiveTextHidden(isSensitiveTextHidden)
+    }
+
+    func setSensitiveTextHidden(_ isHidden: Bool) {
+        questionLabel.alpha = isHidden ? 0 : 1
     }
 
     // MARK: - Private Methods
@@ -43,10 +61,13 @@ final class QuizParticipatingQuestionTextTableViewCell: UITableViewCell {
         backgroundColor = .clear
         contentView.backgroundColor = .clear
 
-        contentView.addSubview(questionLabel)
-        questionLabel.pinTop(to: contentView.topAnchor, 0)
-        questionLabel.pinLeft(to: contentView.leadingAnchor, 24)
-        questionLabel.pinRight(to: contentView.trailingAnchor, 24)
-        questionLabel.pinBottom(to: contentView.bottomAnchor, 20)
+        contentView.addSubview(protectedQuestionContainer)
+        protectedQuestionContainer.pinTop(to: contentView.topAnchor, 0)
+        protectedQuestionContainer.pinLeft(to: contentView.leadingAnchor, 24)
+        protectedQuestionContainer.pinRight(to: contentView.trailingAnchor, 24)
+        protectedQuestionContainer.pinBottom(to: contentView.bottomAnchor, 20)
+
+        protectedQuestionContainer.contentView.addSubview(questionLabel)
+        questionLabel.pin(to: protectedQuestionContainer.contentView)
     }
 }

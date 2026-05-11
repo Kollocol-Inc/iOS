@@ -161,6 +161,7 @@ final class QuizParticipatingViewController: UIViewController {
         bottomButtonTitle: "answer".localized,
         isBottomButtonEnabled: false,
         isTimerVisible: true,
+        isSensitiveQuestionContentProtectionEnabled: false,
         topLeaders: [],
         personalResult: nil,
         finalParticipants: []
@@ -173,6 +174,8 @@ final class QuizParticipatingViewController: UIViewController {
     private var currentQuestionIdentity: String?
     private var serverClockOffsetMs: Int64?
     private var questionServerDeadlineMs: Int64?
+    private var isSceneCaptureActive = false
+    private var isApplicationInactiveForProtection = false
 
     // MARK: - Lifecycle
     init(interactor: QuizParticipatingInteractor) {
@@ -190,6 +193,7 @@ final class QuizParticipatingViewController: UIViewController {
         enableKeyboardDismissOnBackgroundTap()
         configureUI()
         configureNavigationBar()
+        configureSensitiveContentProtection()
 
         Task {
             await interactor.handleViewDidLoad()
@@ -209,6 +213,7 @@ final class QuizParticipatingViewController: UIViewController {
 
     deinit {
         timerTask?.cancel()
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - Methods
@@ -252,6 +257,7 @@ final class QuizParticipatingViewController: UIViewController {
         rebuildRows()
         tableView.reloadData()
         updateAsyncCompletionLabelVisibility()
+        refreshSensitiveQuestionContentVisibility()
     }
 
     @MainActor
@@ -372,6 +378,35 @@ final class QuizParticipatingViewController: UIViewController {
         submitButton.addTarget(self, action: #selector(handleSubmitTap), for: .touchUpInside)
     }
 
+    private func configureSensitiveContentProtection() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleApplicationWillResignActive),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleApplicationDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleApplicationDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+
+        registerForTraitChanges(
+            [UITraitSceneCaptureState.self],
+            action: #selector(handleSceneCaptureStateTraitChanged)
+        )
+
+        updateScreenCaptureState()
+        refreshSensitiveQuestionContentVisibility()
+    }
+
     private func configureNavigationBar() {
         let leftAction = UIAction { [weak self] _ in
             self?.handleLeaveTap()
@@ -430,6 +465,26 @@ final class QuizParticipatingViewController: UIViewController {
         }
 
         return remainingSeconds > 0
+    }
+
+    private func shouldHideSensitiveQuestionText() -> Bool {
+        guard state.isSensitiveQuestionContentProtectionEnabled else {
+            return false
+        }
+
+        return isApplicationInactiveForProtection || isSceneCaptureActive
+    }
+
+    private func refreshSensitiveQuestionContentVisibility() {
+        let shouldHideSensitiveText = shouldHideSensitiveQuestionText()
+
+        tableView.visibleCells.forEach { cell in
+            if let questionCell = cell as? QuizParticipatingQuestionTextTableViewCell {
+                questionCell.setSensitiveTextHidden(shouldHideSensitiveText)
+            } else if let optionCell = cell as? QuizParticipatingOptionTableViewCell {
+                optionCell.setSensitiveTextHidden(shouldHideSensitiveText)
+            }
+        }
     }
 
     private func rebuildRows() {
@@ -710,6 +765,12 @@ final class QuizParticipatingViewController: UIViewController {
         return "\(payload.question.id ?? "none"):\(payload.questionIndex)"
     }
 
+    private func updateScreenCaptureState() {
+        let captureState = view.window?.traitCollection.sceneCaptureState
+            ?? traitCollection.sceneCaptureState
+        isSceneCaptureActive = captureState == .active
+    }
+
     private func updateBottomIslandButtonInset() {
         bottomButtonBottomConstraint?.constant = -view.safeAreaInsets.bottom
     }
@@ -730,6 +791,31 @@ final class QuizParticipatingViewController: UIViewController {
             .first
 
         return openAnswerCell?.currentText
+    }
+
+    @objc
+    private func handleApplicationWillResignActive() {
+        isApplicationInactiveForProtection = true
+        refreshSensitiveQuestionContentVisibility()
+    }
+
+    @objc
+    private func handleApplicationDidBecomeActive() {
+        isApplicationInactiveForProtection = false
+        updateScreenCaptureState()
+        refreshSensitiveQuestionContentVisibility()
+    }
+
+    @objc
+    private func handleApplicationDidEnterBackground() {
+        isApplicationInactiveForProtection = true
+        refreshSensitiveQuestionContentVisibility()
+    }
+
+    @objc
+    private func handleSceneCaptureStateTraitChanged() {
+        updateScreenCaptureState()
+        refreshSensitiveQuestionContentVisibility()
     }
 
     // MARK: - Actions
@@ -853,7 +939,11 @@ extension QuizParticipatingViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
 
-            cell.configure(text: text)
+            cell.configure(
+                text: text,
+                isSensitiveTextHidden: shouldHideSensitiveQuestionText(),
+                isScreenshotProtectionEnabled: state.isSensitiveQuestionContentProtectionEnabled
+            )
             return cell
 
         case .openAnswerInput(let text, let isEditable, let isLoading):
@@ -881,7 +971,11 @@ extension QuizParticipatingViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
 
-            cell.configure(with: optionViewData)
+            cell.configure(
+                with: optionViewData,
+                isSensitiveTextHidden: shouldHideSensitiveQuestionText(),
+                isScreenshotProtectionEnabled: state.isSensitiveQuestionContentProtectionEnabled
+            )
             cell.onTap = { [weak self] in
                 guard let self else { return }
                 Task {

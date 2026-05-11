@@ -658,6 +658,7 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
             bottomButtonTitle: bottomButtonTitle(),
             isBottomButtonEnabled: isBottomButtonEnabled(),
             isTimerVisible: isTimerVisible(),
+            isSensitiveQuestionContentProtectionEnabled: isSensitiveQuestionContentProtectionEnabled(),
             topLeaders: finalLeaderboardViewData.topLeaders,
             personalResult: finalLeaderboardViewData.personalResult,
             finalParticipants: finalLeaderboardViewData.finalParticipants
@@ -1053,6 +1054,22 @@ actor QuizParticipatingLogic: QuizParticipatingInteractor {
                 .creatorWaitingParticipants:
             return true
         }
+    }
+
+    private func isSensitiveQuestionContentProtectionEnabled() -> Bool {
+        guard isCreator == false else {
+            return false
+        }
+
+        guard phase != .quizFinished else {
+            return false
+        }
+
+        if currentQuizStatus == .active {
+            return true
+        }
+
+        return questionPayload != nil
     }
 
     private func isBottomButtonEnabled() -> Bool {

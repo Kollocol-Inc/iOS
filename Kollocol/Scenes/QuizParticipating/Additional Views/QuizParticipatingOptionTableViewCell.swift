@@ -10,6 +10,7 @@ import UIKit
 final class QuizParticipatingOptionTableViewCell: UITableViewCell {
     // MARK: - UI Components
     private let markControl = AnswerOptionMarkControl()
+    private let protectedOptionContainer = ScreenshotProtectedContainerView()
 
     private let optionLabel: UILabel = {
         let label = UILabel()
@@ -53,12 +54,20 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         markControl.stopAnimating()
+        optionLabel.alpha = 1
+        protectedOptionContainer.setSecureRenderingEnabled(false)
         onTap = nil
     }
 
     // MARK: - Methods
-    func configure(with option: QuizParticipatingModels.OptionViewData) {
+    func configure(
+        with option: QuizParticipatingModels.OptionViewData,
+        isSensitiveTextHidden: Bool = false,
+        isScreenshotProtectionEnabled: Bool = false
+    ) {
         optionLabel.text = option.text
+        protectedOptionContainer.setSecureRenderingEnabled(isScreenshotProtectionEnabled)
+        setSensitiveTextHidden(isSensitiveTextHidden)
         optionCounterLabel.isHidden = option.isAnswersCountVisible == false
         if option.isAnswersCountVisible {
             optionCounterLabel.attributedText = makeOptionCounterAttributedText(count: option.answersCount)
@@ -85,6 +94,10 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
         contentView.alpha = 1
     }
 
+    func setSensitiveTextHidden(_ isHidden: Bool) {
+        optionLabel.alpha = isHidden ? 0 : 1
+    }
+
     // MARK: - Private Methods
     private func configureUI() {
         selectionStyle = .none
@@ -97,16 +110,19 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
         markControl.pinLeft(to: contentView.leadingAnchor, 28)
         markControl.pinTop(to: contentView.topAnchor, 0)
 
-        contentView.addSubview(optionLabel)
+        contentView.addSubview(protectedOptionContainer)
         contentView.addSubview(optionCounterLabel)
 
         optionCounterLabel.pinTop(to: contentView.topAnchor, 0)
         optionCounterLabel.pinRight(to: contentView.safeAreaLayoutGuide.trailingAnchor, 24)
 
-        optionLabel.pinLeft(to: markControl.trailingAnchor, 12)
-        optionLabel.pinRight(to: optionCounterLabel.leadingAnchor, 12)
-        optionLabel.pinTop(to: contentView.topAnchor, 0)
-        optionLabel.pinBottom(to: contentView.bottomAnchor, 20)
+        protectedOptionContainer.pinLeft(to: markControl.trailingAnchor, 12)
+        protectedOptionContainer.pinRight(to: optionCounterLabel.leadingAnchor, 12)
+        protectedOptionContainer.pinTop(to: contentView.topAnchor, 0)
+        protectedOptionContainer.pinBottom(to: contentView.bottomAnchor, 20)
+
+        protectedOptionContainer.contentView.addSubview(optionLabel)
+        optionLabel.pin(to: protectedOptionContainer.contentView)
 
         contentView.addSubview(tapButton)
         tapButton.pin(to: contentView)
