@@ -10,9 +10,10 @@ import Foundation
 struct UserNotification {
     let content: String?
     let createdAt: Date?
-    let groupId: String?
     let id: String?
     let isRead: Bool?
+    let relatedEntityId: String?
+    let requiresAction: Bool?
     let title: String?
     let type: UserNotificationType
     let userId: String?

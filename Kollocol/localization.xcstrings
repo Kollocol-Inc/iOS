@@ -2466,6 +2466,23 @@
         }
       }
     },
+    "notificationsGoButton" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перейти"
+          }
+        }
+      }
+    },
     "notificationsNoNotifications" : {
       "extractionState" : "manual",
       "localizations" : {

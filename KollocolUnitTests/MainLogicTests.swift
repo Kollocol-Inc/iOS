@@ -72,9 +72,10 @@ struct MainLogicTests {
                     UserNotification(
                         content: nil,
                         createdAt: nil,
-                        groupId: nil,
                         id: "1",
                         isRead: false,
+                        relatedEntityId: nil,
+                        requiresAction: nil,
                         title: nil,
                         type: .unknown,
                         userId: nil
@@ -82,9 +83,10 @@ struct MainLogicTests {
                     UserNotification(
                         content: nil,
                         createdAt: nil,
-                        groupId: nil,
                         id: "2",
                         isRead: true,
+                        relatedEntityId: nil,
+                        requiresAction: nil,
                         title: nil,
                         type: .unknown,
                         userId: nil
@@ -92,9 +94,10 @@ struct MainLogicTests {
                     UserNotification(
                         content: nil,
                         createdAt: nil,
-                        groupId: nil,
                         id: "3",
                         isRead: nil,
+                        relatedEntityId: nil,
+                        requiresAction: nil,
                         title: nil,
                         type: .unknown,
                         userId: nil

@@ -16,14 +16,20 @@ enum NotificationsModels {
 
     struct NotificationViewData: Equatable {
         let id: String
-        let groupId: String?
+        let relatedEntityId: String?
         let title: String
         let description: String
         let type: NotificationType
         let isRead: Bool
         let createdAt: Date?
         let dateText: String?
+        let inviteActionState: InviteActionState
         let isInviteActionInProgress: Bool
+    }
+
+    enum InviteActionState: Equatable {
+        case available
+        case ignored
     }
 
     enum NotificationType: Equatable {

@@ -224,11 +224,11 @@ extension ServiceErrorHandling {
     func presentServiceError(
         _ error: Error,
         useCase: ServiceErrorUseCase = .generic,
-        title: String = "errorTitle".localized
+        title: String = "Ошибка"
     ) async {
         let message = overrideMessage(for: error, useCase: useCase)
             ?? (error as? any UserFacingError)?.userMessage
-            ?? "somethingWentWrong".localized
+            ?? "Что-то пошло не так"
 
         errorDisplayer.showError(title: title, message: message)
     }

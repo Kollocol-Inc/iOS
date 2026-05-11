@@ -84,34 +84,37 @@ final class NotificationsLogic: NotificationsInteractor {
     ) async {
         guard let notification = notifications.first(where: { $0.id == notificationId }) else { return }
         guard notification.type == .groupInvite else { return }
+        guard notification.inviteActionState == .available else { return }
         guard notification.isInviteActionInProgress == false else { return }
 
         updateNotification(notificationId: notificationId) { notification in
             NotificationsModels.NotificationViewData(
                 id: notification.id,
-                groupId: notification.groupId,
+                relatedEntityId: notification.relatedEntityId,
                 title: notification.title,
                 description: notification.description,
                 type: notification.type,
                 isRead: notification.isRead,
                 createdAt: notification.createdAt,
                 dateText: notification.dateText,
+                inviteActionState: notification.inviteActionState,
                 isInviteActionInProgress: true
             )
         }
         await presenter.presentNotifications(notifications)
 
-        guard let groupId = resolveInviteTargetGroupId(for: notification) else {
+        guard let relatedEntityId = notification.relatedEntityId?.trimmedNonEmpty else {
             updateNotification(notificationId: notificationId) { notification in
                 NotificationsModels.NotificationViewData(
                     id: notification.id,
-                    groupId: notification.groupId,
+                    relatedEntityId: notification.relatedEntityId,
                     title: notification.title,
                     description: notification.description,
                     type: notification.type,
                     isRead: notification.isRead,
                     createdAt: notification.createdAt,
                     dateText: notification.dateText,
+                    inviteActionState: .available,
                     isInviteActionInProgress: false
                 )
             }
@@ -123,10 +126,10 @@ final class NotificationsLogic: NotificationsInteractor {
         do {
             switch action {
             case .accept:
-                _ = try await groupService.acceptGroupInvitation(by: groupId)
+                _ = try await groupService.acceptGroupInvitation(by: relatedEntityId)
 
             case .ignore:
-                try await groupService.declineGroupInvitation(by: groupId)
+                try await groupService.declineGroupInvitation(by: relatedEntityId)
             }
 
             do {
@@ -142,13 +145,14 @@ final class NotificationsLogic: NotificationsInteractor {
             updateNotification(notificationId: notificationId) { notification in
                 NotificationsModels.NotificationViewData(
                     id: notification.id,
-                    groupId: notification.groupId,
+                    relatedEntityId: notification.relatedEntityId,
                     title: notification.title,
                     description: notification.description,
                     type: notification.type,
                     isRead: true,
                     createdAt: notification.createdAt,
                     dateText: notification.dateText,
+                    inviteActionState: .ignored,
                     isInviteActionInProgress: false
                 )
             }
@@ -157,13 +161,14 @@ final class NotificationsLogic: NotificationsInteractor {
             updateNotification(notificationId: notificationId) { notification in
                 NotificationsModels.NotificationViewData(
                     id: notification.id,
-                    groupId: notification.groupId,
+                    relatedEntityId: notification.relatedEntityId,
                     title: notification.title,
                     description: notification.description,
                     type: notification.type,
                     isRead: notification.isRead,
                     createdAt: notification.createdAt,
                     dateText: notification.dateText,
+                    inviteActionState: .available,
                     isInviteActionInProgress: false
                 )
             }
@@ -177,6 +182,7 @@ final class NotificationsLogic: NotificationsInteractor {
         let notificationId = notification.id?.trimmedNonEmpty ?? UUID().uuidString
         let title = notification.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let description = notification.content?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let notificationType = mapNotificationType(notification.type)
 
         let dateText: String?
         if let createdAt = notification.createdAt {
@@ -187,13 +193,14 @@ final class NotificationsLogic: NotificationsInteractor {
 
         return NotificationsModels.NotificationViewData(
             id: notificationId,
-            groupId: notification.groupId?.trimmedNonEmpty,
+            relatedEntityId: notification.relatedEntityId?.trimmedNonEmpty,
             title: title,
             description: description,
-            type: mapNotificationType(notification.type),
+            type: notificationType,
             isRead: notification.isRead ?? false,
             createdAt: notification.createdAt,
             dateText: dateText,
+            inviteActionState: mapInviteActionState(notification, type: notificationType),
             isInviteActionInProgress: false
         )
     }
@@ -215,6 +222,23 @@ final class NotificationsLogic: NotificationsInteractor {
         case .unknown:
             return .unknown
         }
+    }
+
+    private func mapInviteActionState(
+        _ notification: UserNotification,
+        type: NotificationsModels.NotificationType
+    ) -> NotificationsModels.InviteActionState {
+        guard type == .groupInvite else { return .ignored }
+
+        if notification.isRead == true {
+            return .ignored
+        }
+
+        if notification.requiresAction == true {
+            return .available
+        }
+
+        return .available
     }
 
     private func sortNotifications(_ value: [NotificationsModels.NotificationViewData]) -> [NotificationsModels.NotificationViewData] {
@@ -246,15 +270,6 @@ final class NotificationsLogic: NotificationsInteractor {
         case (.none, .none):
             return lhs.id > rhs.id
         }
-    }
-
-    private func resolveInviteTargetGroupId(
-        for notification: NotificationsModels.NotificationViewData
-    ) -> String? {
-        // Backend payloads may carry invitation target under `group_id`
-        // or reuse notification `id` as the target identifier.
-        notification.groupId?.trimmedNonEmpty
-            ?? notification.id.trimmedNonEmpty
     }
 
     private func updateNotification(

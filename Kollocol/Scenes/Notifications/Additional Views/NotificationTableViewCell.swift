@@ -87,7 +87,7 @@ final class NotificationTableViewCell: UITableViewCell {
         stackView.axis = .horizontal
         stackView.spacing = 8
         stackView.alignment = .fill
-        stackView.distribution = .fillEqually
+        stackView.distribution = .fill
         return stackView
     }()
 
@@ -121,11 +121,18 @@ final class NotificationTableViewCell: UITableViewCell {
         static let iconTextSpacing: CGFloat = 14
         static let unreadDotSize: CGFloat = 6
         static let actionButtonHeight: CGFloat = 42
+        static let inviteActionsDefaultSpacing: CGFloat = 8
+        static let inviteActionsTransitionDuration: TimeInterval = 0.25
+        static let mainStackDefaultSpacing: CGFloat = 8
     }
 
     // MARK: - Properties
     private var onIgnoreTap: (() -> Void)?
     private var onAcceptTap: (() -> Void)?
+    private var inviteActionsHeightConstraint: NSLayoutConstraint?
+    private var ignoreEqualWidthConstraint: NSLayoutConstraint?
+    private var ignoreCollapsedWidthConstraint: NSLayoutConstraint?
+    private var inviteActionState: NotificationsModels.InviteActionState = .ignored
 
     // MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -145,6 +152,13 @@ final class NotificationTableViewCell: UITableViewCell {
         flameGradientIconView.applyCurrentColors(using: traitCollection)
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        onIgnoreTap = nil
+        onAcceptTap = nil
+        resetInviteActionsLayout()
+    }
+
     // MARK: - Methods
     func configure(
         with notification: NotificationsModels.NotificationViewData,
@@ -161,7 +175,7 @@ final class NotificationTableViewCell: UITableViewCell {
         unreadDotView.isHidden = notification.isRead
 
         configureIcon(type: notification.type)
-        configureInviteActions(notification)
+        configureInviteActions(with: notification)
     }
 
     // MARK: - Private Methods
@@ -170,12 +184,14 @@ final class NotificationTableViewCell: UITableViewCell {
         configureHierarchy()
         configureConstraints()
         configureActions()
+        resetInviteActionsLayout()
     }
 
     private func configureBackground() {
         selectionStyle = .none
         backgroundColor = .clear
         contentView.backgroundColor = .clear
+        inviteActionsStackView.clipsToBounds = true
     }
 
     private func configureHierarchy() {
@@ -232,7 +248,10 @@ final class NotificationTableViewCell: UITableViewCell {
         unreadDotView.setWidth(UIConstants.unreadDotSize)
         unreadDotView.setHeight(UIConstants.unreadDotSize)
 
-        inviteActionsStackView.setHeight(UIConstants.actionButtonHeight)
+        inviteActionsHeightConstraint = inviteActionsStackView.setHeight(UIConstants.actionButtonHeight)
+        ignoreEqualWidthConstraint = ignoreButton.pinWidth(to: acceptButton.widthAnchor)
+        ignoreCollapsedWidthConstraint = ignoreButton.setWidth(0)
+        ignoreCollapsedWidthConstraint?.isActive = false
 
         titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -311,25 +330,108 @@ final class NotificationTableViewCell: UITableViewCell {
             .withTintColor(tintColor, renderingMode: .alwaysOriginal)
     }
 
-    private func configureInviteActions(_ notification: NotificationsModels.NotificationViewData) {
-        let shouldShowActions = notification.type == .groupInvite && notification.isRead == false
-        inviteActionsStackView.isHidden = shouldShowActions == false
+    private func configureInviteActions(with notification: NotificationsModels.NotificationViewData) {
+        guard notification.type == .groupInvite else {
+            applyIgnoredLayout(animated: false)
+            inviteActionState = .ignored
+            return
+        }
 
-        let isEnabled = notification.isInviteActionInProgress == false
+        let previousState = inviteActionState
+        let targetState = notification.inviteActionState
+        let shouldAnimate = previousState == .available && targetState != .available
+
+        switch targetState {
+        case .available:
+            applyAvailableLayout(isInProgress: notification.isInviteActionInProgress)
+
+        case .ignored:
+            applyIgnoredLayout(animated: shouldAnimate)
+        }
+
+        inviteActionState = targetState
+    }
+
+    private func resetInviteActionsLayout() {
+        inviteActionState = .ignored
+        mainStackView.spacing = UIConstants.mainStackDefaultSpacing
+        inviteActionsStackView.isHidden = true
+        inviteActionsStackView.spacing = UIConstants.inviteActionsDefaultSpacing
+        inviteActionsHeightConstraint?.constant = UIConstants.actionButtonHeight
+        ignoreEqualWidthConstraint?.isActive = true
+        ignoreCollapsedWidthConstraint?.isActive = false
+        ignoreButton.isEnabled = true
+        acceptButton.isEnabled = true
+        ignoreButton.alpha = 1
+        acceptButton.alpha = 1
+        ignoreButton.setTitle("notificationsIgnoreButton".localized, for: .normal)
+        acceptButton.setTitle("notificationsAcceptButton".localized, for: .normal)
+    }
+
+    private func applyAvailableLayout(isInProgress: Bool) {
+        inviteActionsStackView.isHidden = false
+        inviteActionsStackView.spacing = UIConstants.inviteActionsDefaultSpacing
+        mainStackView.spacing = UIConstants.mainStackDefaultSpacing
+        inviteActionsHeightConstraint?.constant = UIConstants.actionButtonHeight
+        ignoreEqualWidthConstraint?.isActive = true
+        ignoreCollapsedWidthConstraint?.isActive = false
+        ignoreButton.setTitle("notificationsIgnoreButton".localized, for: .normal)
+        acceptButton.setTitle("notificationsAcceptButton".localized, for: .normal)
+
+        let isEnabled = isInProgress == false
         ignoreButton.isEnabled = isEnabled
         acceptButton.isEnabled = isEnabled
         ignoreButton.alpha = isEnabled ? 1 : 0.6
         acceptButton.alpha = isEnabled ? 1 : 0.6
+        contentView.layoutIfNeeded()
+    }
+
+    private func applyIgnoredLayout(animated: Bool) {
+        ignoreButton.isEnabled = false
+        acceptButton.isEnabled = false
+
+        let updates = { [weak self] in
+            guard let self else { return }
+            self.inviteActionsHeightConstraint?.constant = 0
+            self.mainStackView.spacing = 0
+            self.contentView.layoutIfNeeded()
+        }
+
+        let completion: (Bool) -> Void = { [weak self] _ in
+            self?.inviteActionsStackView.isHidden = true
+        }
+
+        if animated {
+            inviteActionsStackView.isHidden = false
+            inviteActionsHeightConstraint?.constant = UIConstants.actionButtonHeight
+            mainStackView.spacing = UIConstants.mainStackDefaultSpacing
+            inviteActionsStackView.spacing = UIConstants.inviteActionsDefaultSpacing
+            contentView.layoutIfNeeded()
+            UIView.animate(
+                withDuration: UIConstants.inviteActionsTransitionDuration,
+                delay: 0,
+                options: [.curveEaseInOut]
+            ) {
+                updates()
+            } completion: { finished in
+                completion(finished)
+            }
+        } else {
+            updates()
+            completion(true)
+        }
     }
 
     // MARK: - Actions
     @objc
     private func handleIgnoreTap() {
+        guard inviteActionState == .available else { return }
         onIgnoreTap?()
     }
 
     @objc
     private func handleAcceptTap() {
+        guard inviteActionState == .available else { return }
         onAcceptTap?()
     }
 }
