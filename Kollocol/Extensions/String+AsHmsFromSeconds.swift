@@ -1,14 +1,7 @@
-//
-//  String+AsHmsFromSeconds.swift
-//  Kollocol
-//
-//  Created by Arsenii Potiakin on 15.03.2026.
-//
 
 import Foundation
 
 extension String {
-    /// Interprets string as seconds and returns localized short HMS format.
     func asHmsFromSeconds() -> String? {
         guard let totalSeconds = Int(self.trimmingCharacters(in: .whitespacesAndNewlines)),
               totalSeconds >= 0

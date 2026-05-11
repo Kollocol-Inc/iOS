@@ -1,9 +1,3 @@
-//
-//  AuthService.swift
-//  Kollocol
-//
-//  Created by Arseniy on 07.02.2026.
-//
 
 import Foundation
 
@@ -32,7 +26,6 @@ actor AuthServiceImpl: AuthService {
     
     func logout() async throws {
         await tokenStore.clear()
-        // await tokenStore.clear()
     }
     
     func refreshToken(with token: String) async throws {

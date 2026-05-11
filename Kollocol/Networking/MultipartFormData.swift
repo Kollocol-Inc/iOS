@@ -1,9 +1,3 @@
-//
-//  MultipartFormData.swift
-//  Kollocol
-//
-//  Created by Arsenii Potiakin on 14.02.2026.
-//
 
 import Foundation
 
@@ -38,7 +32,6 @@ struct MultipartFormData: Sendable {
             data.appendString("--\(boundary)\(Constants.lineBreak)")
 
             if let fileName = part.fileName, let mimeType = part.mimeType {
-                // файл
                 data.appendString(
                     "Content-Disposition: form-data; name=\"\(part.name)\"; filename=\"\(fileName)\"\(Constants.lineBreak)"
                 )
@@ -46,7 +39,6 @@ struct MultipartFormData: Sendable {
                 data.append(part.data)
                 data.appendString(Constants.lineBreak)
             } else {
-                // текст
                 data.appendString("Content-Disposition: form-data; name=\"\(part.name)\"\(Constants.lineBreak)\(Constants.lineBreak)")
                 data.append(part.data)
                 data.appendString(Constants.lineBreak)
@@ -89,4 +81,3 @@ private extension Data {
         append(data)
     }
 }
-

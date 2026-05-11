@@ -1,9 +1,3 @@
-//
-//  String+Localization.swift
-//  Kollocol
-//
-//  Created by Arsenii Potiakin on 25.04.2026.
-//
 
 import Foundation
 
@@ -30,7 +24,6 @@ extension String {
             comment: ""
         )
 
-        // Support escaped newlines stored in localization values (e.g. "\\n").
         return localizedValue.replacingOccurrences(of: "\\n", with: "\n")
     }
 }

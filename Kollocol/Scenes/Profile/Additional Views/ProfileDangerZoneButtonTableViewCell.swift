@@ -1,9 +1,3 @@
-//
-//  ProfileDangerZoneButtonTableViewCell.swift
-//  Kollocol
-//
-//  Created by Arsenii Potiakin on 07.05.2026.
-//
 
 import UIKit
 
@@ -23,8 +17,6 @@ final class ProfileDangerZoneButtonTableViewCell: UITableViewCell {
     static let reuseIdentifier = "ProfileDangerZoneButtonTableViewCell"
 
     private enum UIConstants {
-        // ProfileHeaderTableViewCell uses bottom inset = 4 for its inner view.
-        // Required visual spacing between that view and this button is 12 -> 12 - 4 = 8.
         static let topInset: CGFloat = 8
         static let horizontalInset: CGFloat = 24
         static let bottomInset: CGFloat = 0

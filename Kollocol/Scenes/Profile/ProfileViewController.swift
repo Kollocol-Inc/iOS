@@ -1,9 +1,3 @@
-//
-//  MainViewController.swift
-//  Kollocol
-//
-//  Created by Arseniy on 09.02.2026.
-//
 
 import UIKit
 import Kingfisher
@@ -215,7 +209,6 @@ final class ProfileViewController: UIViewController {
 
     }
 
-    // MARK: - Methods
     @MainActor
     func displayUserProfile(avatarUrl: String?, firstName: String, lastName: String, email: String) {
         stopProfileLoadingShimmer()
@@ -267,13 +260,11 @@ final class ProfileViewController: UIViewController {
     }
 
     private func configureNavbar() {
-        // title
         var title = AttributedString("profileTitle".localized)
         title.foregroundColor = .textSecondary
         title.font = .systemFont(ofSize: 20, weight: .bold)
         navigationItem.attributedTitle = title
 
-        // right button
         let showPopupAndLogoutAction = UIAction { [weak self] _ in
             Task { [weak self] in
                 await self?.interactor.logout()
@@ -292,7 +283,6 @@ final class ProfileViewController: UIViewController {
             )
         ]
 
-        // left button
         navigationItem.backBarButtonItem = UIBarButtonItem(
             image: UIImage(
                 systemName: "chevron.backward"

@@ -1,9 +1,3 @@
-//
-//  NotificationsLogic.swift
-//  Kollocol
-//
-//  Created by Arsenii Potiakin on 08.05.2026.
-//
 
 import Foundation
 
@@ -139,7 +133,6 @@ final class NotificationsLogic: NotificationsInteractor {
                 sentReadNotificationIDs.insert(notification.id)
                 pendingVisibleReadNotificationIDs.remove(notification.id)
             } catch {
-                // UI state is updated locally regardless; backend will synchronize on next reload.
             }
 
             updateNotification(notificationId: notificationId) { notification in

@@ -1,9 +1,3 @@
-//
-//  MainViewController.swift
-//  Kollocol
-//
-//  Created by Arseniy on 09.02.2026.
-//
 
 import UIKit
 import ShimmerView
@@ -148,8 +142,6 @@ final class MainViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        // During push from Main, custom left bar item may briefly artifact under destination back button.
-        // Temporarily removing it avoids carrying its snapshot into transition.
         navigationItem.leftBarButtonItem = nil
     }
 
@@ -164,7 +156,6 @@ final class MainViewController: UIViewController {
         profileShimmerViews.forEach { $0.apply(style: shimmerStyle) }
     }
 
-    // MARK: - Methods
     @MainActor
     func displayUserProfile(avatarUrl: String?, name: String) {
         stopProfileLoadingShimmer()
@@ -325,7 +316,6 @@ final class MainViewController: UIViewController {
     }
 
     private func configureNavbar() {
-        // title
         navigationItem.title = nil
         navigationItem.titleView = nil
         navigationItem.backButtonDisplayMode = .minimal
@@ -339,10 +329,8 @@ final class MainViewController: UIViewController {
         backButtonItem.hidesSharedBackground = true
         navigationItem.backBarButtonItem = backButtonItem
 
-        // left button
         configureLeftBarButton()
 
-        // right button
         let redirectToNotificationsScreenAction = UIAction { [weak self] _ in
             Task { [weak self] in
                 await self?.interactor.routeToNotificationsScreen()
@@ -438,7 +426,6 @@ final class MainViewController: UIViewController {
         )
     }
 
-    // MARK: - Actions
     @objc
     private func leftBarButtonTapped() {
         Task {
@@ -453,7 +440,6 @@ final class MainViewController: UIViewController {
         }
     }
 }
-
 
 // MARK: - UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
