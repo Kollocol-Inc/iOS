@@ -17,6 +17,7 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
         label.font = .systemFont(ofSize: 17, weight: .medium)
         label.textColor = .textSecondary
         label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
         label.textAlignment = .left
         return label
     }()
@@ -51,6 +52,11 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updatePreferredMaxLayoutWidthIfNeeded()
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
         markControl.stopAnimating()
@@ -68,6 +74,7 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
         optionLabel.text = option.text
         protectedOptionContainer.setSecureRenderingEnabled(isScreenshotProtectionEnabled)
         setSensitiveTextHidden(isSensitiveTextHidden)
+        setNeedsLayout()
         optionCounterLabel.isHidden = option.isAnswersCountVisible == false
         if option.isAnswersCountVisible {
             optionCounterLabel.attributedText = makeOptionCounterAttributedText(count: option.answersCount)
@@ -153,6 +160,17 @@ final class QuizParticipatingOptionTableViewCell: UITableViewCell {
             )
         )
         return attributedText
+    }
+
+    private func updatePreferredMaxLayoutWidthIfNeeded() {
+        contentView.layoutIfNeeded()
+        let targetWidth = protectedOptionContainer.contentView.bounds.width
+        guard targetWidth > 0 else { return }
+
+        if abs(optionLabel.preferredMaxLayoutWidth - targetWidth) > 0.5 {
+            optionLabel.preferredMaxLayoutWidth = targetWidth
+            optionLabel.setNeedsLayout()
+        }
     }
 
     // MARK: - Actions

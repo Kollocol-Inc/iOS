@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
-	<string></string>
+	<string>Kollocol uses the camera so you can take a photo for your profile or a group.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string></string>
+	<string>Kollocol needs access to your photos so you can choose an image for your profile or a group.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

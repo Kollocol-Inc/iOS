@@ -28,7 +28,7 @@ final class ScreenshotProtectedContainerView: UIView {
     }()
 
     // MARK: - Properties
-    private var didInstallContentView = false
+    private weak var secureCanvasView: UIView?
 
     // MARK: - Lifecycle
     override init(frame: CGRect) {
@@ -64,32 +64,53 @@ final class ScreenshotProtectedContainerView: UIView {
         secureTextField.pin(to: self)
 
         installContentViewIfNeeded()
+        DispatchQueue.main.async { [weak self] in
+            self?.installContentViewIfNeeded()
+        }
     }
 
     private func installContentViewIfNeeded() {
-        guard didInstallContentView == false else {
-            return
-        }
-
         secureTextField.layoutIfNeeded()
 
-        guard let secureCanvasView = findSecureCanvasView(in: secureTextField) else {
+        guard let targetCanvasView = findSecureCanvasView(in: secureTextField) else {
             return
         }
 
-        secureCanvasView.backgroundColor = .clear
-        secureCanvasView.clipsToBounds = true
-        secureCanvasView.addSubview(contentView)
-        contentView.pin(to: secureCanvasView)
-        didInstallContentView = true
+        if contentView.superview !== targetCanvasView {
+            contentView.removeFromSuperview()
+            targetCanvasView.addSubview(contentView)
+            contentView.pin(to: targetCanvasView)
+        }
+
+        targetCanvasView.backgroundColor = .clear
+        targetCanvasView.clipsToBounds = true
+        secureCanvasView = targetCanvasView
     }
 
     private func findSecureCanvasView(in rootView: UIView) -> UIView? {
-        allSubviews(of: rootView).first { subview in
+        let candidates = allSubviews(of: rootView).filter { subview in
             let className = NSStringFromClass(type(of: subview))
             return className.contains("LayoutCanvasView")
                 || className.contains("TextLayoutCanvasView")
                 || className.contains("CanvasView")
+        }
+
+        guard candidates.isEmpty == false else {
+            return nil
+        }
+
+        let rootWidth = rootView.bounds.width
+        let rootHeight = rootView.bounds.height
+
+        if let bestSizedCandidate = candidates.first(where: { candidate in
+            abs(candidate.bounds.width - rootWidth) < 0.5
+                && abs(candidate.bounds.height - rootHeight) < 0.5
+        }) {
+            return bestSizedCandidate
+        }
+
+        return candidates.max { lhs, rhs in
+            (lhs.bounds.width * lhs.bounds.height) < (rhs.bounds.width * rhs.bounds.height)
         }
     }
 
