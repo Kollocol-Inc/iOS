@@ -70,11 +70,11 @@ final class AvatarPickerController: NSObject {
         let cameraImage = UIImage(systemName: "camera.fill")
         let trashImage = UIImage(systemName: "trash.fill")
 
-        let galleryAction = UIAction(title: "Галерея", image: galleryImage) { [weak self] _ in
+        let galleryAction = UIAction(title: "gallery".localized, image: galleryImage) { [weak self] _ in
             self?.presentGalleryPicker()
         }
 
-        let cameraAction = UIAction(title: "Сделать фото", image: cameraImage) { [weak self] _ in
+        let cameraAction = UIAction(title: "takePhoto".localized, image: cameraImage) { [weak self] _ in
             self?.presentCameraPicker()
         }
 
@@ -82,7 +82,7 @@ final class AvatarPickerController: NSObject {
 
         if avatarView.hasAvatar() {
             let deleteAction = UIAction(
-                title: "Удалить фото",
+                title: "deletePhoto".localized,
                 image: trashImage,
                 attributes: [.destructive]
             ) { [weak self] _ in
